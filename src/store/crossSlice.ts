@@ -25,6 +25,9 @@ const SCREENPLAY_KEYWORDS = new Set([
   'MONTAGE', 'BEGIN', 'RESUME', 'BACK', 'SAME', 'TIME',
 ]);
 
+// Maximum length for character names in screenplay format (reasonable limit for names)
+const MAX_CHARACTER_NAME_LENGTH = 30;
+
 // Convert string to title case
 function toTitleCase(str: string): string {
   return str
@@ -108,7 +111,8 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
     const state = get();
     
     // Extract all-caps words/phrases using the specified regex pattern
-    const pattern = /\b([A-Z][A-Z '.-]{1,30})\b/g;
+    // Pattern matches 1-30 character sequences of uppercase letters, spaces, periods, apostrophes, and hyphens
+    const pattern = new RegExp(`\\b([A-Z][A-Z '.\\-]{1,${MAX_CHARACTER_NAME_LENGTH}}\\b`, 'g');
     const matches = text.match(pattern) || [];
     
     // Create a set of unique capitalized names, filtering out screenplay keywords
@@ -170,7 +174,7 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
     // Add all new characters to the store using set()
     if (newCharacters.length > 0) {
       set((prevState: any) => ({
-        characters: [...newCharacters, ...prevState.characters],
+        characters: [...prevState.characters, ...newCharacters],
       }));
     }
 
