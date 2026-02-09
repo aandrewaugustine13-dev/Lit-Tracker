@@ -141,7 +141,7 @@ const LoreModule: React.FC = () => {
 
       {/* Content */}
       {view === 'map' ? (
-        <div className="flex-1 min-h-[600px]">
+        <div className="flex-1 relative min-h-0">
           <LoreMap />
         </div>
       ) : (

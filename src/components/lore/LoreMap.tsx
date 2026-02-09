@@ -181,7 +181,7 @@ const LoreMap: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 relative">
+    <div className="absolute inset-0">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -203,7 +203,7 @@ const LoreMap: React.FC = () => {
       </ReactFlow>
 
       {/* Stats overlay */}
-      <div className="glass-panel absolute top-4 left-4 px-4 py-3 rounded-lg space-y-2 text-xs">
+      <div className="glass-panel absolute top-4 left-4 px-4 py-3 rounded-lg space-y-2 text-xs z-10">
         <div className="flex items-center gap-2 text-steel-300">
           <span className="font-bold">{stats.total}</span>
           <span className="text-steel-500">total nodes</span>
