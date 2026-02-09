@@ -4,6 +4,7 @@ import { LoreEntry, LoreType } from '../../types';
 import { LORE_TYPE_CONFIG } from '../../utils/loreConfig';
 import LoreCard from './LoreCard';
 import LoreEditor from './LoreEditor';
+import LoreMap from './LoreMap';
 import { Search, Plus, BookOpen } from 'lucide-react';
 import { genId } from '../../utils/helpers';
 
@@ -15,6 +16,7 @@ const LoreModule: React.FC = () => {
 
   const [editingEntry, setEditingEntry] = useState<LoreEntry | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [view, setView] = useState<'grid' | 'map'>('grid');
 
   const filtered = useMemo(() => {
     return loreEntries.filter(e => {
@@ -103,9 +105,17 @@ const LoreModule: React.FC = () => {
             </div>
           </div>
 
+          {/* View toggle */}
+          <button
+            onClick={() => setView(view === 'grid' ? 'map' : 'grid')}
+            className="ml-3 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider bg-ink-800 hover:bg-ink-700 text-steel-300 rounded-lg border border-ink-700 transition-colors"
+          >
+            {view === 'grid' ? '🧠 Neural Map' : '📋 Grid View'}
+          </button>
+
           <button
             onClick={handleCreate}
-            className="ml-4 bg-lore-500 hover:bg-lore-400 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-lore-500/20 transition-all active:scale-95 text-sm"
+            className="ml-2 bg-lore-500 hover:bg-lore-400 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-lore-500/20 transition-all active:scale-95 text-sm"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">New Entry</span>
@@ -130,38 +140,44 @@ const LoreModule: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-5 lg:p-8">
-        {loreEntries.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-20 animate-fade-in">
-            <div className="w-20 h-20 bg-lore-900/30 border border-lore-500/20 rounded-3xl flex items-center justify-center mb-6 text-lore-400">
-              <BookOpen size={32} />
+      {view === 'map' ? (
+        <div className="flex-1 min-h-[600px]">
+          <LoreMap />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 lg:p-8">
+          {loreEntries.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-20 animate-fade-in">
+              <div className="w-20 h-20 bg-lore-900/30 border border-lore-500/20 rounded-3xl flex items-center justify-center mb-6 text-lore-400">
+                <BookOpen size={32} />
+              </div>
+              <h2 className="text-2xl font-display font-bold text-steel-100 mb-3">Lore Tracker is Empty</h2>
+              <p className="text-steel-400 mb-8 leading-relaxed text-sm">
+                Build your universe from the ground up. Factions, locations, events, concepts, artifacts, and canon rules — everything lives here.
+              </p>
+              <button
+                onClick={handleCreate}
+                className="bg-lore-500 hover:bg-lore-400 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm shadow-lg shadow-lore-500/20 active:scale-95"
+              >
+                Create First Entry
+              </button>
             </div>
-            <h2 className="text-2xl font-display font-bold text-steel-100 mb-3">Lore Tracker is Empty</h2>
-            <p className="text-steel-400 mb-8 leading-relaxed text-sm">
-              Build your universe from the ground up. Factions, locations, events, concepts, artifacts, and canon rules — everything lives here.
-            </p>
-            <button
-              onClick={handleCreate}
-              className="bg-lore-500 hover:bg-lore-400 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm shadow-lg shadow-lore-500/20 active:scale-95"
-            >
-              Create First Entry
-            </button>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-            <p className="text-steel-500">No entries matching your filter</p>
-            <button onClick={() => { setLoreSearchTerm(''); setLoreFilterType('all'); }} className="mt-3 text-lore-400 hover:underline text-xs font-bold uppercase tracking-widest">
-              Clear Filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fade-in">
-            {filtered.map(entry => (
-              <LoreCard key={entry.id} entry={entry} onEdit={handleEdit} />
-            ))}
-          </div>
-        )}
-      </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+              <p className="text-steel-500">No entries matching your filter</p>
+              <button onClick={() => { setLoreSearchTerm(''); setLoreFilterType('all'); }} className="mt-3 text-lore-400 hover:underline text-xs font-bold uppercase tracking-widest">
+                Clear Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fade-in">
+              {filtered.map(entry => (
+                <LoreCard key={entry.id} entry={entry} onEdit={handleEdit} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Editor */}
       {isEditorOpen && (
