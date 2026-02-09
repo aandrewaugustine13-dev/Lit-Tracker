@@ -35,7 +35,7 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-ink-950 text-steel-200 overflow-hidden">
+    <div className="flex h-screen bg-ink-950 text-steel-300 overflow-hidden">
       <GlobalSidebar />
       {renderModule()}
       <DetailPanel />
