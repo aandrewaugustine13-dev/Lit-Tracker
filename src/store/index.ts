@@ -5,9 +5,10 @@ import { LoreSlice, createLoreSlice } from './loreSlice';
 import { NavSlice, createNavSlice } from './navSlice';
 import { InkSlice, createInkSlice } from './inkSlice';
 import { DetailSlice, createDetailSlice } from './detailSlice';
+import { CrossSlice, createCrossSlice } from './crossSlice';
 
 // Combined store type
-export type LitStore = CharacterSlice & LoreSlice & NavSlice & InkSlice & DetailSlice;
+export type LitStore = CharacterSlice & LoreSlice & NavSlice & InkSlice & DetailSlice & CrossSlice;
 
 export const useLitStore = create<LitStore>()(
   persist(
@@ -17,6 +18,7 @@ export const useLitStore = create<LitStore>()(
       ...createNavSlice(...a),
       ...createInkSlice(...a),
       ...createDetailSlice(...a),
+      ...createCrossSlice(...a),
     }),
     {
       name: 'lit-tracker-v1',
