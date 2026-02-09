@@ -1,0 +1,301 @@
+import React, { useState, useEffect } from 'react';
+import { AppState } from '../../types';
+import { InkAction as Action } from '../../store/inkSlice';
+import { Icons } from '../../constants';
+import NewProjectModal from './NewProjectModal';
+import EmptyState from './EmptyState';
+
+interface ProjectHubProps {
+    state: AppState;
+    dispatch: React.Dispatch<Action>;
+    onClose: () => void;
+}
+
+const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => {
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+    const [localGeminiKey, setLocalGeminiKey] = useState<string>('');
+    const [localLeonardoKey, setLocalLeonardoKey] = useState<string>('');
+    const [localGrokKey, setLocalGrokKey] = useState<string>('');
+    const [localFalKey, setLocalFalKey] = useState<string>('');
+    const [localSeaArtKey, setLocalSeaArtKey] = useState<string>('');
+    const [localOpenAIKey, setLocalOpenAIKey] = useState<string>('');
+
+    useEffect(() => {
+        if (editingId) {
+            const proj = state.projects.find(p => p.id === editingId);
+            setLocalGeminiKey(proj?.geminiApiKey || '');
+            setLocalLeonardoKey(proj?.leonardoApiKey || '');
+            setLocalGrokKey(proj?.grokApiKey || '');
+            setLocalFalKey(proj?.falApiKey || '');
+            setLocalSeaArtKey(proj?.seaartApiKey || '');
+            setLocalOpenAIKey(proj?.openaiApiKey || '');
+        }
+    }, [editingId, state.projects]);
+
+    return (
+        <div className="fixed inset-0 z-[500] bg-black/20 backdrop-blur-xl flex items-center justify-center p-8 animate-fade-in">
+        <div className="max-w-5xl w-full bg-ink-950 border border-ink-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-10 border-b border-ink-700 flex items-center justify-between">
+        <div>
+        <h2 className="font-display text-5xl tracking-widest text-steel-100 uppercase text-center">Archive</h2>
+        <p className="font-mono text-xs text-ember-500 mt-2 tracking-[0.3em] uppercase text-center">Storyboard Management</p>
+        </div>
+        <button
+        onClick={onClose}
+        className="w-12 h-12 flex items-center justify-center rounded-full bg-ink-800 hover:bg-red-500 text-steel-400 hover:text-white transition-all"
+        >
+        <Icons.X />
+        </button>
+        </div>
+
+        <div className="p-10 overflow-y-auto">
+        {state.projects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+                <EmptyState
+                    variant="projects"
+                    onAction={() => setShowNewProjectModal(true)}
+                    actionLabel="Create First Project"
+                />
+            </div>
+        ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {state.projects.map(proj => (
+            <div
+            key={proj.id}
+            onClick={() => { dispatch({ type: 'SET_ACTIVE_PROJECT', id: proj.id }); onClose(); }}
+            className={`p-8 rounded-2xl border-2 cursor-pointer transition-all group relative overflow-hidden flex flex-col ${
+                state.activeProjectId === proj.id
+                ? 'border-ember-500 bg-ember-500/5 ring-4 ring-ember-500/10'
+                : 'border-ink-700 hover:border-steel-500 bg-ink-950/50'
+            }`}
+            >
+            <div className="relative z-10 flex-1">
+            <div className="flex justify-between items-start">
+            <h3 className="font-display text-3xl text-steel-100 group-hover:text-ember-500 transition-colors mb-2 uppercase truncate pr-4">
+            {proj.title}
+            </h3>
+            <button
+            onClick={(e) => { e.stopPropagation(); setEditingId(proj.id === editingId ? null : proj.id); }}
+            className={`p-2 rounded-full border transition-all flex-shrink-0 ${
+                editingId === proj.id ? 'bg-ember-500 text-ink-950 border-ember-500' : 'bg-ink-800 text-steel-500 border-ink-700 hover:border-ember-500/50'
+            }`}
+            >
+            <Icons.Edit />
+            </button>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] font-mono text-steel-500 uppercase tracking-widest">
+            <span>{proj.issues.reduce((acc, i) => acc + i.pages.length, 0)} Pages</span>
+            <div className="w-1 h-1 rounded-full bg-steel-700"></div>
+            <span>{proj?.characters?.length || 0} Cast</span>
+            </div>
+            </div>
+
+            <div className="mt-6 flex justify-between items-center relative z-10">
+            <span className={`text-[10px] font-mono px-3 py-1 rounded-full border uppercase ${
+                proj.imageProvider === 'gemini' ? 'bg-blue-600/20 text-blue-400 border-blue-600/50' :
+                proj.imageProvider === 'leonardo' ? 'bg-orange-600/20 text-orange-400 border-orange-600/50' :
+                proj.imageProvider === 'grok' ? 'bg-gray-600/20 text-gray-400 border-gray-600/50' :
+                proj.imageProvider === 'fal' ? 'bg-ember-500/20 text-ember-400 border-ember-500/50' :
+                proj.imageProvider === 'seaart' ? 'bg-pink-600/20 text-pink-400 border-pink-600/50' :
+                proj.imageProvider === 'openai' ? 'bg-green-600/20 text-green-400 border-green-600/50' :
+                'bg-ink-800 text-steel-600 border-ink-700'
+            }`}>
+            {proj.imageProvider}
+            </span>
+            <button
+            onClick={(e) => {
+                e.stopPropagation();
+                if(confirm('Delete Project?')) dispatch({ type: 'DELETE_PROJECT', id: proj.id });
+            }}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-steel-700 hover:text-red-500 hover:bg-red-500/10 transition-all"
+            >
+            <Icons.Trash />
+            </button>
+            </div>
+
+            {editingId === proj.id && (
+                <div onClick={e => e.stopPropagation()} className="mt-6 p-4 bg-ink-950 rounded-xl border border-ink-700 space-y-4 animate-fade-in shadow-2xl">
+                <div>
+                <label className="text-[9px] font-mono text-steel-500 uppercase block mb-2">Image Provider</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                <button
+                onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'gemini' } })}
+                className={`text-[10px] font-mono py-2 rounded-lg border transition-all ${proj.imageProvider === 'gemini' ? 'bg-blue-600 text-white border-blue-500 font-bold' : 'bg-ink-900 text-steel-500 border-ink-700 hover:border-blue-600/50'}`}
+                >
+                GEMINI
+                </button>
+                <button
+                onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'leonardo' } })}
+                className={`text-[10px] font-mono py-2 rounded-lg border transition-all ${proj.imageProvider === 'leonardo' ? 'bg-orange-600 text-white border-orange-500 font-bold' : 'bg-ink-900 text-steel-500 border-ink-700 hover:border-orange-600/50'}`}
+                >
+                LEONARDO
+                </button>
+                <button
+                onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'grok' } })}
+                className={`text-[10px] font-mono py-2 rounded-lg border transition-all ${proj.imageProvider === 'grok' ? 'bg-gray-600 text-white border-gray-500 font-bold' : 'bg-ink-900 text-steel-500 border-ink-700 hover:border-gray-600/50'}`}
+                >
+                GROK
+                </button>
+                <button
+                onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'fal' } })}
+                className={`text-[10px] font-mono py-2 rounded-lg border transition-all ${proj.imageProvider === 'fal' ? 'bg-ember-500 text-ink-950 border-ember-400 font-bold' : 'bg-ink-900 text-steel-500 border-ink-700 hover:border-ember-500/50'}`}
+                >
+                FAL
+                </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+                <button
+                onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'seaart' } })}
+                className={`text-[10px] font-mono py-2 rounded-lg border transition-all ${proj.imageProvider === 'seaart' ? 'bg-pink-600 text-white border-pink-500 font-bold' : 'bg-ink-900 text-steel-500 border-ink-700 hover:border-pink-600/50'}`}
+                >
+                SEAART
+                </button>
+                <button
+                onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'openai' } })}
+                className={`text-[10px] font-mono py-2 rounded-lg border transition-all ${proj.imageProvider === 'openai' ? 'bg-green-600 text-white border-green-500 font-bold' : 'bg-ink-900 text-steel-500 border-ink-700 hover:border-green-600/50'}`}
+                >
+                OPENAI
+                </button>
+                </div>
+                </div>
+
+                {/* API Key input for selected provider */}
+                <div className="mt-3 p-3 bg-ink-800 rounded-lg border border-ink-700 space-y-2">
+                <label className="block text-[9px] font-mono text-steel-400 uppercase mb-1">
+                {proj.imageProvider === 'gemini' ? 'Gemini' :
+                 proj.imageProvider === 'leonardo' ? 'Leonardo' :
+                 proj.imageProvider === 'grok' ? 'Grok (xAI)' :
+                 proj.imageProvider === 'fal' ? 'FAL' :
+                 proj.imageProvider === 'seaart' ? 'SeaArt' :
+                 proj.imageProvider === 'openai' ? 'OpenAI' : ''} API Key
+                </label>
+                <div className="flex gap-2">
+                <input
+                type="password"
+                placeholder="Enter API key..."
+                value={
+                    proj.imageProvider === 'gemini' ? localGeminiKey :
+                    proj.imageProvider === 'leonardo' ? localLeonardoKey :
+                    proj.imageProvider === 'grok' ? localGrokKey :
+                    proj.imageProvider === 'fal' ? localFalKey :
+                    proj.imageProvider === 'seaart' ? localSeaArtKey :
+                    proj.imageProvider === 'openai' ? localOpenAIKey : ''
+                }
+                onChange={e => {
+                    if (proj.imageProvider === 'gemini') setLocalGeminiKey(e.target.value);
+                    else if (proj.imageProvider === 'leonardo') setLocalLeonardoKey(e.target.value);
+                    else if (proj.imageProvider === 'grok') setLocalGrokKey(e.target.value);
+                    else if (proj.imageProvider === 'fal') setLocalFalKey(e.target.value);
+                    else if (proj.imageProvider === 'seaart') setLocalSeaArtKey(e.target.value);
+                    else if (proj.imageProvider === 'openai') setLocalOpenAIKey(e.target.value);
+                }}
+                className="flex-1 bg-ink-900 border border-ink-700 rounded-lg px-3 py-2 text-xs text-steel-300 font-mono outline-none focus:border-ember-500"
+                />
+                <button
+                onClick={() => {
+                    if (proj.imageProvider === 'gemini' && localGeminiKey.trim()) {
+                        dispatch({ type: 'UPDATE_PROJECT_GEMINI_KEY', projectId: proj.id, apiKey: localGeminiKey.trim() });
+                        alert('Gemini Key saved!');
+                    } else if (proj.imageProvider === 'leonardo' && localLeonardoKey.trim()) {
+                        dispatch({ type: 'UPDATE_PROJECT_LEONARDO_KEY', projectId: proj.id, apiKey: localLeonardoKey.trim() });
+                        alert('Leonardo Key saved!');
+                    } else if (proj.imageProvider === 'grok' && localGrokKey.trim()) {
+                        dispatch({ type: 'UPDATE_PROJECT_GROK_KEY', projectId: proj.id, apiKey: localGrokKey.trim() });
+                        alert('Grok Key saved!');
+                    } else if (proj.imageProvider === 'fal' && localFalKey.trim()) {
+                        dispatch({ type: 'UPDATE_PROJECT_FAL_KEY', projectId: proj.id, apiKey: localFalKey.trim() });
+                        alert('FAL Key saved!');
+                    } else if (proj.imageProvider === 'seaart' && localSeaArtKey.trim()) {
+                        dispatch({ type: 'UPDATE_PROJECT_SEAART_KEY', projectId: proj.id, apiKey: localSeaArtKey.trim() });
+                        alert('SeaArt Key saved!');
+                    } else if (proj.imageProvider === 'openai' && localOpenAIKey.trim()) {
+                        dispatch({ type: 'UPDATE_PROJECT_OPENAI_KEY', projectId: proj.id, apiKey: localOpenAIKey.trim() });
+                        alert('OpenAI Key saved!');
+                    }
+                }}
+                className="bg-ember-500 hover:bg-ember-400 text-ink-950 font-bold px-4 py-2 rounded-lg uppercase text-[9px] transition-colors"
+                >
+                Save
+                </button>
+                </div>
+                {proj.imageProvider === 'gemini' ? (
+                    <a 
+                        href="https://aistudio.google.com/app/apikey" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors mt-1 block"
+                    >
+                        Get key from ai.google.dev
+                    </a>
+                ) : proj.imageProvider === 'leonardo' ? (
+                    <a 
+                        href="https://leonardo.ai/settings" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors mt-1 block"
+                    >
+                        Get key from leonardo.ai
+                    </a>
+                ) : proj.imageProvider === 'grok' ? (
+                    <a 
+                        href="https://console.x.ai" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors mt-1 block"
+                    >
+                        Get key from console.x.ai (experimental)
+                    </a>
+                ) : proj.imageProvider === 'fal' ? (
+                    <a 
+                        href="https://fal.ai/dashboard/keys" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors mt-1 block"
+                    >
+                        Get key from fal.ai
+                    </a>
+                ) : proj.imageProvider === 'seaart' ? (
+                    <a 
+                        href="https://seaart.ai/api" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors mt-1 block"
+                    >
+                        Get key from seaart.ai/api
+                    </a>
+                ) : proj.imageProvider === 'openai' ? (
+                    <a 
+                        href="https://platform.openai.com/api-keys" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors mt-1 block"
+                    >
+                        Get key from platform.openai.com
+                    </a>
+                ) : null}
+                </div>
+                </div>
+            )}
+            </div>
+        ))}
+
+        <button
+        onClick={() => setShowNewProjectModal(true)}
+        className="p-8 rounded-2xl border-2 border-dashed border-ink-700 hover:border-ember-500 hover:bg-ember-500/5 flex flex-col items-center justify-center gap-6 text-steel-500 hover:text-ember-500 transition-all group min-h-[220px]"
+        >
+        <div className="w-16 h-16 rounded-full border-2 border-dashed border-steel-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <Icons.Plus />
+        </div>
+        <span className="font-display text-2xl uppercase tracking-widest text-center">Initialize Sequence</span>
+        </button>
+        </div>
+        )}
+        </div>
+        </div>
+        {showNewProjectModal && <NewProjectModal onClose={() => setShowNewProjectModal(false)} dispatch={dispatch} />}
+        </div>
+    );
+};
+
+export default ProjectHub;
