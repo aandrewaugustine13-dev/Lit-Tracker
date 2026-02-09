@@ -111,8 +111,9 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
     const state = get();
     
     // Extract all-caps words/phrases using the specified regex pattern
-    // Pattern matches 1-30 character sequences of uppercase letters, spaces, periods, apostrophes, and hyphens
-    const pattern = new RegExp(`\\b([A-Z][A-Z '.\\-]{1,${MAX_CHARACTER_NAME_LENGTH}}\\b`, 'g');
+    // Pattern matches sequences starting with uppercase letter, followed by 0-29 more chars (uppercase, space, period, apostrophe, hyphen)
+    // Total length: 1 to MAX_CHARACTER_NAME_LENGTH characters
+    const pattern = new RegExp(`\\b([A-Z][A-Z '.\\-]{0,${MAX_CHARACTER_NAME_LENGTH - 1}})\\b`, 'g');
     const matches = text.match(pattern) || [];
     
     // Create a set of unique capitalized names, filtering out screenplay keywords
