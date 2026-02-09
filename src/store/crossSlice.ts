@@ -1,13 +1,19 @@
 import { StateCreator } from 'zustand';
-import { Character } from '../types';
+import { Character, LoreType, LocationEntry, EventEntry } from '../types';
 
 // =============================================================================
 // CROSS-SLICE — Cross-cutting actions that orchestrate updates across multiple slices
 // =============================================================================
 
+export interface ScriptExtractionResult {
+  newCharacters: Character[];
+  newLocations: LocationEntry[];
+  newTimelineEvents: EventEntry[];
+}
+
 export interface CrossSlice {
   updateEntity: (id: string, data: Partial<Character>) => void;
-  autoCreateFromScript: (text: string) => string[];
+  autoCreateFromScript: (text: string) => ScriptExtractionResult;
 }
 
 // Helper to escape special regex characters in character names
@@ -28,6 +34,24 @@ const SCREENPLAY_KEYWORDS = new Set([
 // Maximum length for character names in screenplay format (reasonable limit for names)
 const MAX_CHARACTER_NAME_LENGTH = 30;
 
+// Place indicator keywords for location extraction
+const PLACE_INDICATORS = new Set([
+  'CENTER', 'CENTRE', 'ROOM', 'BUILDING', 'STREET', 'LAB', 'LABORATORY', 
+  'HOSPITAL', 'GARAGE', 'OFFICE', 'BUREAU', 'HEADQUARTERS', 'HQ', 'APARTMENT', 
+  'HOUSE', 'MANSION', 'CHURCH', 'TEMPLE', 'SCHOOL', 'STATION', 'WAREHOUSE', 
+  'PARK', 'ALLEY', 'BRIDGE', 'TOWER', 'PRISON', 'JAIL', 'COURT', 'COURTROOM', 
+  'DINER', 'BAR', 'RESTAURANT', 'CAFÉ', 'CAFE', 'MALL', 'SHOP', 'STORE', 
+  'MARKET', 'ARENA', 'STADIUM', 'LIBRARY', 'MUSEUM', 'HALL', 'HALLWAY', 
+  'CORRIDOR', 'BASEMENT', 'ROOFTOP', 'ROOF', 'BUNKER', 'CAVE', 'FOREST', 
+  'DOCK', 'PORT', 'HARBOR', 'HANGAR', 'FACILITY',
+]);
+
+// Interface for raw timeline event extraction
+interface RawTimelineEvent {
+  date: string;
+  context: string;
+}
+
 // Convert string to title case
 function toTitleCase(str: string): string {
   return str
@@ -35,6 +59,112 @@ function toTitleCase(str: string): string {
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+/**
+ * Extract location names from script text.
+ * Looks for:
+ * 1. Lines starting with INT. or EXT. (standard slug-lines)
+ * 2. Sentences starting with Interior/Exterior (optionally preceded by Panel N)
+ * 3. All-caps phrases containing place indicator words
+ */
+function extractLocations(text: string): string[] {
+  const locations = new Set<string>();
+  const lines = text.split('\n');
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    // 1. Check for INT./EXT. slug-lines (e.g., "INT. APARTMENT - NIGHT")
+    const slugMatch = trimmedLine.match(/^(INT\.|EXT\.)\s+([^-]+?)(?:\s+-\s+.*)?$/i);
+    if (slugMatch) {
+      const location = slugMatch[2].trim();
+      if (location.length >= 3) {
+        locations.add(location);
+      }
+      continue;
+    }
+
+    // 2. Check for Interior/Exterior descriptions (e.g., "Panel 1 Interior apartment.")
+    const interiorExteriorMatch = trimmedLine.match(/(?:Panel\s+\d+\s+)?(Interior|Exterior)[.\s]+(.+)/i);
+    if (interiorExteriorMatch) {
+      const location = interiorExteriorMatch[2].trim().replace(/\.$/, '');
+      if (location.length >= 3) {
+        locations.add(location);
+      }
+      continue;
+    }
+
+    // 3. Check for all-caps phrases with place indicators
+    const capsWords = trimmedLine.match(/\b[A-Z][A-Z\s'.,-]{2,}\b/g);
+    if (capsWords) {
+      for (const phrase of capsWords) {
+        const cleanPhrase = phrase.trim();
+        // Check if phrase contains at least one place indicator
+        const words = cleanPhrase.split(/\s+/);
+        const hasPlaceIndicator = words.some(word => 
+          PLACE_INDICATORS.has(word.replace(/[,.-]/g, ''))
+        );
+        
+        if (hasPlaceIndicator && cleanPhrase.length >= 3) {
+          locations.add(cleanPhrase);
+        }
+      }
+    }
+  }
+
+  return Array.from(locations);
+}
+
+/**
+ * Extract timeline events from script text.
+ * Looks for:
+ * 1. Setting: <date>
+ * 2. CAPTION: <year>...
+ * Tracks current page/scene context for descriptive purposes.
+ */
+function extractTimeline(text: string): RawTimelineEvent[] {
+  const events: RawTimelineEvent[] = [];
+  const lines = text.split('\n');
+  let currentContext = 'Script';
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    // Track page/scene context
+    const pageMatch = trimmedLine.match(/^Page\s+(\d+)/i);
+    if (pageMatch) {
+      currentContext = `Page ${pageMatch[1]}`;
+      continue;
+    }
+
+    const sceneMatch = trimmedLine.match(/^Scene\s+(\d+)/i);
+    if (sceneMatch) {
+      currentContext = `Scene ${sceneMatch[1]}`;
+      continue;
+    }
+
+    // Look for Setting: <date>
+    const settingMatch = trimmedLine.match(/^Setting:\s*(.+)/i);
+    if (settingMatch) {
+      const date = settingMatch[1].trim();
+      if (date) {
+        events.push({ date, context: currentContext });
+      }
+      continue;
+    }
+
+    // Look for CAPTION: <year>...
+    const captionMatch = trimmedLine.match(/^CAPTION:\s*(\d{4}.+)/i);
+    if (captionMatch) {
+      const date = captionMatch[1].trim();
+      if (date) {
+        events.push({ date, context: currentContext });
+      }
+    }
+  }
+
+  return events;
 }
 
 // NOTE: This slice needs access to the full LitStore type to read/write across all slices.
@@ -101,14 +231,16 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
   },
 
   /**
-   * Scans the provided script text for CAPITALIZED NAMES (standard screenplay convention).
-   * Filters out common screenplay direction keywords and compares found names against
-   * existing characters (case-insensitive). For each new name, creates a placeholder
-   * Character object and adds it to the characters array. Returns an array of the
-   * newly created character IDs.
+   * Scans the provided script text for CAPITALIZED NAMES (standard screenplay convention),
+   * LOCATIONS, and TIMELINE EVENTS. Filters out common screenplay direction keywords and 
+   * compares found names against existing characters and lore entries (case-insensitive). 
+   * For each new entity, creates a placeholder object and adds it to the appropriate store.
+   * Returns a structured result containing all newly created entities.
    */
-  autoCreateFromScript: (text: string): string[] => {
+  autoCreateFromScript: (text: string): ScriptExtractionResult => {
     const state = get();
+    
+    // ===== CHARACTER EXTRACTION (existing logic) =====
     
     // Extract all-caps words/phrases using the specified regex pattern
     // Pattern matches sequences starting with uppercase letter, followed by 0-29 more chars (uppercase, space, period, apostrophe, hyphen)
@@ -133,7 +265,6 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
 
     // Create new characters for names that don't exist yet
     const newCharacters: Character[] = [];
-    const newCharacterIds: string[] = [];
     
     uniqueNames.forEach((name) => {
       const lowerName = name.toLowerCase();
@@ -164,21 +295,116 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
         updatedAt: Date.now(),
       };
 
-      // Add to the lists
+      // Add to the list
       newCharacters.push(newCharacter);
-      newCharacterIds.push(newCharacter.id);
       
       // Add to existing names set to avoid duplicates in this batch
       existingNames.add(lowerName);
     });
 
-    // Add all new characters to the store using set()
-    if (newCharacters.length > 0) {
+    // ===== LOCATION EXTRACTION =====
+    
+    const extractedLocations = extractLocations(text);
+    
+    // Get existing location names (case-insensitive comparison)
+    const existingLocationNames = new Set(
+      state.loreEntries
+        .filter((e: any) => e.type === LoreType.LOCATION)
+        .map((e: any) => e.name.toLowerCase())
+    );
+
+    // Create new locations for names that don't exist yet
+    const newLocations: LocationEntry[] = [];
+    
+    extractedLocations.forEach((locationName) => {
+      const lowerName = locationName.toLowerCase();
+      
+      // Skip if location already exists
+      if (existingLocationNames.has(lowerName)) {
+        return;
+      }
+
+      // Create a new location entry
+      const newLocation: LocationEntry = {
+        id: crypto.randomUUID(),
+        name: toTitleCase(locationName),
+        type: LoreType.LOCATION,
+        description: 'Auto-extracted from script import',
+        tags: ['auto-extracted'],
+        relatedEntryIds: [],
+        characterIds: [],
+        region: '',
+        climate: '',
+        importance: '',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Add to the list
+      newLocations.push(newLocation);
+      
+      // Add to existing names set to avoid duplicates in this batch
+      existingLocationNames.add(lowerName);
+    });
+
+    // ===== TIMELINE EVENT EXTRACTION =====
+    
+    const extractedEvents = extractTimeline(text);
+    
+    // Get existing event dates (case-insensitive comparison)
+    const existingEventDates = new Set(
+      state.loreEntries
+        .filter((e: any) => e.type === LoreType.EVENT)
+        .map((e: any) => e.date?.toLowerCase() || '')
+    );
+
+    // Create new timeline events for dates that don't exist yet
+    const newTimelineEvents: EventEntry[] = [];
+    
+    extractedEvents.forEach((event) => {
+      const lowerDate = event.date.toLowerCase();
+      
+      // Skip if event already exists
+      if (existingEventDates.has(lowerDate)) {
+        return;
+      }
+
+      // Create a new event entry
+      const newEvent: EventEntry = {
+        id: crypto.randomUUID(),
+        name: event.date,
+        type: LoreType.EVENT,
+        date: event.date,
+        participants: '',
+        consequences: '',
+        description: `Timeline marker found at ${event.context}`,
+        tags: ['timeline', 'auto-extracted'],
+        relatedEntryIds: [],
+        characterIds: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Add to the list
+      newTimelineEvents.push(newEvent);
+      
+      // Add to existing dates set to avoid duplicates in this batch
+      existingEventDates.add(lowerDate);
+    });
+
+    // ===== COMMIT ALL NEW ENTITIES TO STORE =====
+    
+    if (newCharacters.length > 0 || newLocations.length > 0 || newTimelineEvents.length > 0) {
       set((prevState: any) => ({
         characters: [...prevState.characters, ...newCharacters],
+        loreEntries: [...prevState.loreEntries, ...newLocations, ...newTimelineEvents],
       }));
     }
 
-    return newCharacterIds;
+    return {
+      newCharacters,
+      newLocations,
+      newTimelineEvents,
+    };
   },
 });
