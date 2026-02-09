@@ -1,32 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  /* Surface scale — light greys (ink-950 = lightest bg, ink-600 = darkest surface) */
-  --color-ink-600: #c8ccd4;
-  --color-ink-700: #d4d8e0;
-  --color-ink-750: #dce0e8;
-  --color-ink-800: #e8ecf2;
-  --color-ink-850: #eef1f6;
-  --color-ink-900: #f4f6f9;
-  --color-ink-950: #f9fafb;
+  /* Surface scale — warm zinc-based tones for paper-like feel */
+  --color-ink-600: #52525b;    /* zinc-600 */
+  --color-ink-700: #3f3f46;    /* zinc-700 */
+  --color-ink-750: #35353b;    /* between zinc-700 and zinc-800 */
+  --color-ink-800: #27272a;    /* zinc-800 */
+  --color-ink-850: #202023;    /* between zinc-800 and zinc-900 */
+  --color-ink-900: #18181b;    /* zinc-900 */
+  --color-ink-950: #09090b;    /* zinc-950 */
 
-  /* Primary accent — slate blue */
-  --color-ember-300: #93b4f5;
-  --color-ember-400: #6895ec;
-  --color-ember-500: #4a7ae0;
-  --color-ember-600: #3b64c8;
-  --color-ember-700: #2d4fa8;
-  --color-ember-900: #e8eef8;
+  /* Primary accent — warm amber tones */
+  --color-ember-300: #fcd34d;  /* amber-300 */
+  --color-ember-400: #fbbf24;  /* amber-400 */
+  --color-ember-500: #f59e0b;  /* amber-500 */
+  --color-ember-600: #d97706;  /* amber-600 — primary buttons/highlights */
+  --color-ember-700: #b45309;  /* amber-700 */
+  --color-ember-900: rgba(217, 119, 6, 0.2);  /* amber-900/20 — subtle backgrounds */
 
-  /* Text scale — dark to light (steel-100 = darkest text, steel-700 = lightest) */
-  --color-steel-50: #111827;
-  --color-steel-100: #1f2937;
-  --color-steel-200: #374151;
-  --color-steel-300: #4b5563;
-  --color-steel-400: #6b7280;
-  --color-steel-500: #9ca3af;
-  --color-steel-600: #c0c7d2;
-  --color-steel-700: #d1d5db;
+  /* Text scale — warm zinc-based text colors */
+  --color-steel-50: #fafafa;   /* zinc-50 */
+  --color-steel-100: #f4f4f5;  /* zinc-100 */
+  --color-steel-200: #e4e4e7;  /* zinc-200 */
+  --color-steel-300: #d4d4d8;  /* zinc-300 */
+  --color-steel-400: #a1a1aa;  /* zinc-400 */
+  --color-steel-500: #71717a;  /* zinc-500 */
+  --color-steel-600: #52525b;  /* zinc-600 */
+  --color-steel-700: #3f3f46;  /* zinc-700 */
 
   /* Character module accent — teal */
   --color-char-300: #5eead4;
@@ -42,29 +42,30 @@
   --color-lore-600: #4f46e5;
   --color-lore-900: #eef0fe;
 
-  --font-family-display: 'Instrument Serif', Georgia, serif;
-  --font-family-body: 'DM Sans', system-ui, sans-serif;
+  --font-family-display: 'Lora', Georgia, serif;
+  --font-family-body: 'Inter', system-ui, sans-serif;
   --font-family-mono: 'JetBrains Mono', Consolas, monospace;
 }
 
 /* Base */
 body {
   font-family: var(--font-family-body);
-  background: var(--color-ink-950);
-  color: var(--color-steel-200);
+  background-color: var(--color-ink-950);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  color: var(--color-steel-300);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-ink-700) transparent;
+  scrollbar-color: var(--color-ink-600) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-ink-700); border-radius: 3px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-ink-600); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-ink-600); border-radius: 3px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-ink-700); }
 
 /* Animations */
 @keyframes fadeIn {
@@ -83,8 +84,8 @@ body {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 122, 224, 0.2); }
-  50% { box-shadow: 0 0 12px 4px rgba(74, 122, 224, 0.1); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.2); }
+  50% { box-shadow: 0 0 12px 4px rgba(217, 119, 6, 0.1); }
 }
 
 @keyframes subtlePulse {
@@ -106,7 +107,7 @@ body {
 /* Sidebar separator lines */
 .sidebar-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-ink-700), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
   margin: 0 0.75rem;
 }
 
@@ -132,4 +133,36 @@ body {
 }
 .header-gradient-lore {
   background: linear-gradient(90deg, var(--color-lore-500), var(--color-lore-600), transparent);
+}
+
+/* Glass panel — for floating sidebars and navigation */
+.glass-panel {
+  background: rgba(24, 24, 27, 0.60);  /* bg-zinc-900/60 */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Card — for content containers across all modules */
+.card {
+  background: rgba(39, 39, 42, 0.40);  /* bg-zinc-800/40 */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.20), 0 4px 6px -4px rgba(0, 0, 0, 0.20);
+  transition: all 300ms ease;
+}
+.card:hover {
+  background: rgba(39, 39, 42, 0.60);  /* hover:bg-zinc-800/60 */
+}
+
+/* Writer's input style — notebook paper feel */
+.writer-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-ink-700);
+  border-radius: 0;
+  transition: border-color 200ms ease;
+}
+.writer-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-ember-500);
 }

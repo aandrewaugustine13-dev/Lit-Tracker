@@ -42,10 +42,10 @@ const CharacterCard: React.FC<Props> = ({ character }) => {
   return (
     <div
       onClick={handleClick}
-      className="group relative bg-ink-900 border border-ink-700 rounded-xl overflow-hidden hover:border-ember-500/40 transition-all duration-300 flex flex-col cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1"
+      className="group relative card rounded-xl overflow-hidden hover:border-ember-500/40 flex flex-col cursor-pointer hover:-translate-y-1"
     >
       {/* Image / Placeholder */}
-      <div className="aspect-[3/4] bg-ink-800 relative overflow-hidden flex items-center justify-center">
+      <div className="aspect-[3/4] bg-ink-850 relative overflow-hidden flex items-center justify-center">
         {referenceImage ? (
           <img src={referenceImage} alt={character.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (

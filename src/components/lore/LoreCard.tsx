@@ -27,7 +27,7 @@ const LoreCard: React.FC<Props> = ({ entry, onEdit }) => {
   return (
     <div
       onClick={handleClick}
-      className={`group relative flex flex-col h-full bg-ink-950 border ${config.borderColor} rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer`}
+      className={`group relative flex flex-col h-full card rounded-xl overflow-hidden hover:-translate-y-1 cursor-pointer`}
     >
       {/* Top accent bar */}
       <div className="h-1 w-full" style={{ background: config.accentHex }} />

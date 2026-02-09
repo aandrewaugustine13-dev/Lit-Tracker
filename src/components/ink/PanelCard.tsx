@@ -202,13 +202,13 @@ const PanelCard: React.FC<PanelCardProps> = ({
                             : 'bg-white/90 border-2 border-black shadow-md hover:shadow-lg'
                     : panelFrameStyle === 'opaque-white' ? 'bg-white/90 border-2 border-white shadow-md hover:shadow-lg'
                         : panelFrameStyle === 'translucent' ? 'bg-transparent border border-gray-400/60 shadow-sm hover:shadow-md backdrop-blur-sm'
-                            : 'bg-ink-900 border-2 border-black shadow-2xl hover:shadow-ember-500/10'
+                            : 'bg-zinc-800/40 border border-white/5 shadow-lg shadow-black/20'
             } ${isDragging ? 'ring-2 ring-ember-500 shadow-2xl' : ''} ${isResizing ? 'cursor-nwse-resize' : ''}`}
         >
             {/* HEADER */}
             <div className={`flex items-center justify-between px-3 py-2 border-b ${
                 panelFrameStyle === 'translucent' ? 'border-gray-400/30 bg-white/10 backdrop-blur-sm'
-                    : showGutters ? 'border-gray-200 bg-gray-50' : 'border-ink-800 bg-ink-950/50'
+                    : showGutters ? 'border-gray-200 bg-gray-50' : 'border-white/5 bg-zinc-800/40'
             } rounded-t-xl`}>
                 <div className="flex items-center gap-2">
                     <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none hover:text-ember-500 transition-colors p-1 -ml-1 rounded hover:bg-ink-800/50" title="Drag to move">
@@ -238,7 +238,7 @@ const PanelCard: React.FC<PanelCardProps> = ({
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
                 {/* IMAGE */}
-                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} ${showGutters ? 'bg-gray-100 border border-gray-200' : 'bg-ink-950 border border-ink-800'}`}>
+                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} ${showGutters ? 'bg-gray-100 border border-gray-200' : 'bg-zinc-900 border border-white/5'}`}>
                     <div className="absolute top-2 left-2 z-20"><div className="w-8 h-8 rounded-full bg-ember-500 text-white flex items-center justify-center font-bold text-sm shadow-lg">{index + 1}</div></div>
                     {imageDataUrl ? (
                         <>

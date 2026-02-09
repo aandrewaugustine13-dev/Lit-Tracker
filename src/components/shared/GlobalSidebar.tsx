@@ -98,9 +98,9 @@ const GlobalSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-16 lg:w-60 bg-ink-900 border-r border-ink-750 h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
+    <aside className="w-16 lg:w-60 glass-panel h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
       {/* Brand */}
-      <div className="h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-ink-750 flex-shrink-0">
+      <div className="h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-white/5 flex-shrink-0">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ember-500 to-ember-600 flex items-center justify-center shadow-lg shadow-ember-500/20 flex-shrink-0 relative">
           <Flame size={16} className="text-white" />
           <div className="absolute inset-0 rounded-xl bg-ember-500/20 animate-pulse-glow" />
@@ -193,7 +193,7 @@ const GlobalSidebar: React.FC = () => {
       </nav>
 
       {/* Footer — sync status */}
-      <div className="p-3 lg:px-4 lg:py-3 border-t border-ink-750">
+      <div className="p-3 lg:px-4 lg:py-3 border-t border-white/5">
         <div className="hidden lg:flex items-center gap-2.5">
           {syncStatus === 'saving' ? (
             <RefreshCcw size={12} className="text-ember-400 animate-spin flex-shrink-0" />
