@@ -2,7 +2,7 @@
 
 @theme {
   /* Surface scale — warm zinc-based tones for paper-like feel */
-  --color-ink-600: #3f3f46;    /* zinc-700 */
+  --color-ink-600: #52525b;    /* zinc-600 */
   --color-ink-700: #3f3f46;    /* zinc-700 */
   --color-ink-750: #35353b;    /* between zinc-700 and zinc-800 */
   --color-ink-800: #27272a;    /* zinc-800 */
