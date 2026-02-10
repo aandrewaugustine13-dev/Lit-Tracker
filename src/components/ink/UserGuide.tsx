@@ -15,46 +15,46 @@ interface UserGuideProps {
 
 const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
   return (
-    <div className={`flex-1 overflow-y-auto ${showGutters ? 'bg-gray-100' : 'bg-ink-900'}`}>
+    <div className="flex-1 overflow-y-auto bg-paper">
       <div className="max-w-5xl mx-auto px-8 py-12">
-        <div className={`${showGutters ? 'text-gray-900' : 'text-steel-100'}`}>
+        <div className="text-ink">
           
           {/* Header */}
           <div className="mb-12">
-            <h1 className={`font-display text-6xl uppercase tracking-tighter mb-4 ${showGutters ? 'text-black' : 'text-steel-100'}`}>
+            <h1 className="font-display text-6xl uppercase tracking-tighter mb-4 text-ink">
               How to Use
             </h1>
-            <p className={`text-lg font-mono ${showGutters ? 'text-gray-600' : 'text-steel-400'}`}>
+            <p className="text-lg font-body text-stone-600">
               A comprehensive guide to mastering Ink Tracker
             </p>
           </div>
 
           {/* Getting Started */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Getting Started
             </h2>
-            <div className={`space-y-4 ${showGutters ? 'text-gray-800' : 'text-steel-300'}`}>
+            <div className="space-y-4 text-stone-700">
               <div className="mb-6">
-                <h3 className={`font-mono text-lg uppercase tracking-wide mb-2 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>
+                <h3 className="font-body text-lg uppercase tracking-wide mb-2 text-ink">
                   Create a Project
                 </h3>
                 <p>Click the folder icon next to "Story" in the sidebar to open the Archive (Project Hub). Click "Initialize Sequence" to create a new project with a title.</p>
               </div>
               <div className="mb-6">
-                <h3 className={`font-mono text-lg uppercase tracking-wide mb-2 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>
+                <h3 className="font-body text-lg uppercase tracking-wide mb-2 text-ink">
                   Set Up Image Generation
                 </h3>
                 <p>In the sidebar, select your preferred AI image provider (Gemini, Leonardo, Grok, FAL, or SeaArt) and enter your API key.</p>
               </div>
               <div className="mb-6">
-                <h3 className={`font-mono text-lg uppercase tracking-wide mb-2 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>
+                <h3 className="font-body text-lg uppercase tracking-wide mb-2 text-ink">
                   Build Your Story
                 </h3>
                 <p>Create issues/chapters in the sidebar, add pages to each issue, and add panel frames to each page using the "ADD FRAME" button.</p>
               </div>
               <div className="mb-6">
-                <h3 className={`font-mono text-lg uppercase tracking-wide mb-2 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>
+                <h3 className="font-body text-lg uppercase tracking-wide mb-2 text-ink">
                   Generate Art
                 </h3>
                 <p>Write panel descriptions, assign characters, and click the "Generate" button on each panel or use "AUTO-INK" to generate all panels at once.</p>
@@ -64,7 +64,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
           {/* Core Features */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Core Features
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -109,15 +109,15 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
           {/* Canvas Controls */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Canvas Controls
             </h2>
-            <div className={`rounded-2xl overflow-hidden border ${showGutters ? 'bg-white border-gray-300' : 'bg-ink-800 border-ink-700'}`}>
+            <div className="rounded-2xl overflow-hidden border bg-card border-stone-200">
               <table className="w-full">
-                <thead className={`${showGutters ? 'bg-gray-100' : 'bg-ink-900'}`}>
+                <thead className="bg-stone-50">
                   <tr>
-                    <th className={`font-mono text-xs uppercase tracking-wider px-6 py-3 text-left ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>Action</th>
-                    <th className={`font-mono text-xs uppercase tracking-wider px-6 py-3 text-left ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>How To</th>
+                    <th className="font-body text-xs uppercase tracking-wider px-6 py-3 text-left text-stone-600">Action</th>
+                    <th className="font-body text-xs uppercase tracking-wider px-6 py-3 text-left text-stone-600">How To</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -134,7 +134,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
           {/* Export Options */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Export Options
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,15 +167,15 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
           {/* Keyboard Shortcuts */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Keyboard Shortcuts
             </h2>
-            <div className={`rounded-2xl overflow-hidden border ${showGutters ? 'bg-white border-gray-300' : 'bg-ink-800 border-ink-700'}`}>
+            <div className="rounded-2xl overflow-hidden border bg-card border-stone-200">
               <table className="w-full">
-                <thead className={`${showGutters ? 'bg-gray-100' : 'bg-ink-900'}`}>
+                <thead className="bg-stone-50">
                   <tr>
-                    <th className={`font-mono text-xs uppercase tracking-wider px-6 py-3 text-left ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>Shortcut</th>
-                    <th className={`font-mono text-xs uppercase tracking-wider px-6 py-3 text-left ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>Action</th>
+                    <th className="font-body text-xs uppercase tracking-wider px-6 py-3 text-left text-stone-600">Shortcut</th>
+                    <th className="font-body text-xs uppercase tracking-wider px-6 py-3 text-left text-stone-600">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -193,10 +193,10 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
           {/* Tips */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Tips
             </h2>
-            <div className={`space-y-4 ${showGutters ? 'text-gray-800' : 'text-steel-300'}`}>
+            <div className="space-y-4 text-stone-700">
               <TipCard
                 title="Use Reference Panels"
                 description="Link subsequent panels to an initial establishing shot for visual consistency. Adjust the consistency strength slider based on how much variation you want."
@@ -222,18 +222,18 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
           {/* Storage */}
           <section className="mb-12">
-            <h2 className={`font-mono text-2xl uppercase tracking-wider mb-6 ${showGutters ? 'text-black' : 'text-ember-400'}`}>
+            <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Storage
             </h2>
-            <div className={`p-6 rounded-2xl border ${showGutters ? 'bg-white border-gray-300' : 'bg-ink-800 border-ink-700'}`}>
-              <p className={`mb-4 ${showGutters ? 'text-gray-800' : 'text-steel-300'}`}>
+            <div className="p-6 rounded-2xl border bg-card border-stone-200">
+              <p className="mb-4 text-stone-700">
                 Ink Tracker stores your projects and data locally in your browser using two mechanisms:
               </p>
-              <ul className={`space-y-2 ml-6 list-disc ${showGutters ? 'text-gray-800' : 'text-steel-300'}`}>
-                <li><span className="font-mono">localStorage</span> - Stores project metadata, pages, and panel information</li>
-                <li><span className="font-mono">IndexedDB</span> - Stores generated images for better performance</li>
+              <ul className="space-y-2 ml-6 list-disc text-stone-700">
+                <li><span className="font-body">localStorage</span> - Stores project metadata, pages, and panel information</li>
+                <li><span className="font-body">IndexedDB</span> - Stores generated images for better performance</li>
               </ul>
-              <p className={`mt-4 ${showGutters ? 'text-gray-700' : 'text-steel-400'} text-sm`}>
+              <p className="mt-4 text-stone-600 text-sm">
                 Note: Clearing your browser data will delete all projects and images. Always export important work.
               </p>
             </div>
@@ -247,36 +247,36 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
 // Helper components
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string; showGutters: boolean }> = ({ icon, title, description, showGutters }) => (
-  <div className={`p-6 rounded-2xl border ${showGutters ? 'bg-white border-gray-300' : 'bg-ink-800 border-ink-700'}`}>
-    <div className={`mb-3 ${showGutters ? 'text-gray-900' : 'text-ember-400'}`}>{icon}</div>
-    <h3 className={`font-mono text-sm uppercase tracking-wider mb-2 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>{title}</h3>
-    <p className={`text-sm ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>{description}</p>
+  <div className="p-6 rounded-2xl border bg-card border-stone-200">
+    <div className="mb-3 text-ember-500">{icon}</div>
+    <h3 className="font-body text-sm uppercase tracking-wider mb-2 text-ink">{title}</h3>
+    <p className="text-sm text-stone-600">{description}</p>
   </div>
 );
 
 const ExportCard: React.FC<{ icon: React.ReactNode; title: string; description: string; showGutters: boolean }> = ({ icon, title, description, showGutters }) => (
-  <div className={`p-4 rounded-xl border ${showGutters ? 'bg-white border-gray-300' : 'bg-ink-800 border-ink-700'}`}>
+  <div className="p-4 rounded-xl border bg-card border-stone-200">
     <div className="flex items-start gap-3">
-      <div className={`mt-1 ${showGutters ? 'text-gray-900' : 'text-ember-400'}`}>{icon}</div>
+      <div className="mt-1 text-ember-500">{icon}</div>
       <div>
-        <h3 className={`font-mono text-sm uppercase tracking-wide mb-1 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>{title}</h3>
-        <p className={`text-xs ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>{description}</p>
+        <h3 className="font-body text-sm uppercase tracking-wide mb-1 text-ink">{title}</h3>
+        <p className="text-xs text-stone-600">{description}</p>
       </div>
     </div>
   </div>
 );
 
 const TableRow: React.FC<{ showGutters: boolean; action: string; howTo: string }> = ({ showGutters, action, howTo }) => (
-  <tr className={`border-t ${showGutters ? 'border-gray-200' : 'border-ink-700'}`}>
-    <td className={`px-6 py-3 font-mono text-sm ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>{action}</td>
-    <td className={`px-6 py-3 text-sm ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>{howTo}</td>
+  <tr className="border-t border-stone-200">
+    <td className="px-6 py-3 font-body text-sm text-ink">{action}</td>
+    <td className="px-6 py-3 text-sm text-stone-600">{howTo}</td>
   </tr>
 );
 
 const TipCard: React.FC<{ title: string; description: string; showGutters: boolean }> = ({ title, description, showGutters }) => (
-  <div className={`p-4 rounded-xl border ${showGutters ? 'bg-white border-gray-300' : 'bg-ink-800 border-ink-700'}`}>
-    <h3 className={`font-mono text-sm uppercase tracking-wide mb-2 ${showGutters ? 'text-gray-900' : 'text-steel-200'}`}>{title}</h3>
-    <p className={`text-sm ${showGutters ? 'text-gray-700' : 'text-steel-400'}`}>{description}</p>
+  <div className="p-4 rounded-xl border bg-card border-stone-200">
+    <h3 className="font-body text-sm uppercase tracking-wide mb-2 text-ink">{title}</h3>
+    <p className="text-sm text-stone-600">{description}</p>
   </div>
 );
 

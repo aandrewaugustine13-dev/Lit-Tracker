@@ -196,49 +196,45 @@ const PanelCard: React.FC<PanelCardProps> = ({
         <div ref={setNodeRef} style={style}
             onClick={(e) => { if (onSelect && (e.target as HTMLElement).closest('button, input, textarea, [contenteditable]') === null) onSelect(); }}
             className={`group rounded-xl border transition-all flex flex-col ${
-                showGutters 
-                    ? panelFrameStyle === 'opaque-white' ? 'bg-white/90 border-2 border-white shadow-md hover:shadow-lg'
-                        : panelFrameStyle === 'translucent' ? 'bg-transparent border border-gray-400/60 shadow-sm hover:shadow-md backdrop-blur-sm'
-                            : 'bg-white/90 border-2 border-black shadow-md hover:shadow-lg'
-                    : panelFrameStyle === 'opaque-white' ? 'bg-white/90 border-2 border-white shadow-md hover:shadow-lg'
-                        : panelFrameStyle === 'translucent' ? 'bg-transparent border border-gray-400/60 shadow-sm hover:shadow-md backdrop-blur-sm'
-                            : 'bg-zinc-800/40 border border-white/5 shadow-lg shadow-black/20'
+                panelFrameStyle === 'opaque-white' ? 'bg-paper border-2 border-stone-200 shadow-md hover:shadow-lg'
+                    : panelFrameStyle === 'translucent' ? 'bg-transparent border border-stone-300 shadow-sm hover:shadow-md'
+                        : 'bg-paper border-2 border-stone-200 shadow-md hover:shadow-lg'
             } ${isDragging ? 'ring-2 ring-ember-500 shadow-2xl' : ''} ${isResizing ? 'cursor-nwse-resize' : ''}`}
         >
             {/* HEADER */}
             <div className={`flex items-center justify-between px-3 py-2 border-b ${
-                panelFrameStyle === 'translucent' ? 'border-gray-400/30 bg-white/10 backdrop-blur-sm'
-                    : showGutters ? 'border-gray-200 bg-gray-50' : 'border-white/5 bg-zinc-800/40'
+                panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50'
+                    : 'border-stone-200 bg-stone-50'
             } rounded-t-xl`}>
                 <div className="flex items-center gap-2">
-                    <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none hover:text-ember-500 transition-colors p-1 -ml-1 rounded hover:bg-ink-800/50" title="Drag to move">
-                        <Move size={16} className={showGutters ? 'text-gray-400' : 'text-steel-600'} />
+                    <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none hover:text-ember-500 transition-colors p-1 -ml-1 rounded hover:bg-stone-100" title="Drag to move">
+                        <Move size={16} className="text-stone-500" />
                     </div>
-                    <span className={`text-xs font-mono font-bold ${showGutters ? 'text-gray-600' : 'text-steel-400'}`}>{index + 1}/{total}</span>
+                    <span className="text-xs font-body font-bold text-stone-600">{index + 1}/{total}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="relative">
-                        <button onClick={() => setShowAspectMenu(!showAspectMenu)} className={`text-[10px] font-mono px-2 py-1 rounded flex items-center gap-1 transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`}>
+                        <button onClick={() => setShowAspectMenu(!showAspectMenu)} className="text-[10px] font-body px-2 py-1 rounded flex items-center gap-1 transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200">
                             {aspectConfig?.label.split(' ')[0]}<ChevronDown size={12} />
                         </button>
                         {showAspectMenu && (
-                            <div className={`absolute right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 min-w-[140px] ${showGutters ? 'bg-white border-gray-200' : 'bg-ink-900 border-ink-700'}`}>
+                            <div className="absolute right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 min-w-[140px] bg-card border-stone-200">
                                 {Object.entries(ASPECT_CONFIGS).map(([key, cfg]) => (
-                                    <button key={key} onClick={() => handleAspectChange(key as AspectRatio)} className={`w-full text-left px-3 py-1.5 text-xs font-mono transition-colors ${panel.aspectRatio === key ? 'bg-ember-500 text-ink-950' : showGutters ? 'text-gray-600 hover:bg-gray-100' : 'text-steel-400 hover:bg-ink-800'}`}>{cfg.label}</button>
+                                    <button key={key} onClick={() => handleAspectChange(key as AspectRatio)} className={`w-full text-left px-3 py-1.5 text-xs font-body transition-colors ${panel.aspectRatio === key ? 'bg-ember-500 text-paper' : 'text-stone-600 hover:bg-stone-100'}`}>{cfg.label}</button>
                                 ))}
                             </div>
                         )}
                     </div>
-                    <button onClick={handleDelete} className="p-1 text-steel-600 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                    <button onClick={handleDelete} className="p-1 text-stone-500 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
                 </div>
             </div>
 
             {/* SCROLLABLE CONTENT */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 scrollbar-thin scrollbar-thumb-ink-700 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 scrollbar-thin scrollbar-thumb-stone-300 scrollbar-track-transparent">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
                 {/* IMAGE */}
-                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} ${showGutters ? 'bg-gray-100 border border-gray-200' : 'bg-zinc-900 border border-white/5'}`}>
+                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} bg-stone-100 border border-stone-200`}>
                     <div className="absolute top-2 left-2 z-20"><div className="w-8 h-8 rounded-full bg-ember-500 text-white flex items-center justify-center font-bold text-sm shadow-lg">{index + 1}</div></div>
                     {imageDataUrl ? (
                         <>
@@ -252,9 +248,9 @@ const PanelCard: React.FC<PanelCardProps> = ({
                         </>
                     ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <ImageIcon size={32} className={showGutters ? 'text-gray-300' : 'text-steel-600'} />
-                            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-ember-500 hover:bg-ember-400 text-white transition-colors"><Upload size={14} />Upload Image</button>
-                            <span className={`text-[10px] font-mono ${showGutters ? 'text-gray-400' : 'text-ink-700'}`}>No image yet</span>
+                            <ImageIcon size={32} className="text-stone-400" />
+                            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-body bg-ember-500 hover:bg-ember-400 text-white transition-colors"><Upload size={14} />Upload Image</button>
+                            <span className="text-[10px] font-body text-stone-400">No image yet</span>
                         </div>
                     )}
                     {isGenerating && <PanelGenerationOverlay provider={project.imageProvider} />}
@@ -262,8 +258,8 @@ const PanelCard: React.FC<PanelCardProps> = ({
 
                 {/* DIALOGUE BOX (below image) */}
                 {dialogueLines.length > 0 && (
-                    <div className={`rounded-lg border ${showGutters ? 'border-gray-200 bg-gray-50' : 'border-ink-800 bg-ink-950/50'}`}>
-                        <div className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider border-b ${showGutters ? 'text-gray-500 border-gray-200' : 'text-steel-600 border-ink-800'}`}>Dialogue</div>
+                    <div className="rounded-lg border border-stone-200 bg-stone-50">
+                        <div className="px-3 py-1.5 text-[10px] font-body uppercase tracking-wider border-b text-stone-500 border-stone-200">Dialogue</div>
                         <div className="p-2 space-y-1">
                             {dialogueLines.map((line) => (
                                 <div key={line.id} className="flex items-start gap-1 group/line">
@@ -271,10 +267,10 @@ const PanelCard: React.FC<PanelCardProps> = ({
                                         onChange={(e) => dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId: panel.id, elementId: line.id, updates: { content: e.target.value } })}
                                         placeholder="CHARACTER: Dialogue text..."
                                         rows={1}
-                                        className={`flex-1 rounded px-2 py-1 text-xs resize-none transition-colors outline-none ${showGutters ? 'bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:border-blue-400' : 'bg-ink-900 border border-ink-700 text-steel-200 placeholder-steel-600 focus:border-ember-500'}`}
+                                        className="flex-1 rounded px-2 py-1 text-xs resize-none transition-colors outline-none bg-paper border border-stone-200 text-ink placeholder-stone-400 focus:border-ember-500"
                                         onInput={(e) => { const t = e.target as HTMLTextAreaElement; t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }}
                                     />
-                                    <button onClick={() => dispatch({ type: 'DELETE_TEXT_ELEMENT', panelId: panel.id, elementId: line.id })} className="p-1 text-steel-700 hover:text-red-500 transition-colors opacity-0 group-hover/line:opacity-100 flex-shrink-0" title="Remove"><X size={12} /></button>
+                                    <button onClick={() => dispatch({ type: 'DELETE_TEXT_ELEMENT', panelId: panel.id, elementId: line.id })} className="p-1 text-stone-400 hover:text-red-500 transition-colors opacity-0 group-hover/line:opacity-100 flex-shrink-0" title="Remove"><X size={12} /></button>
                                 </div>
                             ))}
                         </div>
@@ -282,53 +278,53 @@ const PanelCard: React.FC<PanelCardProps> = ({
                 )}
 
                 {/* Add dialogue button */}
-                <button onClick={handleAddDialogueLine} className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-colors ${showGutters ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-dashed border-gray-300' : 'text-steel-600 hover:text-steel-400 hover:bg-ink-800/50 border border-dashed border-ink-700'}`}>
+                <button onClick={handleAddDialogueLine} className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body uppercase tracking-wider transition-colors text-stone-500 hover:text-stone-700 hover:bg-stone-100 border border-dashed border-stone-300">
                     <Plus size={12} />Add Dialogue
                 </button>
 
                 {/* PROMPT */}
                 <textarea value={panel.prompt || ''} onChange={handlePromptChange} placeholder="Describe this panel... (scene, action, mood)" rows={3}
-                    className={`w-full rounded-lg px-3 py-2 text-sm resize-none transition-colors outline-none ${showGutters ? 'bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 focus:border-blue-400' : 'bg-ink-950 border border-ink-800 text-steel-200 placeholder-steel-600 focus:border-ember-500'}`}
+                    className="w-full rounded-lg px-3 py-2 text-sm resize-none transition-colors outline-none bg-stone-50 border border-stone-200 text-ink placeholder-stone-400 focus:border-ember-500"
                 />
 
                 {/* REFERENCE PANEL LINKER */}
                 {activePage.panels.length > 1 && (
                     <div className="relative">
-                        <button onClick={() => setShowRefMenu(!showRefMenu)} className={`w-full text-left px-3 py-2 rounded-lg text-xs font-mono flex items-center justify-between transition-colors ${panel.referencePanelId ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400' : showGutters ? 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100' : 'bg-ink-950 border border-ink-800 text-steel-500 hover:bg-ink-900'}`}>
+                        <button onClick={() => setShowRefMenu(!showRefMenu)} className={`w-full text-left px-3 py-2 rounded-lg text-xs font-body flex items-center justify-between transition-colors ${panel.referencePanelId ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-600' : 'bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100'}`}>
                             <span className="flex items-center gap-2"><Link2 size={12} />{panel.referencePanelId ? `Linked to Panel ${activePage.panels.findIndex(p => p.id === panel.referencePanelId) + 1}` : 'Link to previous panel...'}</span>
                             <ChevronDown size={14} />
                         </button>
                         {showRefMenu && (
-                            <div className={`absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto ${showGutters ? 'bg-white border-gray-200' : 'bg-ink-900 border-ink-700'}`}>
+                            <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
                                 <button onClick={() => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referencePanelId: undefined } }); setShowRefMenu(false); }}
-                                    className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${!panel.referencePanelId ? 'bg-ember-500/20 text-ember-500' : showGutters ? 'text-gray-600 hover:bg-gray-100' : 'text-steel-400 hover:bg-ink-800'}`}>
+                                    className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${!panel.referencePanelId ? 'bg-ember-500/20 text-ember-500' : 'text-stone-600 hover:bg-stone-100'}`}>
                                     <Unlink size={12} /><span>No reference (standalone)</span>
                                 </button>
                                 {activePage.panels.filter(p => p.id !== panel.id && p.imageUrl).map((refPanel) => {
                                     const panelNum = activePage.panels.findIndex(p => p.id === refPanel.id) + 1;
                                     return (
                                         <button key={refPanel.id} onClick={() => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referencePanelId: refPanel.id } }); setShowRefMenu(false); }}
-                                            className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${panel.referencePanelId === refPanel.id ? 'bg-cyan-500/20 text-cyan-400' : showGutters ? 'text-gray-600 hover:bg-gray-100' : 'text-steel-400 hover:bg-ink-800'}`}>
+                                            className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${panel.referencePanelId === refPanel.id ? 'bg-cyan-500/20 text-cyan-600' : 'text-stone-600 hover:bg-stone-100'}`}>
                                             <Link2 size={12} /><span className="font-bold">Panel {panelNum}</span>
                                             <span className="opacity-60 text-[10px] truncate flex-1">{refPanel.prompt?.slice(0, 30) || 'No prompt'}...</span>
                                         </button>
                                     );
                                 })}
                                 {activePage.panels.filter(p => p.id !== panel.id && p.imageUrl).length === 0 && (
-                                    <div className={`px-3 py-2 text-xs italic ${showGutters ? 'text-gray-400' : 'text-steel-600'}`}>No other panels with images yet</div>
+                                    <div className="px-3 py-2 text-xs italic text-stone-500">No other panels with images yet</div>
                                 )}
                             </div>
                         )}
                         {panel.referencePanelId && (
                             <div className="mt-2 px-1">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className={`text-[9px] font-mono uppercase ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>Consistency Strength</span>
-                                    <span className={`text-[9px] font-mono ${showGutters ? 'text-gray-600' : 'text-steel-400'}`}>{Math.round((panel.referenceStrength || 0.7) * 100)}%</span>
+                                    <span className="text-[9px] font-body uppercase text-stone-500">Consistency Strength</span>
+                                    <span className="text-[9px] font-body text-stone-600">{Math.round((panel.referenceStrength || 0.7) * 100)}%</span>
                                 </div>
                                 <input type="range" min="0.1" max="1" step="0.1" value={panel.referenceStrength || 0.7}
                                     onChange={(e) => dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referenceStrength: parseFloat(e.target.value) } })}
-                                    className="w-full h-1 bg-ink-800 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
-                                <div className={`flex justify-between text-[8px] font-mono mt-0.5 ${showGutters ? 'text-gray-400' : 'text-steel-700'}`}><span>Creative</span><span>Consistent</span></div>
+                                    className="w-full h-1 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+                                <div className="flex justify-between text-[8px] font-body mt-0.5 text-stone-400"><span>Creative</span><span>Consistent</span></div>
                             </div>
                         )}
                     </div>
@@ -336,57 +332,57 @@ const PanelCard: React.FC<PanelCardProps> = ({
 
                 {/* MORE OPTIONS (collapsed) */}
                 <button onClick={() => setShowMoreOptions(!showMoreOptions)}
-                    className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-colors ${showGutters ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' : 'text-steel-600 hover:text-steel-400 hover:bg-ink-800/50'}`}>
+                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body uppercase tracking-wider transition-colors text-stone-500 hover:text-stone-700 hover:bg-stone-100">
                     <Settings2 size={12} />{showMoreOptions ? 'Less Options' : 'More Options'}{showMoreOptions ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                 </button>
 
                 {showMoreOptions && (
-                    <div className={`space-y-3 pt-1 border-t ${showGutters ? 'border-gray-200' : 'border-ink-800'}`}>
+                    <div className="space-y-3 pt-1 border-t border-stone-200">
                         {/* Character selector */}
                         <div className="relative">
-                            <label className={`block text-[10px] font-mono uppercase mb-1 ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>Characters in this panel</label>
+                            <label className="block text-[10px] font-body uppercase mb-1 text-stone-500">Characters in this panel</label>
                             {characters.length > 0 ? (
                                 <>
                                     <button onClick={() => setShowCharMenu(!showCharMenu)}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-mono flex items-center justify-between transition-colors ${selectedChars.length > 0 ? 'bg-ember-500/10 border border-ember-500/30 text-ember-400' : showGutters ? 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100' : 'bg-ink-950 border border-ink-800 text-steel-500 hover:bg-ink-900'}`}>
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-body flex items-center justify-between transition-colors ${selectedChars.length > 0 ? 'bg-ember-500/10 border border-ember-500/30 text-ember-500' : 'bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100'}`}>
                                         <span>{selectedChars.length > 0 ? selectedChars.map(c => c.name).join(', ') : 'Select characters...'}</span><ChevronDown size={14} />
                                     </button>
                                     {showCharMenu && (
-                                        <div className={`absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto ${showGutters ? 'bg-white border-gray-200' : 'bg-ink-900 border-ink-700'}`}>
+                                        <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
                                             {characters.map(char => {
                                                 const isSelected = panel.characterIds.includes(char.id);
                                                 const appearanceSummary = getAppearanceSummary(char);
                                                 return (
                                                     <button key={char.id} onClick={() => toggleCharacter(char.id)}
-                                                        className={`w-full text-left px-3 py-2 text-xs transition-colors ${isSelected ? 'bg-ember-500/20' : showGutters ? 'hover:bg-gray-100' : 'hover:bg-ink-800'}`}>
+                                                        className={`w-full text-left px-3 py-2 text-xs transition-colors ${isSelected ? 'bg-ember-500/20' : 'hover:bg-stone-100'}`}>
                                                         <div className="flex items-center gap-2">
-                                                            <span className={`w-3 h-3 rounded border flex-shrink-0 ${isSelected ? 'bg-ember-500 border-ember-500' : showGutters ? 'border-gray-300' : 'border-ink-600'}`} />
-                                                            <span className={`font-bold ${isSelected ? 'text-ember-400' : showGutters ? 'text-gray-700' : 'text-steel-300'}`}>{char.name}</span>
+                                                            <span className={`w-3 h-3 rounded border flex-shrink-0 ${isSelected ? 'bg-ember-500 border-ember-500' : 'border-stone-300'}`} />
+                                                            <span className={`font-bold ${isSelected ? 'text-ember-500' : 'text-ink'}`}>{char.name}</span>
                                                         </div>
-                                                        {appearanceSummary && <p className={`mt-1 ml-5 text-[10px] leading-tight ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>{appearanceSummary}</p>}
+                                                        {appearanceSummary && <p className="mt-1 ml-5 text-[10px] leading-tight text-stone-500">{appearanceSummary}</p>}
                                                     </button>
                                                 );
                                             })}
                                         </div>
                                     )}
                                     {selectedChars.length > 0 && (
-                                        <div className={`mt-2 space-y-1 text-[10px] ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>
+                                        <div className="mt-2 space-y-1 text-[10px] text-stone-600">
                                             {selectedChars.map(char => { const summary = getAppearanceSummary(char); return summary ? (<div key={char.id} className="flex gap-1"><span className="font-bold text-ember-500">{char.name}:</span><span className="truncate">{summary}</span></div>) : null; })}
                                         </div>
                                     )}
                                 </>
-                            ) : (<p className={`text-xs ${showGutters ? 'text-gray-400' : 'text-steel-600'}`}>No characters defined. Use the CHARACTERS button to add some.</p>)}
+                            ) : (<p className="text-xs text-stone-500">No characters defined. Use the CHARACTERS button to add some.</p>)}
                         </div>
 
                         {/* Overlay bubble tools */}
                         {imageDataUrl && (
                             <div>
-                                <label className={`block text-[10px] font-mono uppercase mb-1.5 ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>Image Overlays</label>
+                                <label className="block text-[10px] font-body uppercase mb-1.5 text-stone-500">Image Overlays</label>
                                 <div className="flex items-center gap-1">
-                                    <button onClick={() => handleAddTextElement('dialogue')} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`} title="Add dialogue bubble on image"><MessageCircle size={12} />Bubble</button>
-                                    <button onClick={() => handleAddTextElement('thought')} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`} title="Add thought cloud on image"><Cloud size={12} />Thought</button>
-                                    <button onClick={() => handleAddTextElement('caption')} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`} title="Add caption box on image"><Type size={12} />Caption</button>
-                                    <button onClick={() => handleAddTextElement('phone')} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`} title="Add phone/text on image"><Smartphone size={12} />Phone</button>
+                                    <button onClick={() => handleAddTextElement('dialogue')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add dialogue bubble on image"><MessageCircle size={12} />Bubble</button>
+                                    <button onClick={() => handleAddTextElement('thought')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add thought cloud on image"><Cloud size={12} />Thought</button>
+                                    <button onClick={() => handleAddTextElement('caption')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add caption box on image"><Type size={12} />Caption</button>
+                                    <button onClick={() => handleAddTextElement('phone')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add phone/text on image"><Smartphone size={12} />Phone</button>
                                 </div>
                             </div>
                         )}
@@ -394,25 +390,25 @@ const PanelCard: React.FC<PanelCardProps> = ({
                         {/* Copy/Paste settings */}
                         <div className="flex items-center gap-2">
                             {onCopySettings && (
-                                <button onClick={(e) => { e.stopPropagation(); onCopySettings(); }} className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`} title="Copy panel settings"><Copy size={12} />Copy Settings</button>
+                                <button onClick={(e) => { e.stopPropagation(); onCopySettings(); }} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Copy panel settings"><Copy size={12} />Copy Settings</button>
                             )}
                             {onPasteSettings && copiedSettings && (
-                                <button onClick={(e) => { e.stopPropagation(); onPasteSettings(); }} className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`} title="Paste panel settings"><ClipboardPaste size={12} />Paste Settings</button>
+                                <button onClick={(e) => { e.stopPropagation(); onPasteSettings(); }} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Paste panel settings"><ClipboardPaste size={12} />Paste Settings</button>
                             )}
                         </div>
 
                         {/* Prompt History */}
                         {panel.promptHistory && panel.promptHistory.length > 0 && (
                             <div className="relative">
-                                <button onClick={() => setShowPromptHistory(!showPromptHistory)} className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-mono transition-colors ${showGutters ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-ink-800 text-steel-500 hover:bg-ink-700'}`}>
+                                <button onClick={() => setShowPromptHistory(!showPromptHistory)} className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200">
                                     <History size={12} />Prompt History ({panel.promptHistory.length})
                                 </button>
                                 {showPromptHistory && (
-                                    <div className={`mt-1 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto ${showGutters ? 'bg-white border-gray-200' : 'bg-ink-900 border-ink-700'}`}>
+                                    <div className="mt-1 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
                                         {[...panel.promptHistory].reverse().map((historyPrompt, idx) => (
                                             <button key={idx} onClick={() => { handlePromptChange({ target: { value: historyPrompt } } as React.ChangeEvent<HTMLTextAreaElement>); setShowPromptHistory(false); }}
-                                                className={`w-full text-left px-3 py-2 text-xs transition-colors ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-400 hover:bg-ink-800'}`}>
-                                                <div className={`text-[10px] mb-1 ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>{(panel.promptHistory?.length || 0) - idx} version{(panel.promptHistory?.length || 0) - idx === 1 ? '' : 's'} ago</div>
+                                                className="w-full text-left px-3 py-2 text-xs transition-colors text-stone-700 hover:bg-stone-100">
+                                                <div className="text-[10px] mb-1 text-stone-500">{(panel.promptHistory?.length || 0) - idx} version{(panel.promptHistory?.length || 0) - idx === 1 ? '' : 's'} ago</div>
                                                 <div className="line-clamp-3">{historyPrompt}</div>
                                             </button>
                                         ))}
@@ -425,9 +421,9 @@ const PanelCard: React.FC<PanelCardProps> = ({
             </div>
 
             {/* GENERATE BUTTON */}
-            <div className={`px-3 py-2 border-t ${panelFrameStyle === 'translucent' ? 'border-gray-400/30 bg-white/10 backdrop-blur-sm' : showGutters ? 'border-gray-200 bg-gray-50' : 'border-ink-800 bg-ink-950/50'} rounded-b-xl`}>
+            <div className={`px-3 py-2 border-t ${panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50' : 'border-stone-200 bg-stone-50'} rounded-b-xl`}>
                 <button onClick={handleGenerateImage} disabled={isGenerating || (!panel.prompt?.trim() && panel.characterIds.length === 0)}
-                    className={`w-full py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${showGutters ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-ember-500 hover:bg-ember-400 text-ink-950'}`}>
+                    className="w-full py-2 rounded-lg text-xs font-body font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-ember-500 hover:bg-ember-400 text-paper">
                     {isGenerating ? (<><Loader2 size={14} className="animate-spin" />Generating with {project.imageProvider === 'gemini' ? 'Gemini' : project.imageProvider === 'leonardo' ? 'Leonardo' : project.imageProvider === 'grok' ? 'Grok' : project.imageProvider === 'fal' ? 'FAL' : project.imageProvider === 'seaart' ? 'SeaArt' : project.imageProvider === 'openai' ? 'OpenAI' : 'AI'}...</>)
                     : (<><Sparkles size={14} />Generate</>)}
                 </button>
@@ -435,7 +431,7 @@ const PanelCard: React.FC<PanelCardProps> = ({
 
             {/* RESIZE HANDLE */}
             <div onMouseDown={handleResizeStart}
-                className={`absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity ${showGutters ? 'text-gray-400' : 'text-steel-600'}`}
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity text-stone-400"
                 style={{ background: 'linear-gradient(135deg, transparent 50%, currentColor 50%)', borderBottomRightRadius: '0.75rem' }} />
         </div>
     );
