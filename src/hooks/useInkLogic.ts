@@ -24,7 +24,7 @@ import { ParseResult } from '../services/scriptParser';
 import { useAuth } from '../context/AuthContext';
 import { useCloudSync } from './useCloudSync';
 import { useImageGeneration } from './useImageGeneration';
-import { seedCharactersFromScript, autoLinkPanelsToCharacters, detectLoreMentions } from '../utils/crossModuleSync';
+import { seedCharactersFromScript, autoLinkPanelsToCharacters, detectLoreMentions } from '../store/crossSlice';
 
 import { generateImage as generateGeminiImage } from '../services/geminiService';
 import { generateLeonardoImage } from '../services/leonardoService';
