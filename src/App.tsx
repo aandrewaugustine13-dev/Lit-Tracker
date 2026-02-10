@@ -5,13 +5,16 @@ import DetailPanel from './components/shared/DetailPanel';
 import InkModule from './components/ink/InkModule';
 import CharactersModule from './components/characters/CharactersModule';
 import LoreModule from './components/lore/LoreModule';
+import Gatekeeper from './components/shared/Gatekeeper';
 import { AuthProvider } from './context/AuthContext';
 
 function AppContent() {
-  const { activeModule } = useLitStore();
+  const { activeModule, inkState } = useLitStore();
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (only when app is active, not on Gatekeeper)
   useEffect(() => {
+    if (!inkState.activeProjectId) return;
+
     const handler = (e: KeyboardEvent) => {
       if (e.altKey && e.key === '1') useLitStore.getState().setActiveModule('ink');
       if (e.altKey && e.key === '2') useLitStore.getState().setActiveModule('characters');
@@ -23,7 +26,7 @@ function AppContent() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, []);
+  }, [inkState.activeProjectId]);
 
   const renderModule = () => {
     switch (activeModule) {
@@ -33,6 +36,10 @@ function AppContent() {
       default: return <CharactersModule />;
     }
   };
+
+  if (!inkState.activeProjectId) {
+    return <Gatekeeper />;
+  }
 
   return (
     <div className="flex h-screen bg-ink-950 text-steel-300 overflow-hidden">
