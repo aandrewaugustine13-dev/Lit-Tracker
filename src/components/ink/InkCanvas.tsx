@@ -345,7 +345,7 @@ const InkCanvas: React.FC<InkCanvasProps> = ({
   return (
     <>
       {/* Status bar with page navigation */}
-      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 border rounded-full px-8 py-4 flex items-center gap-10 shadow-2xl z-[400] transition-all ${showGutters ? 'bg-white border-black text-black' : 'bg-card border-stone-200 shadow-sm text-ink'}`}>
+      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 border rounded-full px-8 py-4 flex items-center gap-10 z-[400] transition-all ${showGutters ? 'bg-white border-black text-black shadow-2xl' : 'bg-card border-stone-200 shadow-sm text-ink'}`}>
         <div className="flex items-center gap-4">
           <StatusBarIndicator
             batching={batching}

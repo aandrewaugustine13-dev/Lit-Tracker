@@ -146,7 +146,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                 activeTab === 'canvas'
                   ? showGutters
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-stone-900 text-white shadow-lg'
+                    : 'bg-ink text-card shadow-lg'
                   : showGutters
                     ? 'text-gray-600 hover:text-black'
                     : 'text-stone-600 hover:bg-stone-100'
@@ -160,7 +160,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                 activeTab === 'guide'
                   ? showGutters
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-stone-900 text-white shadow-lg'
+                    : 'bg-ink text-card shadow-lg'
                   : showGutters
                     ? 'text-gray-600 hover:text-black'
                     : 'text-stone-600 hover:bg-stone-100'
