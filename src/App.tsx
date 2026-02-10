@@ -1,12 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { useLitStore } from './store';
-import GlobalSidebar from './components/shared/GlobalSidebar';
-import DetailPanel from './components/shared/DetailPanel';
-import InkModule from './components/ink/InkModule';
-import CharactersModule from './components/characters/CharactersModule';
-import LoreModule from './components/lore/LoreModule';
 import Gatekeeper from './components/shared/Gatekeeper';
 import { AuthProvider } from './context/AuthContext';
+
+// Lazy load workspace components for code splitting
+const GlobalSidebar = lazy(() => import('./components/shared/GlobalSidebar'));
+const DetailPanel = lazy(() => import('./components/shared/DetailPanel'));
+const InkModule = lazy(() => import('./components/ink/InkModule'));
+const CharactersModule = lazy(() => import('./components/characters/CharactersModule'));
+const LoreModule = lazy(() => import('./components/lore/LoreModule'));
+
+// Loading fallback component with branded workspace theme
+const WorkspaceLoadingFallback: React.FC = () => (
+  <div className="flex h-screen w-screen items-center justify-center bg-ink-950">
+    <div className="flex flex-col items-center gap-4 animate-fade-in">
+      <div className="w-12 h-12 border-4 border-ember-500 border-t-transparent rounded-full animate-spin" />
+      <p className="text-steel-500 font-mono text-sm uppercase tracking-widest">Loading Workspace...</p>
+    </div>
+  </div>
+);
 
 function AppContent() {
   const { activeModule, inkState } = useLitStore();
@@ -42,11 +54,13 @@ function AppContent() {
   }
 
   return (
-    <div className="flex h-screen bg-ink-950 text-steel-300 overflow-hidden">
-      <GlobalSidebar />
-      {renderModule()}
-      <DetailPanel />
-    </div>
+    <Suspense fallback={<WorkspaceLoadingFallback />}>
+      <div className="flex h-screen bg-ink-950 text-steel-300 overflow-hidden">
+        <GlobalSidebar />
+        {renderModule()}
+        <DetailPanel />
+      </div>
+    </Suspense>
   );
 }
 
