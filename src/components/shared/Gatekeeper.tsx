@@ -43,7 +43,7 @@ const Gatekeeper: React.FC = () => {
   const mostRecentProject = inkState.projects[0]; // First project is most recent
 
   return (
-    <div className="h-screen w-screen bg-zinc-900 text-zinc-100 flex items-center justify-center p-8">
+    <div className="h-screen w-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-8">
       <div className="w-full max-w-5xl space-y-12 animate-fade-in">
         
         {/* Logo & Wordmark */}
@@ -85,13 +85,13 @@ const Gatekeeper: React.FC = () => {
                     className={`
                       group relative p-6 rounded-xl transition-all duration-300 text-left
                       ${isMostRecent 
-                        ? 'bg-zinc-800 border-2 border-amber-500 shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 col-span-full lg:col-span-2' 
-                        : 'bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600'
+                        ? 'bg-zinc-900 border-2 border-amber-500 shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 col-span-full lg:col-span-2' 
+                        : 'bg-zinc-900/60 border border-zinc-700 hover:bg-zinc-900 hover:border-zinc-600'
                       }
                     `}
                   >
                     {isMostRecent && (
-                      <div className="absolute -top-3 -right-3 bg-amber-500 text-zinc-900 text-xs font-bold px-3 py-1 rounded-full">
+                      <div className="absolute -top-3 -right-3 bg-amber-500 text-zinc-950 text-xs font-bold px-3 py-1 rounded-full">
                         Recent
                       </div>
                     )}
@@ -138,7 +138,7 @@ const Gatekeeper: React.FC = () => {
             <div className="flex justify-center pt-4">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="group flex items-center gap-3 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 hover:border-amber-500 rounded-xl transition-all duration-300"
+                className="group flex items-center gap-3 px-6 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-600 hover:border-amber-500 rounded-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5 text-zinc-400 group-hover:text-amber-500 transition-colors" />
                 <span className="text-zinc-300 group-hover:text-amber-500 transition-colors font-medium">
@@ -154,8 +154,8 @@ const Gatekeeper: React.FC = () => {
               onClick={() => setShowNewProjectModal(true)}
               className="group flex items-center gap-4 px-8 py-4 bg-amber-600 hover:bg-amber-500 rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30"
             >
-              <Plus className="w-6 h-6 text-zinc-900" />
-              <span className="text-zinc-900 font-bold text-lg">
+              <Plus className="w-6 h-6 text-zinc-950" />
+              <span className="text-zinc-950 font-bold text-lg">
                 Create New Universe
               </span>
             </button>
