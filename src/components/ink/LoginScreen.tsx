@@ -5,13 +5,13 @@ export const LoginScreen: React.FC = () => {
   const { signInWithGoogle, loading } = useAuth();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ink-950">
+    <div className="min-h-screen flex items-center justify-center bg-paper">
       <div className="text-center space-y-8 p-8">
         <div>
           <h1 className="text-4xl font-josefin tracking-widest text-ember-500 mb-2">
             INK TRACKER
           </h1>
-          <p className="text-steel-400">
+          <p className="text-stone-600">
             Storyboard your comics with AI
           </p>
         </div>
@@ -44,7 +44,7 @@ export const LoginScreen: React.FC = () => {
           {loading ? 'Loading...' : 'Sign in with Google'}
         </button>
 
-        <p className="text-steel-500 text-sm">
+        <p className="text-stone-500 text-sm">
           Your projects sync automatically to the cloud
         </p>
       </div>

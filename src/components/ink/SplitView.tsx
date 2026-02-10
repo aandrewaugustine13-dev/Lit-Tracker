@@ -16,16 +16,16 @@ interface Props {
 }
 
 const MARKER_COLORS: Record<VisualMarker, string> = {
-    standard: 'bg-ink-800/20',
-    echo: 'bg-red-500/10 border-l-4 border-red-500',
-    hitch: 'bg-cyan-500/10 border-l-4 border-cyan-500',
-    overflow: 'bg-purple-500/10 border-l-4 border-purple-500',
-    shattered: 'bg-red-400/10 border-l-4 border-red-400',
-    split: 'bg-amber-500/10 border-l-4 border-amber-500',
-    splash: 'bg-emerald-500/10 border-l-4 border-emerald-500',
-    inset: 'bg-sky-400/10 border-l-4 border-sky-400',
-    large: 'bg-lime-500/10 border-l-4 border-lime-500',
-    'full-width': 'bg-pink-500/10 border-l-4 border-pink-500',
+    standard: 'bg-stone-50',
+    echo: 'bg-red-50 border-l-4 border-red-500',
+    hitch: 'bg-cyan-50 border-l-4 border-cyan-500',
+    overflow: 'bg-purple-50 border-l-4 border-purple-500',
+    shattered: 'bg-red-50 border-l-4 border-red-400',
+    split: 'bg-amber-50 border-l-4 border-amber-500',
+    splash: 'bg-emerald-50 border-l-4 border-emerald-500',
+    inset: 'bg-sky-50 border-l-4 border-sky-400',
+    large: 'bg-lime-50 border-l-4 border-lime-500',
+    'full-width': 'bg-pink-50 border-l-4 border-pink-500',
 };
 
 export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionClick, onSyncPrompt, onReparseApply, children }: Props) {
@@ -117,7 +117,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
             if (section.start > lastEnd) {
                 const betweenText = scriptText.substring(lastEnd, section.start);
                 elements.push(
-                    <div key={`between-${idx}`} className="text-steel-400 p-2">
+                    <div key={`between-${idx}`} className="text-stone-500 p-2">
                         {betweenText}
                     </div>
                 );
@@ -128,17 +128,17 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                                  section.start >= highlightedScriptSection.start && 
                                  section.end <= highlightedScriptSection.end;
             
-            const highlightClass = isHighlighted ? 'bg-ember-500/10 border-l-4 border-ember-500' : '';
+            const highlightClass = isHighlighted ? 'bg-ember-50 border-l-4 border-ember-500' : '';
             const markerClass = MARKER_COLORS[section.visualMarker] || '';
 
             elements.push(
                 <div
                     key={`section-${idx}`}
                     data-offset={section.start}
-                    className={`p-3 rounded-lg cursor-pointer transition-all ${markerClass} ${highlightClass} hover:bg-ember-500/5`}
+                    className={`p-3 rounded-lg cursor-pointer transition-all ${markerClass} ${highlightClass} hover:bg-stone-100`}
                     onClick={() => handleScriptClick(section.start)}
                 >
-                    <div className="text-steel-300 whitespace-pre-wrap">{section.text}</div>
+                    <div className="text-ink whitespace-pre-wrap">{section.text}</div>
                     {editedSections.has(section.panelId) && (
                         <button
                             onClick={(e) => {
@@ -149,7 +149,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                                 newEdited.delete(section.panelId);
                                 setEditedSections(newEdited);
                             }}
-                            className="mt-2 px-3 py-1 bg-ember-500 hover:bg-ember-400 text-ink-950 text-xs font-bold rounded transition-all"
+                            className="mt-2 px-3 py-1 bg-ember-500 hover:bg-ember-600 text-white text-xs font-bold rounded transition-all"
                         >
                             Sync →
                         </button>
@@ -164,7 +164,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
         if (lastEnd < scriptText.length) {
             const remainingText = scriptText.substring(lastEnd);
             elements.push(
-                <div key="remaining" className="text-steel-400 p-2">
+                <div key="remaining" className="text-stone-500 p-2">
                     {remainingText}
                 </div>
             );
@@ -181,18 +181,18 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
     return (
         <>
         <Group orientation="horizontal" className="h-full">
-            <Panel defaultSize={40} minSize={20} className="bg-ink-950">
+            <Panel defaultSize={40} minSize={20} className="bg-paper">
                 <div className="h-full flex flex-col">
-                    <div className="p-4 border-b border-ink-700 flex items-center justify-between">
+                    <div className="p-4 border-b border-stone-200 flex items-center justify-between">
                         <div>
                             <h2 className="font-display text-xl tracking-widest text-ember-500 uppercase">Script</h2>
-                            <p className="text-[10px] font-mono text-steel-500 mt-1 uppercase tracking-widest">
+                            <p className="text-[10px] font-body text-stone-500 mt-1 uppercase tracking-widest">
                                 Click sections to navigate panels
                             </p>
                         </div>
                         <button
                             onClick={() => setShowReparseModal(true)}
-                            className="px-3 py-2 bg-ink-800 hover:bg-ember-500 text-steel-400 hover:text-ink-950 rounded-lg transition-all flex items-center gap-2 text-xs font-bold uppercase"
+                            className="px-3 py-2 border border-stone-200 hover:border-ember-500 hover:bg-ember-50 text-stone-700 hover:text-ember-600 rounded-lg transition-all flex items-center gap-2 text-xs font-bold uppercase"
                             title="Re-parse script"
                         >
                             <RefreshCw size={14} />
@@ -201,17 +201,17 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                     </div>
                     <div
                         ref={scriptRef}
-                        className="flex-1 overflow-y-auto p-4 font-mono text-xs"
+                        className="flex-1 overflow-y-auto p-4 font-body text-xs"
                     >
                         {renderScriptWithHighlights()}
                     </div>
                 </div>
             </Panel>
             
-            <Separator className="w-1 bg-ink-700 hover:bg-ember-500 transition-colors cursor-col-resize" />
+            <Separator className="w-1 bg-stone-200 hover:bg-ember-500 transition-colors cursor-col-resize" />
             
             <Panel defaultSize={60} minSize={20}>
-                <div className="h-full bg-ink-900">
+                <div className="h-full bg-card">
                     {children}
                 </div>
             </Panel>
