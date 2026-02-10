@@ -109,12 +109,12 @@ export function ZoomableCanvas({
         minHeight: '100%',
         background: showGutters 
           ? 'repeating-linear-gradient(0deg, transparent, transparent 39px, #e5e5e5 39px, #e5e5e5 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #e5e5e5 39px, #e5e5e5 40px)'
-          : 'repeating-linear-gradient(0deg, transparent, transparent 39px, #1e1e26 39px, #1e1e26 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #1e1e26 39px, #1e1e26 40px)'
+          : 'repeating-linear-gradient(0deg, transparent, transparent 39px, #e7e5e4 39px, #e7e5e4 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #e7e5e4 39px, #e7e5e4 40px)'
       }}
     >
     {!activePage || activePage.panels.length === 0 ? (
       <div className="sticky top-4 right-0 w-full flex justify-start pl-2 pointer-events-none" style={{ zIndex: 10 }}>
-        <p className={`font-mono text-sm tracking-wide pointer-events-auto ${showGutters ? 'text-gray-500' : 'text-white/50'}`}>
+        <p className={`font-body text-sm tracking-wide pointer-events-auto ${showGutters ? 'text-gray-500' : 'text-stone-500'}`}>
           ← Click the 📁 in the sidebar to start storyboarding
         </p>
       </div>
@@ -196,8 +196,8 @@ export function SpreadCanvas({
   const renderPageCanvas = (page: Page | null, side: 'left' | 'right') => {
     if (!page) {
       return (
-        <div className={`flex-1 flex items-center justify-center ${showGutters ? 'bg-gray-100' : 'bg-ink-900/50'}`}>
-          <p className={`font-mono text-sm ${showGutters ? 'text-gray-400' : 'text-steel-600'}`}>No page</p>
+        <div className={`flex-1 flex items-center justify-center ${showGutters ? 'bg-gray-100' : 'bg-paper'}`}>
+          <p className={`font-body text-sm ${showGutters ? 'text-gray-400' : 'text-stone-500'}`}>No page</p>
         </div>
       );
     }
@@ -221,7 +221,7 @@ export function SpreadCanvas({
             minHeight: '100%',
             background: showGutters 
               ? 'repeating-linear-gradient(0deg, transparent, transparent 39px, #e5e5e5 39px, #e5e5e5 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #e5e5e5 39px, #e5e5e5 40px)'
-              : 'repeating-linear-gradient(0deg, transparent, transparent 39px, #1e1e26 39px, #1e1e26 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #1e1e26 39px, #1e1e26 40px)'
+              : 'repeating-linear-gradient(0deg, transparent, transparent 39px, #e7e5e4 39px, #e7e5e4 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #e7e5e4 39px, #e7e5e4 40px)'
           }}
         >
           {page.panels.length === 0 ? (
@@ -272,7 +272,7 @@ export function SpreadCanvas({
           )}
         </div>
         {/* Page number label */}
-        <div className={`text-center py-2 text-xs font-mono ${showGutters ? 'text-gray-600 bg-gray-50' : 'text-steel-500 bg-ink-900/50'}`}>
+        <div className={`text-center py-2 text-xs font-body ${showGutters ? 'text-gray-600 bg-gray-50' : 'text-stone-600 bg-card'}`}>
           Page {page.number}
         </div>
       </div>
@@ -283,10 +283,10 @@ export function SpreadCanvas({
     <div className="flex-1 flex">
       {/* Left page */}
       <div className="flex-1 flex flex-col border-r-2" style={{ 
-        borderColor: showGutters ? '#d1d5db' : '#2a2a35',
+        borderColor: showGutters ? '#d1d5db' : '#e7e5e4',
         boxShadow: showGutters 
           ? 'inset -8px 0 12px -8px rgba(0,0,0,0.15)' 
-          : 'inset -8px 0 12px -8px rgba(0,0,0,0.4)'
+          : 'inset -8px 0 12px -8px rgba(0,0,0,0.1)'
       }}>
         {renderPageCanvas(leftPage, 'left')}
       </div>
@@ -297,16 +297,16 @@ export function SpreadCanvas({
         style={{ 
           background: showGutters 
             ? 'linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%)'
-            : 'linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)'
+            : 'linear-gradient(90deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.15) 100%)'
         }}
       />
 
       {/* Right page */}
       <div className="flex-1 flex flex-col border-l-2" style={{ 
-        borderColor: showGutters ? '#d1d5db' : '#2a2a35',
+        borderColor: showGutters ? '#d1d5db' : '#e7e5e4',
         boxShadow: showGutters 
           ? 'inset 8px 0 12px -8px rgba(0,0,0,0.15)' 
-          : 'inset 8px 0 12px -8px rgba(0,0,0,0.4)'
+          : 'inset 8px 0 12px -8px rgba(0,0,0,0.1)'
       }}>
         {renderPageCanvas(rightPage, 'right')}
       </div>
@@ -345,7 +345,7 @@ const InkCanvas: React.FC<InkCanvasProps> = ({
   return (
     <>
       {/* Status bar with page navigation */}
-      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 border border-white/10 rounded-full px-8 py-4 flex items-center gap-10 shadow-2xl z-[400] transition-all ${showGutters ? 'bg-white border-black text-black' : 'bg-ink-900/95 backdrop-blur-2xl text-steel-400'}`}>
+      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 border rounded-full px-8 py-4 flex items-center gap-10 shadow-2xl z-[400] transition-all ${showGutters ? 'bg-white border-black text-black' : 'bg-card border-stone-200 shadow-sm text-ink'}`}>
         <div className="flex items-center gap-4">
           <StatusBarIndicator
             batching={batching}
@@ -357,14 +357,14 @@ const InkCanvas: React.FC<InkCanvasProps> = ({
             showGutters={showGutters}
           />
         </div>
-        <div className={`h-5 w-px ${showGutters ? 'bg-black/20' : 'bg-ink-700'}`}></div>
+        <div className={`h-5 w-px ${showGutters ? 'bg-black/20' : 'bg-stone-200'}`}></div>
         <div className="flex gap-8">
           <div className="flex flex-col">
-            <span className="text-[9px] font-mono uppercase mb-0.5 opacity-60">Project</span>
-            <span className={`text-[11px] font-mono uppercase font-bold truncate max-w-[120px] ${showGutters ? 'text-black' : 'text-steel-200'}`}>{activeProject?.title}</span>
+            <span className="text-[9px] font-body uppercase mb-0.5 opacity-60">Project</span>
+            <span className={`text-[11px] font-body uppercase font-bold truncate max-w-[120px] ${showGutters ? 'text-black' : 'text-ink'}`}>{activeProject?.title}</span>
           </div>
         </div>
-        <div className={`h-5 w-px ${showGutters ? 'bg-black/20' : 'bg-ink-700'}`}></div>
+        <div className={`h-5 w-px ${showGutters ? 'bg-black/20' : 'bg-stone-200'}`}></div>
         <div className="flex items-center gap-4">
           <button 
             onClick={handlePreviousPage}
@@ -372,13 +372,13 @@ const InkCanvas: React.FC<InkCanvasProps> = ({
             className={`p-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
               showGutters 
                 ? 'hover:bg-gray-200 text-gray-600' 
-                : 'hover:bg-ink-800 text-steel-400 hover:text-steel-200'
+                : 'hover:bg-stone-100 text-stone-600 hover:text-ink'
             }`}
             title="Previous Page"
           >
             <ChevronLeft size={20} />
           </button>
-          <span className="text-[10px] font-mono uppercase tracking-wide">
+          <span className="text-[10px] font-body uppercase tracking-wide">
             {showSpreadView && activeIssue && activePage ? (() => {
               const currentIndex = activeIssue.pages.findIndex((p: Page) => p.id === activePage.id);
               const leftPage = activePage.number % 2 === 0 ? activePage : (currentIndex > 0 ? activeIssue.pages[currentIndex - 1] : null);
@@ -399,7 +399,7 @@ const InkCanvas: React.FC<InkCanvasProps> = ({
             className={`p-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
               showGutters 
                 ? 'hover:bg-gray-200 text-gray-600' 
-                : 'hover:bg-ink-800 text-steel-400 hover:text-steel-200'
+                : 'hover:bg-stone-100 text-stone-600 hover:text-ink'
             }`}
             title="Next Page"
           >
