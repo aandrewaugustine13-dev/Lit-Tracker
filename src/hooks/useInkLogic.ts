@@ -200,7 +200,7 @@ export function useInkLogic() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inkCanUndo, inkCanRedo, activePage, selectedPanelId, showReadThrough]);
+  }, [inkCanUndo, inkCanRedo, activePage, selectedPanelId, showReadThrough, dispatch]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
