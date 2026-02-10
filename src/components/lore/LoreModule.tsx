@@ -46,40 +46,40 @@ const LoreModule: React.FC = () => {
   }, [loreEntries]);
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-ink-950">
+    <div className="flex-1 flex flex-col min-w-0 bg-paper">
       {/* Header */}
-      <header className="flex-shrink-0 border-b border-ink-750 bg-ink-900/40 backdrop-blur-md sticky top-0 z-40">
+      <header className="flex-shrink-0 border-b border-stone-200 bg-card sticky top-0 z-40">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-5 flex-1">
             {/* Module identity */}
             <div className="hidden md:flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-lore-500" />
-                <h1 className="text-lg font-display font-bold text-steel-100 tracking-tight">Lore Tracker</h1>
+                <h1 className="text-lg font-display font-bold text-ink tracking-tight">Lore Tracker</h1>
               </div>
-              <p className="text-[9px] font-mono text-steel-600 uppercase tracking-[0.15em] pl-4">
+              <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] pl-4">
                 {loreEntries.length} entr{loreEntries.length !== 1 ? 'ies' : 'y'} cataloged
               </p>
             </div>
 
             {/* Search */}
             <div className="relative flex-1 max-w-md group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-600 group-focus-within:text-lore-400 transition-colors" size={15} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-lore-400 transition-colors" size={15} />
               <input
                 type="text"
                 placeholder="Search lore entries, tags..."
                 value={loreSearchTerm}
                 onChange={(e) => setLoreSearchTerm(e.target.value)}
-                className="w-full bg-ink-950 border border-ink-700 rounded-lg pl-9 pr-4 py-2 text-sm text-steel-100 placeholder:text-steel-600 focus:outline-none focus:border-lore-500/50 focus:ring-1 focus:ring-lore-500/20 transition-all"
+                className="w-full bg-white border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-lore-500/20 transition-all"
               />
             </div>
 
             {/* Type filter pills */}
-            <div className="hidden md:flex items-center gap-1 bg-ink-900 border border-ink-700 rounded-lg p-0.5">
+            <div className="hidden md:flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-lg p-0.5">
               <button
                 onClick={() => setLoreFilterType('all')}
                 className={`px-2.5 py-1.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all ${
-                  loreFilterType === 'all' ? 'bg-lore-500/15 text-lore-400' : 'text-steel-500 hover:text-steel-200'
+                  loreFilterType === 'all' ? 'bg-lore-500/15 text-lore-400' : 'text-stone-600 hover:text-ink'
                 }`}
               >
                 All
@@ -92,7 +92,7 @@ const LoreModule: React.FC = () => {
                     key={t}
                     onClick={() => setLoreFilterType(t)}
                     className={`px-2 py-1.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 ${
-                      loreFilterType === t ? `${cfg.bgColor} ${cfg.color}` : 'text-steel-500 hover:text-steel-200'
+                      loreFilterType === t ? `${cfg.bgColor} ${cfg.color}` : 'text-stone-600 hover:text-ink'
                     }`}
                   >
                     {cfg.icon}
@@ -116,11 +116,11 @@ const LoreModule: React.FC = () => {
       </header>
 
       {/* Mobile filter */}
-      <div className="md:hidden px-5 py-2 border-b border-ink-700 bg-ink-900/20">
+      <div className="md:hidden px-5 py-2 border-b border-stone-200 bg-stone-50">
         <select
           value={loreFilterType}
           onChange={(e) => setLoreFilterType(e.target.value as LoreType | 'all')}
-          className="w-full bg-ink-900 border border-ink-800 rounded-lg px-3 py-2 text-sm text-steel-200 cursor-pointer"
+          className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-ink cursor-pointer"
         >
           <option value="all">All Types</option>
           {Object.values(LoreType).map(t => (
@@ -136,8 +136,8 @@ const LoreModule: React.FC = () => {
             <div className="w-20 h-20 bg-lore-900/30 border border-lore-500/20 rounded-3xl flex items-center justify-center mb-6 text-lore-400">
               <BookOpen size={32} />
             </div>
-            <h2 className="text-2xl font-display font-bold text-steel-100 mb-3">Lore Tracker is Empty</h2>
-            <p className="text-steel-400 mb-8 leading-relaxed text-sm">
+            <h2 className="text-2xl font-display font-bold text-ink mb-3">Lore Tracker is Empty</h2>
+            <p className="text-stone-600 mb-8 leading-relaxed text-sm">
               Build your universe from the ground up. Factions, locations, events, concepts, artifacts, and canon rules — everything lives here.
             </p>
             <button
@@ -149,7 +149,7 @@ const LoreModule: React.FC = () => {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-            <p className="text-steel-500">No entries matching your filter</p>
+            <p className="text-stone-500">No entries matching your filter</p>
             <button onClick={() => { setLoreSearchTerm(''); setLoreFilterType('all'); }} className="mt-3 text-lore-400 hover:underline text-xs font-bold uppercase tracking-widest">
               Clear Filters
             </button>
