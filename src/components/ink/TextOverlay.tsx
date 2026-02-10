@@ -189,27 +189,27 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ element, panelId, dispatch, t
         </div>
 
         {isFocused && (
-            <div className="text-control-panel absolute -top-16 left-1/2 -translate-x-1/2 bg-ink-900 border-2 border-ink-700 rounded-2xl p-2 flex items-center gap-2 shadow-2xl z-[300]">
+            <div className="text-control-panel absolute -top-16 left-1/2 -translate-x-1/2 bg-card border-2 border-stone-200 rounded-2xl p-2 flex items-center gap-2 shadow-2xl z-[300]">
             <div className="flex flex-col gap-1">
-            <div className="flex items-center bg-ink-950 px-2 py-1 rounded-lg border border-ink-700 gap-2">
+            <div className="flex items-center bg-paper px-2 py-1 rounded-lg border border-stone-200 gap-2">
             <button
             onMouseDown={(e) => { e.preventDefault(); dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId, elementId: element.id, updates: { fontSize: Math.max(8, element.fontSize - 2) } }); }}
-            className="w-7 h-7 flex items-center justify-center text-xs hover:bg-ember-500 hover:text-ink-950 rounded-lg text-steel-400 transition-colors"
+            className="w-7 h-7 flex items-center justify-center text-xs hover:bg-ember-500 hover:text-white rounded-lg text-stone-600 transition-colors"
             >
             A-
             </button>
-            <span className="text-[10px] font-mono text-center w-6 text-ember-500 font-bold">{element.fontSize}</span>
+            <span className="text-[10px] font-body text-center w-6 text-ember-500 font-bold">{element.fontSize}</span>
             <button
             onMouseDown={(e) => { e.preventDefault(); dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId, elementId: element.id, updates: { fontSize: Math.min(80, element.fontSize + 2) } }); }}
-            className="w-7 h-7 flex items-center justify-center text-xs hover:bg-ember-500 hover:text-ink-950 rounded-lg text-steel-400 transition-colors"
+            className="w-7 h-7 flex items-center justify-center text-xs hover:bg-ember-500 hover:text-white rounded-lg text-stone-600 transition-colors"
             >
             A+
             </button>
             </div>
             </div>
 
-            <div className="flex items-center bg-ink-950 px-2 py-1 rounded-lg border border-ink-700 gap-2 h-full self-stretch">
-            <span className="text-[9px] font-mono text-steel-500 uppercase">ROT</span>
+            <div className="flex items-center bg-paper px-2 py-1 rounded-lg border border-stone-200 gap-2 h-full self-stretch">
+            <span className="text-[9px] font-body text-stone-500 uppercase">ROT</span>
             <input
             type="range" min="-15" max="15" step="1"
             value={rotation}
@@ -219,22 +219,22 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ element, panelId, dispatch, t
             />
             </div>
 
-            <div className="flex items-center bg-ink-950 px-2 py-1 rounded-lg border border-ink-700 gap-1 h-full self-stretch">
+            <div className="flex items-center bg-paper px-2 py-1 rounded-lg border border-stone-200 gap-1 h-full self-stretch">
             <button
             onMouseDown={(e) => { e.preventDefault(); dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId, elementId: element.id, updates: { tailStyle: 'pointy' } }); }}
-            className={`w-6 h-6 rounded flex items-center justify-center ${tailStyle === 'pointy' ? 'bg-ember-500 text-ink-950' : 'text-steel-400'}`} title="Pointer"
+            className={`w-6 h-6 rounded flex items-center justify-center ${tailStyle === 'pointy' ? 'bg-ember-500 text-white' : 'text-stone-600'}`} title="Pointer"
             >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4 22h16L12 2z" /></svg>
             </button>
             <button
             onMouseDown={(e) => { e.preventDefault(); dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId, elementId: element.id, updates: { tailStyle: 'cloud' } }); }}
-            className={`w-6 h-6 rounded flex items-center justify-center ${tailStyle === 'cloud' ? 'bg-ember-500 text-ink-950' : 'text-steel-400'}`} title="Thought"
+            className={`w-6 h-6 rounded flex items-center justify-center ${tailStyle === 'cloud' ? 'bg-ember-500 text-white' : 'text-stone-600'}`} title="Thought"
             >
             <circle cx="12" cy="12" r="8" fill="currentColor" />
             </button>
             <button
             onMouseDown={(e) => { e.preventDefault(); dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId, elementId: element.id, updates: { tailStyle: 'none' } }); }}
-            className={`w-6 h-6 rounded flex items-center justify-center ${tailStyle === 'none' ? 'bg-ember-500 text-ink-950' : 'text-steel-400'}`} title="None"
+            className={`w-6 h-6 rounded flex items-center justify-center ${tailStyle === 'none' ? 'bg-ember-500 text-white' : 'text-stone-600'}`} title="None"
             >
             <span className="text-[9px] font-bold">Ø</span>
             </button>

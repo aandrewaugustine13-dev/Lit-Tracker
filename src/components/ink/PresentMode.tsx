@@ -207,11 +207,11 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
 
   if (allPanels.length === 0) {
     return (
-      <div className="fixed inset-0 bg-ink-950 z-[9999] flex items-center justify-center">
-        <p className="text-steel-400 font-mono text-lg">No panels to present.</p>
+      <div className="fixed inset-0 bg-paper z-[9999] flex items-center justify-center">
+        <p className="text-stone-600 font-body text-lg">No panels to present.</p>
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-3 bg-ink-900/80 hover:bg-ink-800 rounded-full text-steel-300 transition-colors"
+          className="absolute top-6 right-6 p-3 bg-card hover:bg-stone-100 rounded-full text-ink transition-colors border border-stone-200"
         >
           <X size={24} />
         </button>
@@ -229,13 +229,13 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
 
   return (
     <div
-      className="fixed inset-0 bg-ink-950 z-[9999] flex items-center justify-center select-none"
+      className="fixed inset-0 bg-paper z-[9999] flex items-center justify-center select-none"
       style={{ isolation: 'isolate' }}
     >
       {/* Exit button (always visible) */}
       <button
         onClick={onClose}
-        className="absolute top-6 right-6 p-3 bg-ink-900/80 hover:bg-ink-800 rounded-full text-steel-300 transition-colors z-[10001] backdrop-blur-sm"
+        className="absolute top-6 right-6 p-3 bg-card hover:bg-stone-100 rounded-full text-ink transition-colors z-[10001] border border-stone-200"
         title="Exit presentation (Escape)"
       >
         <X size={24} />
@@ -243,12 +243,12 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
 
       {/* Page interstitial */}
       {showPageInterstitial && (
-        <div className="absolute inset-0 flex items-center justify-center z-[10000] bg-ink-950 animate-fade-in">
+        <div className="absolute inset-0 flex items-center justify-center z-[10000] bg-paper animate-fade-in">
           <div className="text-center">
-            <p className="text-steel-600 text-sm font-mono uppercase tracking-widest mb-2">
+            <p className="text-stone-500 text-sm font-body uppercase tracking-widest mb-2">
               Turning to
             </p>
-            <p className="text-steel-200 text-5xl font-display tracking-wider">
+            <p className="text-ink text-5xl font-display tracking-wider">
               Page {interstitialPageNumber}
             </p>
           </div>
@@ -305,7 +305,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
       )}
 
       {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-ink-900 z-[10000]">
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-stone-200 z-[10000]">
         <div
           className="h-full bg-ember-500 transition-all duration-500 ease-out"
           style={{ width: `${progressPercent}%` }}
@@ -314,7 +314,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
 
       {/* Control bar (auto-hide) */}
       <div
-        className={`absolute bottom-8 left-1/2 -translate-x-1/2 bg-ink-900/85 backdrop-blur-lg rounded-2xl px-6 py-4 flex items-center gap-5 shadow-2xl border border-ink-700 z-[10001] transition-opacity duration-300 ${
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 bg-card rounded-2xl px-6 py-4 flex items-center gap-5 shadow-2xl border border-stone-200 z-[10001] transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -326,18 +326,18 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
             navigatePrev();
           }}
           disabled={currentIndex === 0}
-          className="p-2 hover:bg-ember-500 hover:text-ink-950 rounded-lg text-steel-300 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-steel-300"
+          className="p-2 hover:bg-ember-500 hover:text-paper rounded-lg text-ink transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
           title="Previous panel (←)"
         >
           <ChevronLeft size={22} />
         </button>
 
         {/* Page / panel indicator */}
-        <div className="flex items-center gap-3 font-mono text-xs text-steel-400 min-w-[220px] justify-center">
+        <div className="flex items-center gap-3 font-body text-xs text-stone-600 min-w-[220px] justify-center">
           <span className="text-ember-500">
             Page {pageNumber} — Panel {panelIndexInPage}/{totalPanelsInPage}
           </span>
-          <span className="text-steel-700">|</span>
+          <span className="text-stone-300">|</span>
           <span>
             {currentIndex + 1} of {totalPanelCount}
           </span>
@@ -350,14 +350,14 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
             navigateNext();
           }}
           disabled={currentIndex >= totalPanelCount - 1}
-          className="p-2 hover:bg-ember-500 hover:text-ink-950 rounded-lg text-steel-300 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-steel-300"
+          className="p-2 hover:bg-ember-500 hover:text-paper rounded-lg text-ink transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
           title="Next panel (→)"
         >
           <ChevronRight size={22} />
         </button>
 
         {/* Separator */}
-        <div className="h-6 w-px bg-ink-700" />
+        <div className="h-6 w-px bg-stone-200" />
 
         {/* Play/Pause auto-advance */}
         <button
@@ -367,8 +367,8 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
           }}
           className={`p-2 rounded-lg transition-colors ${
             autoAdvance
-              ? 'bg-ember-500 text-ink-950 hover:bg-ember-400'
-              : 'text-steel-300 hover:bg-ink-800 hover:text-steel-200'
+              ? 'bg-ember-500 text-paper hover:bg-ember-400'
+              : 'text-ink hover:bg-stone-100 hover:text-ink'
           }`}
           title={autoAdvance ? 'Pause auto-advance (Space)' : 'Play auto-advance (Space)'}
         >
@@ -388,13 +388,13 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
               )
             }
             onClick={(e) => e.stopPropagation()}
-            className="w-12 px-2 py-1 bg-ink-800 border border-ink-700 rounded text-steel-300 text-xs font-mono text-center focus:outline-none focus:border-ember-500"
+            className="w-12 px-2 py-1 bg-paper border border-stone-200 rounded text-ink text-xs font-body text-center focus:outline-none focus:border-ember-500"
           />
-          <span className="font-mono text-xs text-steel-500">s</span>
+          <span className="font-body text-xs text-stone-500">s</span>
         </div>
 
         {/* Separator */}
-        <div className="h-6 w-px bg-ink-700" />
+        <div className="h-6 w-px bg-stone-200" />
 
         {/* Text overlay toggle */}
         <button
@@ -402,10 +402,10 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
             e.stopPropagation();
             setShowTextOverlay((prev) => !prev);
           }}
-          className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+          className={`px-3 py-1.5 rounded-lg font-body text-xs transition-colors ${
             showTextOverlay
-              ? 'bg-ember-500 text-ink-950 hover:bg-ember-400'
-              : 'text-steel-400 hover:bg-ink-800 hover:text-steel-200'
+              ? 'bg-ember-500 text-paper hover:bg-ember-400'
+              : 'text-stone-600 hover:bg-stone-100 hover:text-ink'
           }`}
           title="Toggle script text overlay (T)"
         >
@@ -465,7 +465,7 @@ function PresentPanel({
 
   if (loading) {
     return (
-      <div className="w-[800px] h-[500px] bg-ink-800 rounded-2xl flex items-center justify-center">
+      <div className="w-[800px] h-[500px] bg-card rounded-2xl flex items-center justify-center border border-stone-200">
         <div className="w-8 h-8 border-2 border-ember-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -473,8 +473,8 @@ function PresentPanel({
 
   if (!image) {
     return (
-      <div className="w-[800px] h-[500px] bg-ink-800 rounded-2xl flex items-center justify-center p-8">
-        <p className="text-steel-400 font-mono text-sm text-center max-w-[600px]">
+      <div className="w-[800px] h-[500px] bg-card rounded-2xl flex items-center justify-center p-8 border border-stone-200">
+        <p className="text-stone-600 font-body text-sm text-center max-w-[600px]">
           {prompt || 'No image generated'}
         </p>
       </div>

@@ -167,29 +167,19 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     // Compact variant for sidebar sections
     if (compact) {
         return (
-            <div className={`flex flex-col items-center text-center py-6 px-3 rounded-xl border border-dashed transition-colors ${
-                showGutters ? 'border-gray-300 bg-gray-50' : 'border-ink-700 bg-ink-800/30'
-            }`}>
-                <Illustration className={`w-16 h-12 mb-3 ${showGutters ? 'text-gray-400' : 'text-steel-600'}`} />
-                <p className={`font-mono text-[10px] uppercase tracking-widest mb-1 ${
-                    showGutters ? 'text-gray-500' : 'text-steel-500'
-                }`}>
+            <div className="flex flex-col items-center text-center py-6 px-3 rounded-xl border border-dashed transition-colors border-stone-200 bg-paper">
+                <Illustration className="w-16 h-12 mb-3 text-stone-400" />
+                <p className="font-body text-[10px] uppercase tracking-widest mb-1 text-stone-500">
                     {config.title}
                 </p>
-                <p className={`text-[10px] leading-relaxed mb-3 max-w-[200px] ${
-                    showGutters ? 'text-gray-400' : 'text-steel-600'
-                }`}>
+                <p className="text-[10px] leading-relaxed mb-3 max-w-[200px] text-stone-600">
                     {config.description}
                 </p>
                 {config.tips.length > 0 && (
                     <ul className="space-y-1 mb-3">
                         {config.tips.map((tip, i) => (
-                            <li key={i} className={`text-[9px] flex items-start gap-1.5 text-left ${
-                                showGutters ? 'text-gray-400' : 'text-steel-700'
-                            }`}>
-                                <span className={`mt-0.5 w-1 h-1 rounded-full flex-shrink-0 ${
-                                    showGutters ? 'bg-gray-400' : 'bg-ember-500/50'
-                                }`} />
+                            <li key={i} className="text-[9px] flex items-start gap-1.5 text-left text-stone-600">
+                                <span className="mt-0.5 w-1 h-1 rounded-full flex-shrink-0 bg-ember-500/50" />
                                 {tip}
                             </li>
                         ))}
@@ -198,7 +188,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                 {onAction && (
                     <button
                         onClick={onAction}
-                        className="mt-1 px-4 py-1.5 text-[9px] font-mono uppercase tracking-widest rounded-lg border transition-all hover:scale-105 active:scale-95 bg-ember-500/10 text-ember-500 border-ember-500/30 hover:bg-ember-500/20"
+                        className="mt-1 px-4 py-1.5 text-[9px] font-body uppercase tracking-widest rounded-lg border transition-all hover:scale-105 active:scale-95 bg-ember-500/10 text-ember-500 border-ember-500/30 hover:bg-ember-500/20"
                     >
                         {actionLabel || config.actionDefault || 'Get Started'}
                     </button>
@@ -212,37 +202,25 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         <div className="flex flex-col items-center justify-center text-center animate-fade-in select-none py-12">
             <Illustration className={`mb-8 ${
                 variant === 'panels' ? 'w-48 h-36' : 'w-36 h-28'
-            } ${showGutters ? 'text-gray-400' : 'text-steel-600'}`} />
+            } text-stone-400`} />
 
-            <h2 className={`font-display text-3xl tracking-widest uppercase mb-3 ${
-                showGutters ? 'text-gray-400' : 'text-ink-600'
-            }`}>
+            <h2 className="font-display text-3xl tracking-widest uppercase mb-3 text-ink">
                 {config.title}
             </h2>
 
-            <p className={`text-sm max-w-md leading-relaxed mb-6 ${
-                showGutters ? 'text-gray-400' : 'text-steel-600'
-            }`}>
+            <p className="text-sm max-w-md leading-relaxed mb-6 text-stone-600">
                 {config.description}
             </p>
 
             {config.tips.length > 0 && (
-                <div className={`rounded-xl border px-6 py-4 mb-6 max-w-sm ${
-                    showGutters ? 'border-gray-300 bg-gray-50' : 'border-ink-800 bg-ink-900/60'
-                }`}>
-                    <p className={`text-[10px] font-mono uppercase tracking-widest mb-3 ${
-                        showGutters ? 'text-gray-500' : 'text-steel-500'
-                    }`}>
+                <div className="rounded-xl border px-6 py-4 mb-6 max-w-sm border-stone-200 bg-card">
+                    <p className="text-[10px] font-body uppercase tracking-widest mb-3 text-stone-500">
                         Quick tips
                     </p>
                     <ul className="space-y-2 text-left">
                         {config.tips.map((tip, i) => (
-                            <li key={i} className={`text-xs flex items-start gap-2 ${
-                                showGutters ? 'text-gray-500' : 'text-steel-500'
-                            }`}>
-                                <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                    showGutters ? 'bg-gray-400' : 'bg-ember-500/60'
-                                }`} />
+                            <li key={i} className="text-xs flex items-start gap-2 text-stone-600">
+                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-ember-500/60" />
                                 {tip}
                             </li>
                         ))}
@@ -253,11 +231,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             {onAction && (
                 <button
                     onClick={onAction}
-                    className={`px-8 py-3 font-display text-lg tracking-widest uppercase rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 ${
-                        showGutters
-                            ? 'bg-black text-white hover:bg-gray-800'
-                            : 'bg-ember-500 hover:bg-ember-400 text-ink-950'
-                    }`}
+                    className="px-8 py-3 font-display text-lg tracking-widest uppercase rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 bg-ink text-paper hover:bg-stone-800"
                 >
                     {actionLabel || config.actionDefault || 'Get Started'}
                 </button>

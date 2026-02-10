@@ -64,7 +64,7 @@ export function PageThumbnails({ panels }: PageThumbnailsProps) {
                 return (
                     <div
                         key={panel.id}
-                        className="border border-ink-700 bg-ink-800 rounded"
+                        className="border border-stone-200 bg-card rounded"
                         style={{
                             width: `${THUMBNAIL_SIZE}px`,
                             height: `${THUMBNAIL_SIZE}px`,
@@ -80,13 +80,13 @@ export function PageThumbnails({ panels }: PageThumbnailsProps) {
                                 loading="lazy"
                             />
                         ) : (
-                            <div className="w-full h-full bg-ink-800" />
+                            <div className="w-full h-full bg-card" />
                         )}
                     </div>
                 );
             })}
             {remainingCount > 0 && (
-                <span className="text-[9px] font-mono text-steel-600 ml-1">
+                <span className="text-[9px] font-body text-stone-400 ml-1">
                     +{remainingCount}
                 </span>
             )}

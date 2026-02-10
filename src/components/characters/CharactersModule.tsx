@@ -28,36 +28,36 @@ const CharactersModule: React.FC = () => {
   });
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-ink-950">
+    <div className="flex-1 flex flex-col min-w-0 bg-paper">
       {/* Header */}
-      <header className="flex-shrink-0 border-b border-ink-750 bg-ink-900/40 backdrop-blur-md sticky top-0 z-40">
+      <header className="flex-shrink-0 border-b border-stone-200 bg-card sticky top-0 z-40">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-5 flex-1">
             {/* Module identity */}
             <div className="hidden md:flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-char-500" />
-                <h1 className="text-lg font-display font-bold text-steel-100 tracking-tight">Character Tracker</h1>
+                <h1 className="text-lg font-display font-bold text-ink tracking-tight">Character Tracker</h1>
               </div>
-              <p className="text-[9px] font-mono text-steel-600 uppercase tracking-[0.15em] pl-4">
+              <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] pl-4">
                 {characters.length} dossier{characters.length !== 1 ? 's' : ''} on file
               </p>
             </div>
 
             {/* Search */}
             <div className="relative flex-1 max-w-md group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-600 group-focus-within:text-char-400 transition-colors" size={15} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-char-400 transition-colors" size={15} />
               <input
                 type="text"
                 placeholder="Search characters, archetypes, tags..."
                 value={characterSearchTerm}
                 onChange={(e) => setCharacterSearchTerm(e.target.value)}
-                className="w-full bg-ink-950 border border-ink-700 rounded-lg pl-9 pr-4 py-2 text-sm text-steel-100 placeholder:text-steel-600 focus:outline-none focus:border-char-500/50 focus:ring-1 focus:ring-char-500/20 transition-all"
+                className="w-full bg-white border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-char-500/50 focus:ring-1 focus:ring-char-500/20 transition-all"
               />
             </div>
 
             {/* View toggles */}
-            <div className="hidden md:flex items-center bg-ink-900 border border-ink-700 rounded-lg p-0.5">
+            <div className="hidden md:flex items-center bg-stone-50 border border-stone-200 rounded-lg p-0.5">
               {([
                 { id: 'grid' as const, icon: <Users size={14} />, label: 'Grid' },
                 { id: 'graph' as const, icon: <Network size={14} />, label: 'Graph' },
@@ -69,7 +69,7 @@ const CharactersModule: React.FC = () => {
                   className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                     characterView === v.id
                       ? 'bg-char-500/15 text-char-400'
-                      : 'text-steel-500 hover:text-steel-200'
+                      : 'text-stone-500 hover:text-ink'
                   }`}
                 >
                   {v.icon}
@@ -95,11 +95,11 @@ const CharactersModule: React.FC = () => {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-5 lg:p-8">
         {characters.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-20 animate-fade-in">
-            <div className="w-20 h-20 bg-char-900/30 border border-char-500/20 rounded-3xl flex items-center justify-center mb-6 text-char-400">
+            <div className="w-20 h-20 bg-char-500/10 border border-char-500/20 rounded-3xl flex items-center justify-center mb-6 text-char-400">
               <UserPlus size={32} />
             </div>
-            <h2 className="text-2xl font-display font-bold text-steel-100 mb-3">Character Tracker is Empty</h2>
-            <p className="text-steel-400 mb-8 leading-relaxed text-sm">
+            <h2 className="text-2xl font-display font-bold text-ink mb-3">Character Tracker is Empty</h2>
+            <p className="text-stone-600 mb-8 leading-relaxed text-sm">
               Begin your narrative journey by defining your first character. Archetypes, visual traits, eras, and story arcs start here.
             </p>
             <button
@@ -111,7 +111,7 @@ const CharactersModule: React.FC = () => {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-            <p className="text-steel-500 text-base">No dossiers matching "{characterSearchTerm}"</p>
+            <p className="text-stone-600 text-base">No dossiers matching "{characterSearchTerm}"</p>
             <button onClick={() => setCharacterSearchTerm('')} className="mt-3 text-char-400 hover:underline text-xs font-bold uppercase tracking-widest">
               Clear Filter
             </button>

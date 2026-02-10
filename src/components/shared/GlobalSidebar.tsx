@@ -98,18 +98,17 @@ const GlobalSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-16 lg:w-60 glass-panel h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
+    <aside className="w-16 lg:w-60 bg-card border-r border-stone-200 h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
       {/* Brand */}
-      <div className="h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-white/5 flex-shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ember-500 to-ember-600 flex items-center justify-center shadow-lg shadow-ember-500/20 flex-shrink-0 relative">
+      <div className="h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-stone-200 flex-shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ember-500 to-ember-600 flex items-center justify-center flex-shrink-0">
           <Flame size={16} className="text-white" />
-          <div className="absolute inset-0 rounded-xl bg-ember-500/20 animate-pulse-glow" />
         </div>
         <div className="hidden lg:block min-w-0">
-          <h1 className="text-sm font-display font-bold text-steel-100 tracking-tight leading-tight truncate">
-            LIT Tracker
+          <h1 className="text-sm font-display font-bold text-ink tracking-tight leading-tight truncate">
+            Lit Tracker
           </h1>
-          <p className="text-[9px] font-mono text-steel-600 uppercase tracking-[0.15em] truncate mt-0.5">
+          <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] truncate mt-0.5">
             {projectName}
           </p>
         </div>
@@ -118,7 +117,7 @@ const GlobalSidebar: React.FC = () => {
       {/* Module Navigation */}
       <nav className="flex-1 py-3 overflow-y-auto custom-scrollbar">
         <div className="hidden lg:block px-4 mb-2">
-          <p className="text-[8px] font-mono text-steel-700 uppercase tracking-[0.25em]">
+          <p className="text-[8px] font-body text-stone-500 uppercase tracking-[0.25em]">
             Modules
           </p>
         </div>
@@ -136,8 +135,8 @@ const GlobalSidebar: React.FC = () => {
                 className={`
                   w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 transition-all duration-200 group relative rounded-lg
                   ${isActive
-                    ? `${colors.activeBg} ${colors.active}`
-                    : `text-steel-500 ${colors.hoverBg} hover:text-steel-300`
+                    ? `${colors.active} font-bold`
+                    : `text-stone-500 hover:bg-stone-50 hover:text-ink`
                   }
                 `}
               >
@@ -145,14 +144,14 @@ const GlobalSidebar: React.FC = () => {
                   <div className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-full ${colors.indicator}`} />
                 )}
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                  isActive ? colors.iconBg : 'bg-ink-800/50 text-steel-500 group-hover:bg-ink-750 group-hover:text-steel-300'
+                  isActive ? colors.iconBg : 'bg-stone-100 text-stone-500 group-hover:bg-stone-200 group-hover:text-ink'
                 }`}>
                   {mod.icon}
                 </div>
                 <div className="hidden lg:flex flex-col items-start min-w-0 flex-1">
-                  <span className="text-[13px] font-semibold truncate leading-tight">{mod.label}</span>
-                  <span className={`text-[9px] font-mono tracking-wider mt-0.5 ${
-                    isActive ? 'opacity-60' : 'text-steel-600'
+                  <span className="text-[13px] truncate leading-tight">{mod.label}</span>
+                  <span className={`text-[9px] font-body tracking-wider mt-0.5 ${
+                    isActive ? 'opacity-60' : 'text-stone-400'
                   }`}>
                     {stat || mod.description}
                   </span>
@@ -170,20 +169,20 @@ const GlobalSidebar: React.FC = () => {
 
         {/* Project stats — desktop */}
         <div className="hidden lg:block px-4 pb-2">
-          <p className="text-[8px] font-mono text-steel-700 uppercase tracking-[0.25em] mb-3">
+          <p className="text-[8px] font-body text-stone-500 uppercase tracking-[0.25em] mb-3">
             Project
           </p>
           <div className="space-y-2">
             {[
-              { icon: <Layers size={12} />, label: 'Issues', value: stats.totalIssues, color: 'text-ember-400' },
-              { icon: <FileText size={12} />, label: 'Pages', value: stats.totalPages, color: 'text-ember-400' },
-              { icon: <Users size={12} />, label: 'Cast', value: characters.length, color: 'text-char-400' },
-              { icon: <BookOpen size={12} />, label: 'Lore', value: loreEntries.length, color: 'text-lore-400' },
+              { icon: <Layers size={12} />, label: 'Issues', value: stats.totalIssues, color: 'text-ember-500' },
+              { icon: <FileText size={12} />, label: 'Pages', value: stats.totalPages, color: 'text-ember-500' },
+              { icon: <Users size={12} />, label: 'Cast', value: characters.length, color: 'text-char-500' },
+              { icon: <BookOpen size={12} />, label: 'Lore', value: loreEntries.length, color: 'text-lore-500' },
             ].map((s, i) => (
               <div key={i} className="flex items-center gap-2.5">
-                <span className="text-steel-600">{s.icon}</span>
-                <span className="text-[10px] text-steel-500 flex-1">{s.label}</span>
-                <span className={`text-[11px] font-mono font-bold ${s.value > 0 ? s.color : 'text-steel-700'}`}>
+                <span className="text-stone-400">{s.icon}</span>
+                <span className="text-[10px] text-stone-500 flex-1">{s.label}</span>
+                <span className={`text-[11px] font-body font-bold ${s.value > 0 ? s.color : 'text-stone-400'}`}>
                   {s.value}
                 </span>
               </div>
@@ -193,22 +192,22 @@ const GlobalSidebar: React.FC = () => {
       </nav>
 
       {/* Footer — sync status */}
-      <div className="p-3 lg:px-4 lg:py-3 border-t border-white/5">
+      <div className="p-3 lg:px-4 lg:py-3 border-t border-stone-200">
         <div className="hidden lg:flex items-center gap-2.5">
           {syncStatus === 'saving' ? (
-            <RefreshCcw size={12} className="text-ember-400 animate-spin flex-shrink-0" />
+            <RefreshCcw size={12} className="text-ember-500 animate-spin flex-shrink-0" />
           ) : syncStatus === 'synced' ? (
             <Cloud size={12} className="text-emerald-500 flex-shrink-0" />
           ) : syncStatus === 'error' ? (
-            <CloudOff size={12} className="text-red-400 flex-shrink-0" />
+            <CloudOff size={12} className="text-red-500 flex-shrink-0" />
           ) : (
-            <CloudOff size={12} className="text-steel-600 flex-shrink-0" />
+            <CloudOff size={12} className="text-stone-400 flex-shrink-0" />
           )}
-          <span className={`text-[9px] font-mono uppercase tracking-wider ${
-            syncStatus === 'saving' ? 'text-ember-400'
+          <span className={`text-[9px] font-body uppercase tracking-wider ${
+            syncStatus === 'saving' ? 'text-ember-500'
             : syncStatus === 'synced' ? 'text-emerald-500'
-            : syncStatus === 'error' ? 'text-red-400'
-            : 'text-steel-600'
+            : syncStatus === 'error' ? 'text-red-500'
+            : 'text-stone-400'
           }`}>
             {syncStatus === 'saving' ? 'Saving...'
               : syncStatus === 'synced' ? 'Cloud synced'
@@ -218,11 +217,11 @@ const GlobalSidebar: React.FC = () => {
         </div>
         <div className="lg:hidden flex justify-center">
           {syncStatus === 'saving' ? (
-            <RefreshCcw size={14} className="text-ember-400 animate-spin" />
+            <RefreshCcw size={14} className="text-ember-500 animate-spin" />
           ) : syncStatus === 'synced' ? (
             <Cloud size={14} className="text-emerald-500" />
           ) : (
-            <CloudOff size={14} className="text-steel-600" />
+            <CloudOff size={14} className="text-stone-400" />
           )}
         </div>
       </div>

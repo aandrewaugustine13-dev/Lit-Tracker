@@ -12,10 +12,10 @@ const LoreModule = lazy(() => import('./components/lore/LoreModule'));
 
 // Loading fallback component with branded workspace theme
 const WorkspaceLoadingFallback: React.FC = () => (
-  <div className="flex h-screen w-screen items-center justify-center bg-ink-950">
+  <div className="flex h-screen w-screen items-center justify-center bg-paper">
     <div className="flex flex-col items-center gap-4 animate-fade-in">
-      <div className="w-12 h-12 border-4 border-ember-500 border-t-transparent rounded-full animate-spin" />
-      <p className="text-steel-500 font-mono text-sm uppercase tracking-widest">Loading Workspace...</p>
+      <div className="w-12 h-12 border-4 border-stone-400 border-t-transparent rounded-full animate-spin" />
+      <p className="text-stone-500 font-body text-sm uppercase tracking-widest">Loading Workspace...</p>
     </div>
   </div>
 );
@@ -55,7 +55,7 @@ function AppContent() {
 
   return (
     <Suspense fallback={<WorkspaceLoadingFallback />}>
-      <div className="flex h-screen bg-ink-950 text-steel-300 overflow-hidden">
+      <div className="flex h-screen bg-paper text-ink overflow-hidden">
         <GlobalSidebar />
         {renderModule()}
         <DetailPanel />

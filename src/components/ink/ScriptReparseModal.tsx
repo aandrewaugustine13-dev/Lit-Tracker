@@ -166,10 +166,10 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
 
     const getDiffColor = (type: DiffType) => {
         switch (type) {
-            case 'added': return 'bg-green-950/30 border-green-700';
-            case 'removed': return 'bg-red-950/30 border-red-700';
-            case 'modified': return 'bg-yellow-950/30 border-yellow-700';
-            default: return 'bg-ink-800 border-ink-700';
+            case 'added': return 'bg-green-50 border-green-300';
+            case 'removed': return 'bg-red-50 border-red-300';
+            case 'modified': return 'bg-yellow-50 border-yellow-300';
+            default: return 'bg-white border-stone-200';
         }
     };
 
@@ -183,18 +183,18 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-xl flex items-center justify-center z-[700] p-8">
-            <div className="w-full max-w-6xl bg-ink-950 border border-ink-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-6 border-b border-ink-700 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-[700] p-8">
+            <div className="w-full max-w-6xl bg-paper border border-stone-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-stone-200 flex items-center justify-between">
                     <div>
-                        <h2 className="font-display text-3xl tracking-widest text-ember-500 uppercase">Script Re-parse</h2>
-                        <p className="text-[10px] font-mono text-steel-500 mt-1 uppercase tracking-widest">
+                        <h2 className="font-display text-3xl tracking-widest text-ink uppercase">Script Re-parse</h2>
+                        <p className="text-[10px] font-body text-stone-600 mt-1 uppercase tracking-widest">
                             Review changes detected in script
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-ink-800 hover:bg-red-500 text-steel-400 hover:text-white transition-all text-xl font-bold"
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-stone-100 text-stone-600 hover:text-red-600 border border-stone-200 transition-all text-xl font-bold"
                     >
                         <X size={20} />
                     </button>
@@ -202,28 +202,28 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {reparsing ? (
-                        <div className="flex flex-col items-center gap-4 py-12 text-steel-400">
-                            <div className="w-10 h-10 rounded-full border-[3px] border-cyan-500 border-t-transparent animate-spin" />
-                            <p className="text-sm font-mono text-steel-300 font-bold uppercase tracking-widest">
+                        <div className="flex flex-col items-center gap-4 py-12 text-stone-600">
+                            <div className="w-10 h-10 rounded-full border-[3px] border-ink border-t-transparent animate-spin" />
+                            <p className="text-sm font-body text-ink font-bold uppercase tracking-widest">
                                 Analyzing Script Changes
                             </p>
                             <div className="flex flex-col gap-2 w-56">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] font-bold">✓</div>
-                                    <span className="text-xs font-mono text-green-400">Re-parsing script...</span>
+                                    <div className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-bold">✓</div>
+                                    <span className="text-xs font-body text-green-600">Re-parsing script...</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-cyan-500 text-white flex items-center justify-center text-[10px] font-bold animate-pulse">2</div>
-                                    <span className="text-xs font-mono text-cyan-400">Comparing panels...</span>
+                                    <div className="w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center text-[10px] font-bold animate-pulse">2</div>
+                                    <span className="text-xs font-body text-ink">Comparing panels...</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-ink-800 text-steel-600 flex items-center justify-center text-[10px] font-bold">3</div>
-                                    <span className="text-xs font-mono text-steel-600">Building diff view...</span>
+                                    <div className="w-5 h-5 rounded-full bg-stone-200 text-stone-500 flex items-center justify-center text-[10px] font-bold">3</div>
+                                    <span className="text-xs font-body text-stone-500">Building diff view...</span>
                                 </div>
                             </div>
                         </div>
                     ) : diffs.length === 0 ? (
-                        <div className="text-center py-12 text-steel-400">
+                        <div className="text-center py-12 text-stone-600">
                             No changes detected in the script.
                         </div>
                     ) : (
@@ -231,33 +231,33 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
                             <div
                                 key={index}
                                 className={`border-2 rounded-lg p-4 transition-all ${getDiffColor(diff.type)} ${
-                                    selectedDiffs.has(index) ? 'ring-2 ring-ember-500' : ''
+                                    selectedDiffs.has(index) ? 'ring-2 ring-ink' : ''
                                 }`}
                             >
                                 <div className="flex items-start justify-between mb-2">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold ${
-                                            diff.type === 'added' ? 'bg-green-500 text-white' :
-                                            diff.type === 'removed' ? 'bg-red-500 text-white' :
-                                            'bg-yellow-500 text-ink-950'
+                                            diff.type === 'added' ? 'bg-green-600 text-white' :
+                                            diff.type === 'removed' ? 'bg-red-600 text-white' :
+                                            'bg-yellow-500 text-ink'
                                         }`}>
                                             {getDiffIcon(diff.type)}
                                         </div>
                                         <div>
-                                            <div className="font-mono text-sm font-bold text-steel-200">
+                                            <div className="font-body text-sm font-bold text-ink">
                                                 Page {diff.pageNumber}, Panel {diff.panelNumber}
                                             </div>
-                                            <div className="text-[10px] font-mono uppercase tracking-widest text-steel-500">
+                                            <div className="text-[10px] font-body uppercase tracking-widest text-stone-600">
                                                 {diff.type}
                                             </div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => handleToggleDiff(index)}
-                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${
                                             selectedDiffs.has(index)
-                                                ? 'bg-ember-500 text-ink-950'
-                                                : 'bg-ink-800 text-steel-400 hover:bg-ink-700'
+                                                ? 'bg-ink text-white border-ink'
+                                                : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
                                         }`}
                                     >
                                         {selectedDiffs.has(index) ? 'SELECTED' : 'SELECT'}
@@ -265,28 +265,28 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
                                 </div>
 
                                 {diff.type === 'added' && diff.newPanel && (
-                                    <div className="mt-3 p-3 bg-green-950/50 rounded-lg">
-                                        <div className="text-xs font-mono text-green-400 mb-1">New Description:</div>
-                                        <div className="text-sm text-steel-200">{diff.newPanel.description}</div>
+                                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div className="text-xs font-body text-green-700 mb-1 font-semibold">New Description:</div>
+                                        <div className="text-sm text-ink">{diff.newPanel.description}</div>
                                     </div>
                                 )}
 
                                 {diff.type === 'removed' && diff.oldDescription && (
-                                    <div className="mt-3 p-3 bg-red-950/50 rounded-lg">
-                                        <div className="text-xs font-mono text-red-400 mb-1">Removed Description:</div>
-                                        <div className="text-sm text-steel-200 line-through">{diff.oldDescription}</div>
+                                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                        <div className="text-xs font-body text-red-700 mb-1 font-semibold">Removed Description:</div>
+                                        <div className="text-sm text-ink line-through">{diff.oldDescription}</div>
                                     </div>
                                 )}
 
                                 {diff.type === 'modified' && (
                                     <div className="mt-3 space-y-2">
-                                        <div className="p-3 bg-red-950/50 rounded-lg">
-                                            <div className="text-xs font-mono text-red-400 mb-1">Before:</div>
-                                            <div className="text-sm text-steel-200">{diff.oldDescription}</div>
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                            <div className="text-xs font-body text-red-700 mb-1 font-semibold">Before:</div>
+                                            <div className="text-sm text-ink">{diff.oldDescription}</div>
                                         </div>
-                                        <div className="p-3 bg-green-950/50 rounded-lg">
-                                            <div className="text-xs font-mono text-green-400 mb-1">After:</div>
-                                            <div className="text-sm text-steel-200">{diff.newDescription}</div>
+                                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                            <div className="text-xs font-body text-green-700 mb-1 font-semibold">After:</div>
+                                            <div className="text-sm text-ink">{diff.newDescription}</div>
                                         </div>
                                     </div>
                                 )}
@@ -295,19 +295,19 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
                     )}
                 </div>
 
-                <div className="p-6 border-t border-ink-700 flex items-center justify-between gap-4">
+                <div className="p-6 border-t border-stone-200 flex items-center justify-between gap-4">
                     <div className="flex gap-3">
                         <button
                             onClick={handleAcceptAll}
                             disabled={diffs.length === 0}
-                            className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all disabled:opacity-30"
+                            className="px-6 py-3 bg-white hover:bg-green-50 text-green-700 border border-green-300 font-bold text-sm uppercase tracking-widest rounded-lg transition-all disabled:opacity-30"
                         >
                             Accept All
                         </button>
                         <button
                             onClick={handleRejectAll}
                             disabled={diffs.length === 0}
-                            className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all disabled:opacity-30"
+                            className="px-6 py-3 bg-white hover:bg-red-50 text-red-700 border border-red-300 font-bold text-sm uppercase tracking-widest rounded-lg transition-all disabled:opacity-30"
                         >
                             Reject All
                         </button>
@@ -315,7 +315,7 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
                     <button
                         onClick={handleApply}
                         disabled={selectedDiffs.size === 0}
-                        className="px-8 py-3 bg-ember-500 hover:bg-ember-400 text-ink-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-all disabled:opacity-30"
+                        className="px-8 py-3 bg-ink hover:bg-stone-800 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all disabled:opacity-30"
                     >
                         Apply {selectedDiffs.size} Changes
                     </button>

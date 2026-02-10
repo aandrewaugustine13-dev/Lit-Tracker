@@ -79,24 +79,24 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
   };
 
   const config = LORE_TYPE_CONFIG[formData.type as LoreType];
-  const InputCls = "w-full bg-ink-950 border border-ink-800 rounded-lg px-3.5 py-2 text-sm text-steel-100 focus:outline-none focus:border-lore-400 transition-colors";
-  const LabelCls = "text-[9px] font-bold text-steel-600 uppercase tracking-[0.2em] mb-1.5 block";
+  const InputCls = "w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-sm text-ink focus:outline-none focus:border-stone-400 transition-colors";
+  const LabelCls = "text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-1.5 block";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-fade-in">
-      <div className="bg-ink-950 border border-ink-700 w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/10 animate-fade-in">
+      <div className="bg-card border border-stone-200 w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-ink-700 flex justify-between items-center bg-ink-900 flex-shrink-0">
+        <div className="px-6 py-4 border-b border-stone-200 flex justify-between items-center bg-stone-50 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${config.bgColor} ${config.color}`}>{config.icon}</div>
             <div>
-              <h2 className="text-base font-display font-bold text-steel-100">
+              <h2 className="text-base font-display font-bold text-ink">
                 {entry ? `Edit: ${formData.name || 'Untitled'}` : 'New Lore Entry'}
               </h2>
-              <p className="text-[9px] text-steel-600 uppercase tracking-[0.15em] font-mono">Lore Tracker</p>
+              <p className="text-[9px] text-stone-500 uppercase tracking-[0.15em] font-body">Lore Tracker</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-ink-800 rounded-full text-steel-500 hover:text-steel-100 transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full text-stone-500 hover:text-ink transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -126,10 +126,10 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
           </div>
 
           {/* Type-specific fields */}
-          <div className="bg-ink-950/30 border border-ink-800/50 rounded-xl p-4 space-y-3">
+          <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-1 h-4 rounded-full" style={{ background: config.accentHex }} />
-              <h3 className="text-xs font-bold text-steel-300 capitalize">{LORE_TYPE_CONFIG[formData.type as LoreType].label} Details</h3>
+              <h3 className="text-xs font-bold text-stone-700 capitalize">{LORE_TYPE_CONFIG[formData.type as LoreType].label} Details</h3>
             </div>
 
             {formData.type === LoreType.FACTION && (
@@ -178,7 +178,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
                     <button
                       onClick={() => setFormData((p: any) => ({ ...p, canonLocked: !p.canonLocked }))}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-xs font-bold transition-all ${
-                        formData.canonLocked ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-ink-900 border-ink-700 text-steel-500'
+                        formData.canonLocked ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-white border-stone-200 text-stone-500'
                       }`}
                     >
                       {formData.canonLocked ? <Lock size={13} /> : <Unlock size={13} />}
@@ -193,7 +193,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
 
           {/* Tags */}
           <div>
-            <label className="flex items-center gap-1.5 text-[9px] font-bold text-steel-600 uppercase tracking-[0.2em] mb-1.5">
+            <label className="flex items-center gap-1.5 text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-1.5">
               <Tag size={10} /> Tags (comma separated)
             </label>
             <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)} className={InputCls} placeholder="mythology, drain, canon..." />
@@ -201,23 +201,23 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
 
           {/* Character connections */}
           <div>
-            <label className="flex items-center gap-1.5 text-[9px] font-bold text-steel-600 uppercase tracking-[0.2em] mb-1.5">
+            <label className="flex items-center gap-1.5 text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-1.5">
               <Users size={10} /> Character Connections
             </label>
-            <div className="bg-ink-950 border border-ink-800 rounded-lg p-2.5 max-h-36 overflow-y-auto custom-scrollbar space-y-1">
+            <div className="bg-white border border-stone-200 rounded-lg p-2.5 max-h-36 overflow-y-auto custom-scrollbar space-y-1">
               {characters.length === 0 ? (
-                <p className="text-[10px] text-steel-600 italic text-center py-3">No characters created yet</p>
+                <p className="text-[10px] text-stone-500 italic text-center py-3">No characters created yet</p>
               ) : characters.map(char => (
                 <button
                   key={char.id}
                   onClick={() => toggleCharacter(char.id)}
                   className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-all text-xs ${
-                    formData.characterIds?.includes(char.id) ? 'bg-char-500/10 border border-char-400/30' : 'hover:bg-ink-900 border border-transparent'
+                    formData.characterIds?.includes(char.id) ? 'bg-char-500/10 border border-char-400/30' : 'hover:bg-stone-100 border border-transparent'
                   }`}
                 >
                   <div className="w-2 h-2 rounded-full bg-char-500/60" />
-                  <span className="text-steel-200 flex-1 truncate">{char.name}</span>
-                  <span className="text-[9px] text-steel-600">{char.role}</span>
+                  <span className="text-ink flex-1 truncate">{char.name}</span>
+                  <span className="text-[9px] text-stone-500">{char.role}</span>
                   {formData.characterIds?.includes(char.id) && <Check size={12} className="text-char-400" />}
                 </button>
               ))}
@@ -226,10 +226,10 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
 
           {/* Related Lore */}
           <div>
-            <label className="flex items-center gap-1.5 text-[9px] font-bold text-steel-600 uppercase tracking-[0.2em] mb-1.5">
+            <label className="flex items-center gap-1.5 text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-1.5">
               <Link2 size={10} /> Related Lore Entries
             </label>
-            <div className="bg-ink-950 border border-ink-800 rounded-lg p-2.5 max-h-36 overflow-y-auto custom-scrollbar space-y-1">
+            <div className="bg-white border border-stone-200 rounded-lg p-2.5 max-h-36 overflow-y-auto custom-scrollbar space-y-1">
               {loreEntries.filter(e => e.id !== formData.id).map(other => {
                 const otherConfig = LORE_TYPE_CONFIG[other.type];
                 return (
@@ -237,25 +237,25 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
                     key={other.id}
                     onClick={() => toggleRelation(other.id)}
                     className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-all text-xs ${
-                      formData.relatedEntryIds?.includes(other.id) ? 'bg-lore-500/10 border border-lore-500/30' : 'hover:bg-ink-900 border border-transparent'
+                      formData.relatedEntryIds?.includes(other.id) ? 'bg-lore-500/10 border border-lore-500/30' : 'hover:bg-stone-100 border border-transparent'
                     }`}
                   >
                     <span className={otherConfig.color}>{otherConfig.icon}</span>
-                    <span className="text-steel-200 flex-1 truncate">{other.name}</span>
+                    <span className="text-ink flex-1 truncate">{other.name}</span>
                     {formData.relatedEntryIds?.includes(other.id) && <ChevronRight size={12} className="text-lore-400" />}
                   </button>
                 );
               })}
               {loreEntries.length <= 1 && (
-                <p className="text-[10px] text-steel-600 italic text-center py-3">Create more entries to establish connections</p>
+                <p className="text-[10px] text-stone-500 italic text-center py-3">Create more entries to establish connections</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-ink-800 bg-ink-950/50 flex justify-end gap-3 flex-shrink-0">
-          <button onClick={onClose} className="px-5 py-2 text-steel-400 hover:text-white transition-colors text-sm font-medium">Cancel</button>
+        <div className="px-6 py-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3 flex-shrink-0">
+          <button onClick={onClose} className="px-5 py-2 text-stone-500 hover:text-ink transition-colors text-sm font-medium">Cancel</button>
           <button onClick={handleSave} className="px-6 py-2 bg-lore-500 hover:bg-lore-400 text-white rounded-lg flex items-center gap-2 font-bold transition-all shadow-lg shadow-lore-500/10 text-sm">
             <Save size={15} /> Save Entry
           </button>

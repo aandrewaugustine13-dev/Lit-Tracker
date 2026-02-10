@@ -50,15 +50,15 @@ const SortablePageItem: React.FC<SortablePageItemProps> = ({ page, isActive, dis
             <button
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing touch-none p-1 text-steel-600 hover:text-ember-500 transition-colors"
+                className="cursor-grab active:cursor-grabbing touch-none p-1 text-stone-500 hover:text-ink transition-colors"
                 title="Drag to reorder"
             >
                 <GripVertical size={14} />
             </button>
             <button
                 onClick={() => dispatch({ type: 'SET_ACTIVE_PAGE', id: page.id })}
-                className={`flex-1 text-left px-3 py-1.5 rounded text-[11px] font-mono transition-all ${
-                    isActive ? 'bg-ember-500 text-ink-950 font-bold' : 'text-steel-500 hover:bg-ink-700'
+                className={`flex-1 text-left px-3 py-1.5 rounded text-[11px] font-body transition-all ${
+                    isActive ? 'bg-ink text-white font-bold' : 'text-stone-600 hover:bg-stone-100'
                 }`}
             >
                 <div className="flex justify-between items-center w-full">
@@ -139,7 +139,7 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
             {/* Issues / Chapters section */}
             <div>
                 <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="text-xs font-mono text-steel-500 uppercase tracking-widest">{typeLabel}s</h2>
+                    <h2 className="text-xs font-body text-stone-600 uppercase tracking-widest">{typeLabel}s</h2>
                     <button
                         onClick={() => {
                             if (!activeProject) {
@@ -150,11 +150,11 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
                             console.log("Dispatching ADD_ISSUE for project:", activeProject.id, activeProject.title);
                             dispatch({ type: 'ADD_ISSUE', projectId: activeProject.id });
                         }}
-                        className="text-steel-400 hover:text-ember-500 transition-colors flex items-center gap-1 group"
+                        className="text-stone-600 hover:text-ink transition-colors flex items-center gap-1 group"
                         title="Add New Issue/Chapter"
                     >
                         <Icons.Plus />
-                        <span className="text-[9px] font-mono opacity-0 group-hover:opacity-100 transition-opacity">NEW</span>
+                        <span className="text-[9px] font-body opacity-0 group-hover:opacity-100 transition-opacity">NEW</span>
                     </button>
                 </div>
 
@@ -175,27 +175,27 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
                     {activeProject?.issues.map(iss => {
                         const isActive = state.activeIssueId === iss.id;
                         return (
-                            <div key={iss.id} className={`rounded-lg overflow-hidden transition-all border ${isActive ? 'border-ember-500/30 bg-ember-500/5' : 'border-ink-700'}`}>
+                            <div key={iss.id} className={`rounded-lg overflow-hidden transition-all border ${isActive ? 'border-ink bg-stone-50' : 'border-stone-200'}`}>
                                 <div
                                     onClick={() => dispatch({ type: 'SET_ACTIVE_ISSUE', id: iss.id })}
-                                    className={`px-3 py-2 flex items-center justify-between cursor-pointer group ${isActive ? 'bg-ember-500/10' : 'hover:bg-ink-800'}`}
+                                    className={`px-3 py-2 flex items-center justify-between cursor-pointer group ${isActive ? 'bg-stone-50' : 'hover:bg-stone-100'}`}
                                 >
                                     <div className="flex items-center gap-2 overflow-hidden">
-                                        <span className={`text-[10px] font-mono ${isActive ? 'text-ember-500' : 'text-steel-600'}`}>{isActive ? '●' : '○'}</span>
-                                        <p className={`text-xs font-bold uppercase tracking-widest truncate ${isActive ? 'text-ember-500' : 'text-steel-400 group-hover:text-steel-200'}`}>{iss.title}</p>
+                                        <span className={`text-[10px] font-body ${isActive ? 'text-ink' : 'text-stone-500'}`}>{isActive ? '●' : '○'}</span>
+                                        <p className={`text-xs font-bold uppercase tracking-widest truncate ${isActive ? 'text-ink' : 'text-stone-600 group-hover:text-ink'}`}>{iss.title}</p>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <span className="text-[9px] font-mono text-steel-600">{iss.pages.length}P</span>
+                                        <span className="text-[9px] font-body text-stone-500">{iss.pages.length}P</span>
                                         <button
                                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); if (confirm(`Delete ${iss.title}?`)) dispatch({ type: 'DELETE_ISSUE', issueId: iss.id }); }}
-                                            className="opacity-0 group-hover:opacity-100 p-1 text-steel-700 hover:text-red-500 transition-all"
+                                            className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-500 transition-all"
                                         >
                                             <Icons.Trash />
                                         </button>
                                     </div>
                                 </div>
                                 {isActive && (
-                                    <div className="px-2 py-2 border-t border-ember-500/10 space-y-1 animate-fade-in">
+                                    <div className="px-2 py-2 border-t border-stone-200 space-y-1 animate-fade-in">
                                         <DndContext
                                             sensors={sensors}
                                             collisionDetection={closestCenter}
@@ -218,7 +218,7 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
                                         </DndContext>
                                         <button
                                             onClick={() => dispatch({ type: 'ADD_PAGE', issueId: iss.id })}
-                                            className="w-full py-1 text-center text-[10px] font-mono text-steel-600 hover:text-ember-500 hover:bg-ink-800 rounded transition-all mt-1 uppercase tracking-tighter"
+                                            className="w-full py-1 text-center text-[10px] font-body text-stone-600 hover:text-ink hover:bg-stone-100 rounded transition-all mt-1 uppercase tracking-tighter"
                                         >
                                             + Add Page
                                         </button>
@@ -233,41 +233,41 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
             {/* Cast section */}
             <div>
                 <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="text-xs font-mono text-steel-500 uppercase tracking-widest">Cast</h2>
+                    <h2 className="text-xs font-body text-stone-600 uppercase tracking-widest">Cast</h2>
                     <button
                         onClick={() => setShowCharForm(!showCharForm)}
-                        className={`transition-colors ${showCharForm ? 'text-ember-500 rotate-45' : 'text-steel-400 hover:text-ember-500'}`}
+                        className={`transition-colors ${showCharForm ? 'text-ink rotate-45' : 'text-stone-600 hover:text-ink'}`}
                     >
                         <Icons.Plus />
                     </button>
                 </div>
 
                 {showCharForm && (
-                    <div className="mb-4 p-3 bg-ink-800 border border-ember-500/30 rounded-lg space-y-3 animate-fade-in shadow-xl">
+                    <div className="mb-4 p-3 bg-card border border-stone-200 rounded-lg space-y-3 animate-fade-in shadow-sm">
                         <input
                             autoFocus
                             placeholder="Name (e.g. Detective Jack)"
                             value={charName}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCharName(e.target.value)}
-                            className="w-full bg-ink-950 border border-ink-700 rounded px-3 py-1.5 text-xs text-steel-200 focus:border-ember-500 outline-none font-bold"
+                            className="w-full bg-white border border-stone-200 rounded px-3 py-1.5 text-xs text-ink focus:border-ink outline-none font-bold"
                         />
                         <textarea
                             placeholder="Description (age, vibe, key features...)"
                             value={charDesc}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCharDesc(e.target.value)}
                             rows={2}
-                            className="w-full bg-ink-950 border border-ink-700 rounded px-3 py-1.5 text-xs text-steel-400 focus:border-ember-500 outline-none resize-none italic"
+                            className="w-full bg-white border border-stone-200 rounded px-3 py-1.5 text-xs text-stone-600 focus:border-ink outline-none resize-none italic"
                         />
                         <div className="flex gap-2">
                             <button
                                 onClick={handleAddChar}
-                                className="flex-1 bg-ember-500 text-ink-950 font-bold py-1.5 rounded text-[10px] uppercase tracking-widest hover:bg-ember-400 transition-colors"
+                                className="flex-1 bg-ember-500 text-white font-bold py-1.5 rounded text-[10px] uppercase tracking-widest hover:bg-ember-400 transition-colors"
                             >
                                 Save Cast
                             </button>
                             <button
                                 onClick={() => setShowCharForm(false)}
-                                className="px-3 py-1.5 border border-ink-700 text-steel-500 rounded text-[10px] uppercase hover:bg-ink-700"
+                                className="px-3 py-1.5 border border-stone-200 text-stone-600 rounded text-[10px] uppercase hover:bg-stone-100"
                             >
                                 Cancel
                             </button>
@@ -277,10 +277,10 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
 
                 <div className="space-y-2">
                     {activeProject?.characters?.map(char => (
-                        <div key={char.id} className="group flex items-center justify-between p-2 bg-ink-800/50 rounded border border-ink-700/50">
+                        <div key={char.id} className="group flex items-center justify-between p-2 bg-stone-50 rounded border border-stone-200">
                             <div className="overflow-hidden">
-                                <p className="text-[11px] text-steel-300 font-bold truncate">{char.name}</p>
-                                <p className="text-[9px] text-steel-600 truncate italic">{char.description}</p>
+                                <p className="text-[11px] text-ink font-bold truncate">{char.name}</p>
+                                <p className="text-[9px] text-stone-500 truncate italic">{char.description}</p>
                             </div>
                             <button
                                 onClick={() => dispatch({ type: 'DELETE_CHARACTER', id: char.id })}

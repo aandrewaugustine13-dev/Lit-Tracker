@@ -37,24 +37,24 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
     };
 
     return (
-        <div className="flex items-center gap-2 bg-ink-900 border border-ink-700 rounded-full px-4 py-1.5 shadow-xl transition-all hover:border-ink-600">
+        <div className="flex items-center gap-2 bg-card border border-stone-200 rounded-full px-4 py-1.5 shadow-xl transition-all hover:border-stone-300">
         <button
         onClick={handleToggleNavMode}
         type="button"
-        className={`p-1.5 rounded-full transition-all flex items-center gap-2 px-3 ${zoomEnabled ? 'text-ember-500 bg-ember-500/10 scale-105' : 'text-steel-600 hover:text-steel-300'}`}
+        className={`p-1.5 rounded-full transition-all flex items-center gap-2 px-3 ${zoomEnabled ? 'text-ember-500 bg-ember-500/10 scale-105' : 'text-stone-500 hover:text-ink'}`}
         title={zoomEnabled ? "Exit Canvas Navigation" : "Enter Canvas Navigation (Pan/Zoom)"}
         >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
         </svg>
-        {zoomEnabled && <span className="text-[9px] font-mono font-bold tracking-widest uppercase">NAV MODE</span>}
+        {zoomEnabled && <span className="text-[9px] font-body font-bold tracking-widest uppercase">NAV MODE</span>}
         </button>
 
-        <div className="w-px h-4 bg-ink-700 mx-1"></div>
+        <div className="w-px h-4 bg-stone-200 mx-1"></div>
 
         <button
         onClick={() => setShowGutters(!showGutters)}
-        className={`p-1.5 rounded-full transition-colors ${showGutters ? 'text-ember-500 bg-ember-500/10' : 'text-steel-600 hover:text-steel-300'}`}
+        className={`p-1.5 rounded-full transition-colors ${showGutters ? 'text-ember-500 bg-ember-500/10' : 'text-stone-500 hover:text-ink'}`}
         title="Toggle Comic Gutter Layout"
         >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,13 +62,13 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
         </svg>
         </button>
 
-        <div className="w-px h-4 bg-ink-700 mx-1"></div>
+        <div className="w-px h-4 bg-stone-200 mx-1"></div>
 
         <div className="flex items-center gap-1">
         <button 
             onClick={() => zoomOut && zoomOut()} 
             disabled={!zoomEnabled}
-            className={`transition-colors p-1 ${zoomEnabled ? 'text-steel-500 hover:text-ember-500' : 'text-steel-700 cursor-not-allowed'}`} 
+            className={`transition-colors p-1 ${zoomEnabled ? 'text-stone-500 hover:text-ember-500' : 'text-stone-300 cursor-not-allowed'}`} 
             title="Zoom Out"
         >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
         <button
         onClick={() => resetTransform && resetTransform()}
         disabled={!zoomEnabled}
-        className={`text-[10px] font-mono font-bold w-12 text-center transition-colors ${zoomEnabled ? 'text-steel-300 hover:text-ember-500' : 'text-steel-600 cursor-not-allowed'}`}
+        className={`text-[10px] font-body font-bold w-12 text-center transition-colors ${zoomEnabled ? 'text-ink hover:text-ember-500' : 'text-stone-400 cursor-not-allowed'}`}
         title="Reset View (100%)"
         >
         {Math.round(scale * 100)}%
@@ -88,7 +88,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
         <button 
             onClick={() => zoomIn && zoomIn()} 
             disabled={!zoomEnabled}
-            className={`transition-colors p-1 ${zoomEnabled ? 'text-steel-500 hover:text-ember-500' : 'text-steel-700 cursor-not-allowed'}`} 
+            className={`transition-colors p-1 ${zoomEnabled ? 'text-stone-500 hover:text-ember-500' : 'text-stone-300 cursor-not-allowed'}`} 
             title="Zoom In"
         >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

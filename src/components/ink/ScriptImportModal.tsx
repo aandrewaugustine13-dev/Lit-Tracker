@@ -231,44 +231,44 @@ export function ScriptImportModal({ project, onClose, onImport }: Props) {
     }, {} as Record<string, number>) || {};
 
     return (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-xl flex items-center justify-center z-[600] p-8">
-            <div className="w-full max-w-5xl bg-ink-950 border border-ink-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-6 border-b border-ink-700 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-[600] p-8">
+            <div className="w-full max-w-5xl bg-paper border border-stone-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-stone-200 flex items-center justify-between">
                     <div>
-                        <h2 className="font-display text-3xl tracking-widest text-ember-500 uppercase">Script Import</h2>
-                        <p className="text-[10px] font-mono text-steel-500 mt-1 uppercase tracking-widest">Paste script or upload .txt file</p>
+                        <h2 className="font-display text-3xl tracking-widest text-ink uppercase">Script Import</h2>
+                        <p className="text-[10px] font-body text-stone-600 mt-1 uppercase tracking-widest">Paste script or upload .txt file</p>
                     </div>
-                    <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-ink-800 hover:bg-red-500 text-steel-400 hover:text-white transition-all text-xl font-bold">×</button>
+                    <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-stone-100 text-stone-600 hover:text-red-600 border border-stone-200 transition-all text-xl font-bold">×</button>
                 </div>
 
                 <div className="flex-1 flex overflow-hidden">
-                    <div className="flex-1 flex flex-col p-6 border-r border-ink-700">
+                    <div className="flex-1 flex flex-col p-6 border-r border-stone-200">
                         <div className="mb-4">
                             <input
                                 type="file"
                                 accept=".txt,.md"
                                 onChange={handleFile}
-                                className="text-[10px] text-steel-400 file:mr-3 file:py-2 file:px-4 file:border file:border-ink-700 file:bg-ink-800 file:text-ember-500 file:font-bold file:text-[9px] file:uppercase file:cursor-pointer file:rounded-lg hover:file:bg-ink-700"
+                                className="text-[10px] text-stone-600 file:mr-3 file:py-2 file:px-4 file:border file:border-stone-200 file:bg-white file:text-ink file:font-bold file:text-[9px] file:uppercase file:cursor-pointer file:rounded-lg hover:file:bg-stone-50"
                             />
                         </div>
                         <textarea
                             value={script}
                             onChange={(e) => { setScript(e.target.value); setResult(null); setEditableCharacters([]); }}
                             placeholder="Paste your script here..."
-                            className="flex-1 w-full bg-ink-950 border border-ink-700 rounded-xl p-4 font-mono text-xs text-steel-300 outline-none resize-none focus:border-ember-500 transition-colors"
+                            className="flex-1 w-full bg-white border border-stone-200 rounded-xl p-4 font-body text-xs text-ink outline-none resize-none focus:border-stone-400 transition-colors"
                         />
-                        <p className="text-[9px] font-mono text-steel-600 mt-2 italic">{getFormatHint()}</p>
+                        <p className="text-[9px] font-body text-stone-500 mt-2 italic">{getFormatHint()}</p>
                     </div>
 
-                    <div className="w-96 flex flex-col p-6 bg-ink-950/50">
+                    <div className="w-96 flex flex-col p-6 bg-stone-50">
                         <button
                             onClick={handleParse}
                             disabled={!script.trim() || isParsing}
-                            className="w-full py-3 mb-6 bg-ember-500 hover:bg-ember-400 text-ink-950 font-bold text-xs uppercase tracking-widest rounded-lg disabled:opacity-30 transition-all flex items-center justify-center gap-2"
+                            className="w-full py-3 mb-6 bg-ink hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-widest rounded-lg disabled:opacity-30 transition-all flex items-center justify-center gap-2"
                         >
                             {isParsing ? (
                                 <>
-                                    <div className="w-4 h-4 rounded-full border-2 border-ink-950 border-t-transparent animate-spin" />
+                                    <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
                                     Parsing...
                                 </>
                             ) : (
@@ -282,35 +282,35 @@ export function ScriptImportModal({ project, onClose, onImport }: Props) {
 
                         {result && !isParsing && (
                             <div className="flex-1 overflow-y-auto space-y-4">
-                                <div className={`p-4 border rounded-lg ${result.success ? 'bg-green-950/30 border-green-700/50' : 'bg-red-950/30 border-red-700/50'}`}> 
-                                    <p className={`font-bold text-sm ${result.success ? 'text-green-400' : 'text-red-400'}`}> 
+                                <div className={`p-4 border rounded-lg ${result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}> 
+                                    <p className={`font-bold text-sm ${result.success ? 'text-green-700' : 'text-red-700'}`}> 
                                         {result.success ? '✓ Parse Successful' : '✗ Parse Failed'}
                                     </p>
                                     {result.errors.map((err, i) => (
-                                        <p key={i} className="text-xs text-red-300 mt-1">{err}</p>
+                                        <p key={i} className="text-xs text-red-600 mt-1">{err}</p>
                                     ))} 
                                 </div>
 
                                 {result.success && (
                                     <> 
                                         <div className="grid grid-cols-3 gap-3">  
-                                            <div className="bg-ink-800 rounded-lg p-3 text-center">  
-                                                <p className="text-2xl font-display text-ember-500">{result.pages.length}</p>
-                                                <p className="text-[9px] font-mono text-steel-500 uppercase">{getPageLabel()}</p>
+                                            <div className="bg-white border border-stone-200 rounded-lg p-3 text-center">  
+                                                <p className="text-2xl font-display text-ink">{result.pages.length}</p>
+                                                <p className="text-[9px] font-body text-stone-600 uppercase">{getPageLabel()}</p>
                                             </div>
-                                            <div className="bg-ink-800 rounded-lg p-3 text-center">  
-                                                <p className="text-2xl font-display text-ember-500">{totalPanels}</p>
-                                                <p className="text-[9px] font-mono text-steel-500 uppercase">{getPanelLabel()}</p>
+                                            <div className="bg-white border border-stone-200 rounded-lg p-3 text-center">  
+                                                <p className="text-2xl font-display text-ink">{totalPanels}</p>
+                                                <p className="text-[9px] font-body text-stone-600 uppercase">{getPanelLabel()}</p>
                                             </div>
-                                            <div className="bg-ink-800 rounded-lg p-3 text-center">  
-                                                <p className="text-2xl font-display text-ember-500">{editableCharacters.length}</p>
-                                                <p className="text-[9px] font-mono text-steel-500 uppercase">Characters</p>
+                                            <div className="bg-white border border-stone-200 rounded-lg p-3 text-center">  
+                                                <p className="text-2xl font-display text-ink">{editableCharacters.length}</p>
+                                                <p className="text-[9px] font-body text-stone-600 uppercase">Characters</p>
                                             </div>
                                         </div>
 
                                         <button
                                             onClick={handleImport}
-                                            className="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all mt-4"
+                                            className="w-full py-4 bg-ink hover:bg-stone-800 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all mt-4"
                                         >
                                             Import {result.pages.length} {getPageLabel()} → Storyboard
                                         </button>

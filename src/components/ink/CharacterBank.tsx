@@ -110,17 +110,17 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[600] flex items-center justify-center p-4">
-            <div className="bg-ink-950 border border-ink-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/10 z-[600] flex items-center justify-center p-4">
+            <div className="bg-card border border-stone-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-ink-800">
+                <div className="flex items-center justify-between p-4 border-b border-stone-200">
                     <div className="flex items-center gap-3">
                         <User size={20} className="text-ember-500" />
-                        <h2 className="font-mono text-sm uppercase tracking-widest text-steel-200">Character Bank</h2>
+                        <h2 className="font-body text-sm uppercase tracking-widest text-ink">Character Bank</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-ink-800 rounded-lg text-steel-400 hover:text-steel-200 transition-colors"
+                        className="p-2 hover:bg-stone-100 rounded-lg text-stone-400 hover:text-stone-700 transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -132,7 +132,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                     {!isAdding && !editingId && (
                         <button
                             onClick={handleStartAdd}
-                            className="w-full py-3 border-2 border-dashed border-ink-700 rounded-xl text-steel-500 hover:text-ember-500 hover:border-ember-500 transition-colors flex items-center justify-center gap-2 font-mono text-sm"
+                            className="w-full py-3 border-2 border-dashed border-stone-200 rounded-xl text-stone-500 hover:text-ember-500 hover:border-ember-500 transition-colors flex items-center justify-center gap-2 font-body text-sm"
                         >
                             <Plus size={16} />
                             Add New Character
@@ -141,38 +141,38 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
 
                     {/* Add/Edit Form */}
                     {(isAdding || editingId) && (
-                        <div className="bg-ink-900 border border-ink-700 rounded-xl p-4 space-y-4">
-                            <h3 className="font-mono text-xs uppercase tracking-widest text-ember-500 mb-3">
+                        <div className="bg-paper border border-stone-200 rounded-xl p-4 space-y-4">
+                            <h3 className="font-body text-xs uppercase tracking-widest text-ember-500 mb-3">
                                 {isAdding ? 'New Character' : 'Edit Character'}
                             </h3>
 
                             {/* Basic info */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-mono text-steel-500 uppercase mb-1">Name *</label>
+                                    <label className="block text-[10px] font-body text-stone-600 uppercase mb-1">Name *</label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="e.g., Elias"
-                                        className="w-full px-3 py-2 bg-ink-950 border border-ink-700 rounded-lg text-steel-200 text-sm placeholder:text-steel-700 focus:outline-none focus:border-ember-500"
+                                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-ink text-sm placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-mono text-steel-500 uppercase mb-1">Quick Description</label>
+                                    <label className="block text-[10px] font-body text-stone-600 uppercase mb-1">Quick Description</label>
                                     <input
                                         type="text"
                                         value={formData.description}
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                         placeholder="e.g., The protagonist"
-                                        className="w-full px-3 py-2 bg-ink-950 border border-ink-700 rounded-lg text-steel-200 text-sm placeholder:text-steel-700 focus:outline-none focus:border-ember-500"
+                                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-ink text-sm placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
                                     />
                                 </div>
                             </div>
 
                             {/* Appearance fields */}
                             <div className="space-y-3">
-                                <p className="text-[10px] font-mono text-steel-500 uppercase">Physical Appearance</p>
+                                <p className="text-[10px] font-body text-stone-600 uppercase">Physical Appearance</p>
                                 
                                 <div className="grid grid-cols-3 gap-3">
                                     <AppearanceField label="Age" value={formData.appearance.age || ''} onChange={(v) => updateAppearance('age', v)} placeholder="e.g., mid-20s" />
@@ -203,14 +203,14 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                             <div className="flex gap-2 pt-2">
                                 <button
                                     onClick={handleCancel}
-                                    className="px-4 py-2 text-steel-400 hover:text-steel-200 font-mono text-xs uppercase tracking-widest transition-colors"
+                                    className="px-4 py-2 text-stone-600 hover:text-stone-800 font-body text-xs uppercase tracking-widest transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={!formData.name.trim()}
-                                    className="flex-1 py-2 bg-ember-500 hover:bg-ember-400 text-ink-950 rounded-lg font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    className="flex-1 py-2 bg-ember-500 hover:bg-ember-400 text-white rounded-lg font-body text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                                 >
                                     <Save size={14} />
                                     Save Character
@@ -233,36 +233,36 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                             {characters.map(char => (
                                 <div 
                                     key={char.id} 
-                                    className={`bg-ink-900 border rounded-xl overflow-hidden transition-colors ${
-                                        editingId === char.id ? 'border-ember-500' : 'border-ink-700'
+                                    className={`bg-card border rounded-xl overflow-hidden transition-colors ${
+                                        editingId === char.id ? 'border-ember-500' : 'border-stone-200'
                                     }`}
                                 >
                                     <div className="flex items-center gap-3 p-3">
-                                        <div className="w-10 h-10 rounded-full bg-ink-800 flex items-center justify-center text-ember-500 font-bold text-lg">
+                                        <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-ember-500 font-bold text-lg">
                                             {char.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-steel-200 truncate">{char.name}</p>
-                                            <p className="text-xs text-steel-500 truncate">{char.description || 'No description'}</p>
+                                            <p className="font-bold text-ink truncate">{char.name}</p>
+                                            <p className="text-xs text-stone-500 truncate">{char.description || 'No description'}</p>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <button
                                                 onClick={() => setExpandedId(expandedId === char.id ? null : char.id)}
-                                                className="p-2 text-steel-500 hover:text-steel-200 transition-colors"
+                                                className="p-2 text-stone-500 hover:text-stone-700 transition-colors"
                                                 title="View details"
                                             >
                                                 {expandedId === char.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                             </button>
                                             <button
                                                 onClick={() => handleStartEdit(char)}
-                                                className="p-2 text-steel-500 hover:text-ember-500 transition-colors"
+                                                className="p-2 text-stone-500 hover:text-ember-500 transition-colors"
                                                 title="Edit"
                                             >
                                                 <Edit2 size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(char.id)}
-                                                className="p-2 text-steel-500 hover:text-red-500 transition-colors"
+                                                className="p-2 text-stone-500 hover:text-red-500 transition-colors"
                                                 title="Delete"
                                             >
                                                 <Trash2 size={16} />
@@ -273,8 +273,8 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                                     {/* Expanded appearance details */}
                                     {expandedId === char.id && char.appearance && (
                                         <div className="px-3 pb-3 pt-0">
-                                            <div className="bg-ink-950 rounded-lg p-3 text-xs space-y-1">
-                                                <p className="font-mono text-[10px] text-steel-600 uppercase mb-2">Appearance Details</p>
+                                            <div className="bg-paper rounded-lg p-3 text-xs space-y-1">
+                                                <p className="font-body text-[10px] text-stone-500 uppercase mb-2">Appearance Details</p>
                                                 {char.appearance.age && <DetailRow label="Age" value={char.appearance.age} />}
                                                 {char.appearance.gender && <DetailRow label="Gender" value={char.appearance.gender} />}
                                                 {char.appearance.ethnicity && <DetailRow label="Ethnicity" value={char.appearance.ethnicity} />}
@@ -299,8 +299,8 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-ink-800">
-                    <p className="text-[10px] text-steel-600 font-mono text-center">
+                <div className="p-4 border-t border-stone-200">
+                    <p className="text-[10px] text-stone-500 font-body text-center">
                         {characters.length} character{characters.length !== 1 ? 's' : ''} • Character appearances are included in image generation prompts
                     </p>
                 </div>
@@ -317,13 +317,13 @@ function AppearanceField({ label, value, onChange, placeholder }: {
 }) {
     return (
         <div>
-            <label className="block text-[10px] font-mono text-steel-600 uppercase mb-1">{label}</label>
+            <label className="block text-[10px] font-body text-stone-500 uppercase mb-1">{label}</label>
             <input
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full px-2 py-1.5 bg-ink-950 border border-ink-700 rounded text-steel-300 text-xs placeholder:text-steel-700 focus:outline-none focus:border-ember-500"
+                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded text-ink text-xs placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
             />
         </div>
     );
@@ -332,8 +332,8 @@ function AppearanceField({ label, value, onChange, placeholder }: {
 function DetailRow({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex">
-            <span className="text-steel-600 w-24 flex-shrink-0">{label}:</span>
-            <span className="text-steel-300">{value}</span>
+            <span className="text-stone-500 w-24 flex-shrink-0">{label}:</span>
+            <span className="text-ink">{value}</span>
         </div>
     );
 }

@@ -97,24 +97,24 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
   setShowSplitView,
 }) => {
   return (
-    <header className={`border-b flex flex-col z-[100] backdrop-blur-xl transition-all shrink-0 ${showGutters ? 'bg-amber-50/80 border-amber-200' : 'bg-ink-900/40 border-ink-750'}`}>
+    <header className={`border-b flex flex-col z-[100] transition-all shrink-0 ${showGutters ? 'bg-amber-50/80 border-amber-200' : 'bg-card border-stone-200'}`}>
       {/* Top Row: Module identity + breadcrumb + tabs */}
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center gap-5 overflow-hidden">
           {/* Module identity */}
           <div className="hidden md:flex flex-col gap-0.5 min-w-0">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${showGutters ? 'bg-black' : 'bg-ember-500'}`} />
-              <h1 className={`text-lg font-display font-bold tracking-tight ${showGutters ? 'text-black' : 'text-steel-100'}`}>
+              <div className={`w-2 h-2 rounded-full ${showGutters ? 'bg-black' : 'bg-ink'}`} />
+              <h1 className={`text-lg font-display font-bold tracking-tight ${showGutters ? 'text-black' : 'text-ink'}`}>
                 Storyboard
               </h1>
             </div>
-            <div className={`flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-[0.15em] pl-4 ${showGutters ? 'text-gray-500' : 'text-steel-600'}`}>
+            <div className={`flex items-center gap-1.5 text-[9px] font-body uppercase tracking-[0.15em] pl-4 ${showGutters ? 'text-gray-500' : 'text-stone-600'}`}>
               <span>{activeProject?.title}</span>
               <span className="opacity-30">/</span>
-              <span className={showGutters ? 'text-gray-700' : 'text-ember-400'}>{activeIssue?.title}</span>
+              <span className={showGutters ? 'text-gray-700' : 'text-ink'}>{activeIssue?.title}</span>
               <span className="opacity-30">/</span>
-              <span className={showGutters ? 'text-black' : 'text-steel-300'}>
+              <span className={showGutters ? 'text-black' : 'text-stone-700'}>
                 {activeTab === 'canvas' ? `Page ${activePage?.number || '-'}` : 'Guide'}
               </span>
             </div>
@@ -127,10 +127,10 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
               <SyncIndicator status={syncStatus} />
               <button
                 onClick={signOut}
-                className={`text-[10px] font-mono uppercase tracking-widest transition-colors ${
+                className={`text-[10px] font-body uppercase tracking-widest transition-colors ${
                   showGutters
                     ? 'text-gray-500 hover:text-black'
-                    : 'text-steel-500 hover:text-ember-500'
+                    : 'text-stone-600 hover:text-ink'
                 }`}
                 title="Sign out"
               >
@@ -139,31 +139,31 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
             </div>
           )}
           {/* Tab Navigation */}
-          <div className={`flex items-center gap-1 rounded-full border p-1 ${showGutters ? 'bg-gray-100 border-gray-300' : 'bg-ink-900 border-ink-700'}`}>
+          <div className={`flex items-center gap-1 rounded-full border p-1 ${showGutters ? 'bg-gray-100 border-gray-300' : 'bg-card border-stone-200'}`}>
             <button
               onClick={() => setActiveTab('canvas')}
-              className={`font-mono text-[10px] px-5 py-1.5 tracking-widest transition-all rounded-full ${
+              className={`font-body text-[10px] px-5 py-1.5 tracking-widest transition-all rounded-full ${
                 activeTab === 'canvas'
                   ? showGutters
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-ember-500 text-ink-950 shadow-lg'
+                    : 'bg-ink text-card shadow-lg'
                   : showGutters
                     ? 'text-gray-600 hover:text-black'
-                    : 'text-steel-400 hover:text-steel-200'
+                    : 'text-stone-600 hover:bg-stone-100'
               }`}
             >
               CANVAS
             </button>
             <button
               onClick={() => setActiveTab('guide')}
-              className={`font-mono text-[10px] px-5 py-1.5 tracking-widest transition-all rounded-full ${
+              className={`font-body text-[10px] px-5 py-1.5 tracking-widest transition-all rounded-full ${
                 activeTab === 'guide'
                   ? showGutters
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-ember-500 text-ink-950 shadow-lg'
+                    : 'bg-ink text-card shadow-lg'
                   : showGutters
                     ? 'text-gray-600 hover:text-black'
-                    : 'text-steel-400 hover:text-steel-200'
+                    : 'text-stone-600 hover:bg-stone-100'
               }`}
             >
               GUIDE
@@ -173,18 +173,18 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
       </div>
 
       {/* Toolbar Row: Canvas Controls and Action Buttons */}
-      <div className="flex items-center justify-between gap-4 px-6 py-2 border-t border-ink-800/50">
+      <div className="flex items-center justify-between gap-4 px-6 py-2 border-t border-stone-200">
         {/* Left Side: Canvas Controls — grouped */}
         <div className="flex items-center gap-2">
           {/* Undo/Redo group */}
-          <div className={`flex items-center gap-0.5 rounded-lg border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-ink-700 bg-ink-850'}`}>
+          <div className={`flex items-center gap-0.5 rounded-lg border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-stone-200 bg-card'}`}>
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={!inkCanUndo}
               className={`p-1.5 rounded transition-all disabled:opacity-20 disabled:cursor-not-allowed ${
                 showGutters 
                   ? 'hover:bg-gray-200 text-gray-600' 
-                  : 'hover:bg-ink-700 text-steel-400 hover:text-steel-200'
+                  : 'hover:bg-stone-100 text-stone-600'
               }`}
               title="Undo (Ctrl+Z)"
             >
@@ -196,7 +196,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
               className={`p-1.5 rounded transition-all disabled:opacity-20 disabled:cursor-not-allowed ${
                 showGutters 
                   ? 'hover:bg-gray-200 text-gray-600' 
-                  : 'hover:bg-ink-700 text-steel-400 hover:text-steel-200'
+                  : 'hover:bg-stone-100 text-stone-600'
               }`}
               title="Redo (Ctrl+Y)"
             >
@@ -205,7 +205,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           </div>
 
           {/* View controls group */}
-          <div className={`flex items-center gap-0.5 rounded-lg border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-ink-700 bg-ink-850'}`}>
+          <div className={`flex items-center gap-0.5 rounded-lg border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-stone-200 bg-card'}`}>
             <ZoomControls
               zoomEnabled={zoomEnabled}
               setZoomEnabled={setZoomEnabled}
@@ -220,10 +220,10 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                 showSpreadView
                   ? showGutters 
                     ? 'bg-ember-500 text-white' 
-                    : 'bg-ember-500 text-ink-950'
+                    : 'bg-ink text-card'
                   : showGutters 
                     ? 'hover:bg-gray-200 text-gray-600' 
-                    : 'hover:bg-ink-700 text-steel-400 hover:text-steel-200'
+                    : 'hover:bg-stone-100 text-stone-600'
               }`}
               title="Spread View"
             >
@@ -238,10 +238,10 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                   showSplitView
                     ? showGutters 
                       ? 'bg-ember-500 text-white' 
-                      : 'bg-ember-500 text-ink-950'
+                      : 'bg-ink text-card'
                     : showGutters 
                       ? 'hover:bg-gray-200 text-gray-600' 
-                      : 'hover:bg-ink-700 text-steel-400 hover:text-steel-200'
+                      : 'hover:bg-stone-100 text-stone-600'
                 }`}
                 title="Script Split View"
               >
@@ -257,23 +257,23 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className={`font-mono text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-ink-850 border-ink-700 text-steel-400 hover:bg-ink-800 hover:text-steel-200'}`}
+              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
             >
               {exporting ? <Icons.Loader /> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
               {exporting ? 'EXPORTING...' : 'EXPORT'}
             </button>
             {showExportMenu && (
-              <div className={`absolute top-full right-0 mt-2 w-56 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-ink-900 border border-ink-700'}`}>
-                <div className={`px-4 py-2 text-[9px] font-mono uppercase tracking-widest ${showGutters ? 'text-gray-400 border-b border-gray-200' : 'text-steel-600 border-b border-ink-800'}`}>Images</div>
-                <button onClick={handleExportPage} className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}><FileImage size={14} /><span>ZIP Page Images</span></button>
-                <button onClick={handleExportIssue} className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}><FileImage size={14} /><span>CBZ Issue</span></button>
-                <div className={`px-4 py-2 text-[9px] font-mono uppercase tracking-widest ${showGutters ? 'text-gray-400 border-y border-gray-200' : 'text-steel-600 border-y border-ink-800'}`}>PDF</div>
-                <button onClick={handleExportPagePDF} className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}><FileImage size={14} /><span>PDF Page</span></button>
-                <button onClick={handleExportIssuePDF} className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}><FileImage size={14} /><span>PDF Issue</span></button>
+              <div className={`absolute top-full right-0 mt-2 w-56 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-card border border-stone-200'}`}>
+                <div className={`px-4 py-2 text-[9px] font-body uppercase tracking-widest ${showGutters ? 'text-gray-400 border-b border-gray-200' : 'text-stone-500 border-b border-stone-200'}`}>Images</div>
+                <button onClick={handleExportPage} className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}><FileImage size={14} /><span>ZIP Page Images</span></button>
+                <button onClick={handleExportIssue} className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}><FileImage size={14} /><span>CBZ Issue</span></button>
+                <div className={`px-4 py-2 text-[9px] font-body uppercase tracking-widest ${showGutters ? 'text-gray-400 border-y border-gray-200' : 'text-stone-500 border-y border-stone-200'}`}>PDF</div>
+                <button onClick={handleExportPagePDF} className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}><FileImage size={14} /><span>PDF Page</span></button>
+                <button onClick={handleExportIssuePDF} className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}><FileImage size={14} /><span>PDF Issue</span></button>
               </div>
             )}
           </div>
-          <button disabled={batching || !activePage?.panels.length} onClick={generatePage} className={`font-mono text-[10px] px-4 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 disabled:opacity-20 active:scale-95 ${showGutters ? 'bg-black border-black text-white hover:bg-gray-800' : 'bg-ember-500 border-ember-500 text-ink-950 hover:bg-ember-400 shadow-lg shadow-ember-500/20'}`}>
+          <button disabled={batching || !activePage?.panels.length} onClick={generatePage} className={`font-body text-[10px] px-4 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 disabled:opacity-20 active:scale-95 ${showGutters ? 'bg-black border-black text-white hover:bg-gray-800' : 'bg-ink border-ink text-card hover:bg-stone-900 shadow-lg'}`}>
             {batching ? <Icons.Loader /> : <Icons.Magic />}{batching ? `INKING WITH ${(activeProject?.imageProvider || 'AI').toUpperCase()}...` : 'AUTO-INK'}
           </button>
           {/* Generate All Button */}
@@ -291,12 +291,12 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                   <button
                     onClick={handleGenerateAll}
                     disabled={isGeneratingAll || batching}
-                    className={`font-mono text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 disabled:opacity-20 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-ink-850 border-ink-700 text-steel-400 hover:bg-ink-800 hover:text-steel-200'}`}
+                    className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 disabled:opacity-20 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
                   >
                     <Sparkles className="w-4 h-4" />
                     GENERATE ALL
                   </button>
-                  <p className="text-[9px] font-mono text-steel-600 mt-1 max-w-[200px] text-center">
+                  <p className="text-[9px] font-body text-stone-600 mt-1 max-w-[200px] text-center">
                     Batch generation may consume significant API credits depending on your provider and plan. Review the panel count before proceeding.
                   </p>
                 </>
@@ -307,53 +307,53 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowTemplateMenu(!showTemplateMenu)}
-              className={`font-mono text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-ink-850 border-ink-700 text-steel-400 hover:bg-ink-800 hover:text-steel-200'}`}
+              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
               title="Apply page template"
             >
               <LayoutGrid size={16} />
               TEMPLATES
             </button>
             {showTemplateMenu && (
-              <div className={`absolute top-full right-0 mt-2 w-48 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-ink-900 border border-ink-700'}`}>
+              <div className={`absolute top-full right-0 mt-2 w-48 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-card border border-stone-200'}`}>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: '2x2' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <Grid2X2 size={16} /> 2×2 Grid
                 </button>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: '3x3' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <Grid3X3 size={16} /> 3×3 Grid
                 </button>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: '2x3' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <Columns size={16} /> 2×3 Rows
                 </button>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: 'manga-right' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <LayoutGrid size={16} /> Manga (R→L)
                 </button>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: 'manga-left' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <LayoutGrid size={16} /> Manga (L→R)
                 </button>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: 'single' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <Square size={16} /> Single Splash
                 </button>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: 'double-wide' }); setShowTemplateMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-mono transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-steel-300 hover:bg-ember-500 hover:text-ink-950'}`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
                 >
                   <RectangleHorizontal size={16} /> Double Wide
                 </button>
@@ -364,7 +364,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           {activeIssue?.scriptText && (
             <button
               onClick={() => setShowScriptPanel(!showScriptPanel)}
-              className={`font-mono text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg ${showScriptPanel ? 'bg-ember-500 border-ember-400 text-ink-950' : showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-ink-800 border-ink-700 text-steel-200 hover:bg-ink-700'}`}
+              className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg ${showScriptPanel ? 'bg-ink border-ink text-card' : showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
               title="Toggle script reference panel"
             >
               <FileText size={16} />
@@ -374,7 +374,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           {/* Character Bank */}
           <button
             onClick={() => setShowCharacterBank(true)}
-            className={`font-mono text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-ink-800 border-ink-700 text-steel-200 hover:bg-ink-700'}`}
+            className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
             title="Manage characters"
           >
             <Users size={16} />
@@ -384,7 +384,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <button
             onClick={() => setShowReadThrough(true)}
             disabled={totalIssuePanels === 0}
-            className={`font-mono text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg disabled:opacity-30 ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-ink-800 border-ink-700 text-steel-200 hover:bg-ink-700'}`}
+            className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg disabled:opacity-30 ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
             title="Cinematic presentation mode"
           >
             <Play size={16} />
@@ -394,7 +394,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           {activeIssue && characters.length > 0 && (
             <button
               onClick={handleAutoLink}
-              className={`font-mono text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-ink-850 border-ink-700 text-steel-400 hover:bg-ink-800 hover:text-steel-200'}`}
+              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
               title="Scan panels and auto-link characters by name"
             >
               <Link2 size={14} />
@@ -413,13 +413,13 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
               // No pages at all - create one first
               dispatch({ type: 'ADD_PAGE', issueId: activeIssue.id });
             }
-          }} className={`font-display text-xl px-6 py-2 tracking-widest transition-all rounded-full shadow-lg active:translate-y-1 ${showGutters ? 'bg-black text-white hover:bg-gray-800' : 'bg-ember-500 hover:bg-ember-400 text-ink-950'}`}>
+          }} className={`font-display text-xl px-6 py-2 tracking-widest transition-all rounded-full shadow-lg active:translate-y-1 ${showGutters ? 'bg-black text-white hover:bg-gray-800' : 'bg-ink hover:bg-stone-900 text-card'}`}>
             ADD FRAME
           </button>
         </div>
       </div>
       {/* Accent underline */}
-      <div className={`h-[1px] ${showGutters ? 'bg-gray-300' : 'header-gradient-ember'}`} />
+      <div className={`h-[1px] ${showGutters ? 'bg-gray-300' : 'bg-stone-200'}`} />
     </header>
   );
 };

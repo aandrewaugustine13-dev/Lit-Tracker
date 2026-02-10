@@ -363,62 +363,62 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
     return (
         <div>
             <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="text-xs font-mono text-steel-500 uppercase tracking-widest">Story</h2>
+                <h2 className="text-xs font-body text-stone-600 uppercase tracking-widest">Story</h2>
                 <div className="flex gap-2">
                     <button
                         onClick={() => {
                             const i = activeProject?.issueType === 'issue' ? 'chapter' : 'issue';
                             if (activeProject) dispatch({ type: 'UPDATE_PROJECT', id: activeProject.id, updates: { issueType: i } });
                         }}
-                        className="text-[9px] font-mono text-steel-600 hover:text-ember-500 uppercase transition-colors"
+                        className="text-[9px] font-body text-stone-600 hover:text-ink uppercase transition-colors"
                         title="Switch Label Type"
                     >
                         Mode: {activeProject?.issueType}
                     </button>
-                    <button onClick={onOpenProjects} className="text-steel-400 hover:text-ember-500 transition-colors">
+                    <button onClick={onOpenProjects} className="text-stone-600 hover:text-ink transition-colors">
                         <Icons.Folder />
                     </button>
                 </div>
             </div>
 
-            <div className="p-3 bg-ink-800 rounded border border-ink-700 shadow-inner flex flex-col gap-2">
-                <p className="font-display text-lg text-steel-200 tracking-wide truncate">{activeProject?.title}</p>
+            <div className="p-3 bg-card rounded border border-stone-200 shadow-sm flex flex-col gap-2">
+                <p className="font-display text-lg text-ink tracking-wide truncate">{activeProject?.title}</p>
                 <button
                     onClick={onOpenScriptImport}
-                    className="w-full mt-2 py-2 text-[10px] font-mono text-cyan-500 border border-cyan-800/50 rounded-lg hover:bg-cyan-900/20 uppercase tracking-widest transition-colors"
+                    className="w-full mt-2 py-2 text-[10px] font-body text-ink border border-stone-200 rounded-lg hover:bg-stone-100 uppercase tracking-widest transition-colors"
                 >
                     📜 Import Script
                 </button>
 
                 <div className="flex flex-col gap-2 mt-3">
-                    <p className="text-[9px] font-mono text-steel-500 uppercase tracking-widest">Image Provider</p>
+                    <p className="text-[9px] font-body text-stone-600 uppercase tracking-widest">Image Provider</p>
                     <div className="grid grid-cols-2 gap-1.5">
                         <button
                             onClick={handleGeminiClick}
-                            className={`text-[9px] font-mono py-2 rounded-lg transition-all ${
+                            className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'gemini'
-                                    ? 'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-600/30'
-                                    : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                    ? 'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-sm'
+                                    : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                         >
                             GEMINI
                         </button>
                         <button
                             onClick={handleLeonardoClick}
-                            className={`text-[9px] font-mono py-2 rounded-lg transition-all ${
+                            className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'leonardo'
-                                    ? 'bg-orange-600 hover:bg-orange-500 text-white font-bold shadow-lg shadow-orange-600/30'
-                                    : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                    ? 'bg-orange-600 hover:bg-orange-500 text-white font-bold shadow-sm'
+                                    : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                         >
                             LEONARDO
                         </button>
                         <button
                             onClick={handleGrokClick}
-                            className={`text-[9px] font-mono py-2 rounded-lg transition-all ${
+                            className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'grok'
-                                    ? 'bg-gray-600 hover:bg-gray-500 text-white font-bold shadow-lg shadow-gray-600/30'
-                                    : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                    ? 'bg-gray-600 hover:bg-gray-500 text-white font-bold shadow-sm'
+                                    : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                             title="xAI Grok - Image generation may be limited"
                         >
@@ -426,10 +426,10 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                         </button>
                         <button
                             onClick={handleFalClick}
-                            className={`text-[9px] font-mono py-2 rounded-lg transition-all ${
+                            className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'fal'
-                                    ? 'bg-ember-500 hover:bg-ember-400 text-ink-950 font-bold shadow-lg shadow-ember-500/30'
-                                    : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                    ? 'bg-ember-500 hover:bg-ember-400 text-white font-bold shadow-sm'
+                                    : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                         >
                             FAL
@@ -438,10 +438,10 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                     <div className="grid grid-cols-2 gap-1.5 mt-1.5">
                         <button
                             onClick={handleSeaArtClick}
-                            className={`text-[9px] font-mono py-2 rounded-lg transition-all ${
+                            className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'seaart'
-                                    ? 'bg-pink-600 hover:bg-pink-500 text-white font-bold shadow-lg shadow-pink-600/30'
-                                    : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                    ? 'bg-pink-600 hover:bg-pink-500 text-white font-bold shadow-sm'
+                                    : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                             title="SeaArt - Creative image generation"
                         >
@@ -449,10 +449,10 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                         </button>
                         <button
                             onClick={handleOpenAIClick}
-                            className={`text-[9px] font-mono py-2 rounded-lg transition-all ${
+                            className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'openai'
-                                    ? 'bg-green-600 hover:bg-green-500 text-white font-bold shadow-lg shadow-green-600/30'
-                                    : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                    ? 'bg-green-600 hover:bg-green-500 text-white font-bold shadow-sm'
+                                    : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                             title="OpenAI GPT Image - gpt-image-1"
                         >
@@ -462,8 +462,8 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                 </div>
 
                 {/* API Key Input */}
-                <div className="mt-3 pt-3 border-t border-ink-700 space-y-2">
-                    <label className="text-[9px] font-mono text-steel-500 uppercase flex justify-between items-center">
+                <div className="mt-3 pt-3 border-t border-stone-200 space-y-2">
+                    <label className="text-[9px] font-body text-stone-600 uppercase flex justify-between items-center">
                         <span>
                             {activeProject?.imageProvider === 'gemini' ? 'Gemini' :
                              activeProject?.imageProvider === 'leonardo' ? 'Leonardo' :
@@ -480,7 +480,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             placeholder="Enter API Key..."
                             value={sidebarKey}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSidebarKey(e.target.value)}
-                            className="flex-1 bg-ink-950 border border-ink-700 rounded-lg px-3 py-2 text-[10px] text-steel-300 focus:border-ember-500 outline-none"
+                            className="flex-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-[10px] text-ink focus:border-ink outline-none"
                         />
                         <button
                             onClick={() => {
@@ -501,7 +501,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                                     alert('API key saved!');
                                 }
                             }}
-                            className="bg-ember-500 hover:bg-ember-400 text-ink-950 px-4 rounded-lg text-[9px] transition-colors font-bold"
+                            className="bg-ember-500 hover:bg-ember-400 text-white px-4 rounded-lg text-[9px] transition-colors font-bold"
                         >
                             SET
                         </button>
@@ -511,7 +511,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             href="https://aistudio.google.com/app/apikey" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors"
+                            className="text-[8px] text-stone-500 italic hover:underline hover:text-ink cursor-pointer transition-colors"
                         >
                             Get key from ai.google.dev
                         </a>
@@ -520,7 +520,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             href="https://leonardo.ai/settings" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors"
+                            className="text-[8px] text-stone-500 italic hover:underline hover:text-ink cursor-pointer transition-colors"
                         >
                             Get key from leonardo.ai
                         </a>
@@ -529,7 +529,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             href="https://console.x.ai" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors"
+                            className="text-[8px] text-stone-500 italic hover:underline hover:text-ink cursor-pointer transition-colors"
                         >
                             Get key from console.x.ai (experimental)
                         </a>
@@ -538,7 +538,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             href="https://fal.ai/dashboard/keys" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors"
+                            className="text-[8px] text-stone-500 italic hover:underline hover:text-ink cursor-pointer transition-colors"
                         >
                             Get key from fal.ai
                         </a>
@@ -547,7 +547,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             href="https://seaart.ai/api" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors"
+                            className="text-[8px] text-stone-500 italic hover:underline hover:text-ink cursor-pointer transition-colors"
                         >
                             Get key from seaart.ai/api
                         </a>
@@ -556,7 +556,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             href="https://platform.openai.com/api-keys" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-[8px] text-steel-600 italic hover:underline hover:text-steel-400 cursor-pointer transition-colors"
+                            className="text-[8px] text-stone-500 italic hover:underline hover:text-ink cursor-pointer transition-colors"
                         >
                             Get key from platform.openai.com
                         </a>
