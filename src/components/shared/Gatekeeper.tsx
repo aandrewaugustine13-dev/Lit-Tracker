@@ -110,7 +110,12 @@ const Gatekeeper: React.FC = () => {
                     <div className="flex items-center gap-6 text-sm text-zinc-400">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
-                        <span>{issueCount} {project.issueType === 'issue' ? 'issue' : 'chapter'}{issueCount !== 1 ? 's' : ''}</span>
+                        <span>
+                          {issueCount} {issueCount === 1 
+                            ? (project.issueType === 'issue' ? 'issue' : 'chapter')
+                            : (project.issueType === 'issue' ? 'issues' : 'chapters')
+                          }
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Layers className="w-4 h-4" />
