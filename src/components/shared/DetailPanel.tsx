@@ -63,13 +63,13 @@ const Section: React.FC<{
   count?: number;
   accentColor?: string;
   children: React.ReactNode;
-}> = ({ title, icon, count, accentColor = 'text-steel-500', children }) => (
-  <div className="py-4 border-t border-ink-800/60">
+}> = ({ title, icon, count, accentColor = 'text-stone-500', children }) => (
+  <div className="py-4 border-t border-stone-200">
     <div className="flex items-center gap-2 mb-3 px-5">
       <span className={accentColor}>{icon}</span>
-      <span className="text-[10px] font-mono font-bold text-steel-500 uppercase tracking-[0.15em]">{title}</span>
+      <span className="text-[10px] font-body font-bold text-stone-600 uppercase tracking-[0.15em]">{title}</span>
       {count !== undefined && count > 0 && (
-        <span className="text-[9px] font-mono text-steel-600 bg-ink-800 px-1.5 py-0.5 rounded">{count}</span>
+        <span className="text-[9px] font-body text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded">{count}</span>
       )}
     </div>
     <div className="px-5">{children}</div>
@@ -88,16 +88,16 @@ const EntityChip: React.FC<{
 }> = ({ label, sublabel, icon, accentBg, accentText, onClick }) => (
   <button
     onClick={onClick}
-    className={`group flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg border border-ink-800/60 bg-ink-900/40 hover:bg-ink-800 hover:border-ink-700 transition-all`}
+    className={`group flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 hover:border-stone-300 transition-all`}
   >
     <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${accentBg} ${accentText}`}>
       {icon}
     </div>
     <div className="min-w-0 flex-1">
-      <p className="text-[12px] font-semibold text-steel-200 truncate group-hover:text-steel-100 transition-colors">{label}</p>
-      {sublabel && <p className="text-[9px] font-mono text-steel-600 truncate">{sublabel}</p>}
+      <p className="text-[12px] font-semibold text-ink truncate group-hover:text-ink transition-colors">{label}</p>
+      {sublabel && <p className="text-[9px] font-body text-stone-500 truncate">{sublabel}</p>}
     </div>
-    <ChevronRight size={12} className="text-steel-700 group-hover:text-steel-500 transition-colors flex-shrink-0" />
+    <ChevronRight size={12} className="text-stone-400 group-hover:text-stone-600 transition-colors flex-shrink-0" />
   </button>
 );
 
@@ -108,9 +108,9 @@ const PanelThumb: React.FC<{
 }> = ({ appearance }) => {
   const { panel, page, issue } = appearance;
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg bg-ink-900/40 border border-ink-800/60">
+    <div className="flex items-center gap-3 p-2 rounded-lg bg-stone-50 border border-stone-200">
       {/* Tiny image preview or placeholder */}
-      <div className="w-12 h-12 rounded bg-ink-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className="w-12 h-12 rounded bg-stone-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
         {panel.imageUrl ? (
           <img
             src={panel.imageUrl.startsWith('idb://') ? undefined : panel.imageUrl}
@@ -118,14 +118,14 @@ const PanelThumb: React.FC<{
             className="w-full h-full object-cover"
           />
         ) : (
-          <ImageIcon size={14} className="text-steel-700" />
+          <ImageIcon size={14} className="text-stone-400" />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] text-steel-300 truncate">
+        <p className="text-[11px] text-ink truncate">
           {panel.prompt ? panel.prompt.slice(0, 60) + (panel.prompt.length > 60 ? '...' : '') : 'No prompt'}
         </p>
-        <p className="text-[9px] font-mono text-steel-600 mt-0.5">
+        <p className="text-[9px] font-body text-stone-500 mt-0.5">
           {issue.title} · Page {page.number} · Panel {page.panels.indexOf(panel) + 1}
         </p>
       </div>
@@ -171,22 +171,22 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
       <div className="px-5 py-4">
         <div className="flex items-start gap-4">
           {/* Avatar / gallery image */}
-          <div className="w-16 h-16 rounded-xl bg-ink-800 border border-ink-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center overflow-hidden flex-shrink-0">
             {character.gallery?.[0] ? (
               <img src={character.gallery[0]} alt={character.name} className="w-full h-full object-cover" />
             ) : (
-              <User size={24} className="text-steel-600" />
+              <User size={24} className="text-stone-400" />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-xl font-display font-bold text-steel-100 leading-tight">{character.name}</h3>
-            <p className="text-[11px] text-steel-400 mt-0.5">{character.archetype || 'No archetype'}</p>
+            <h3 className="text-xl font-display font-bold text-ink leading-tight">{character.name}</h3>
+            <p className="text-[11px] text-stone-600 mt-0.5">{character.archetype || 'No archetype'}</p>
             <div className="flex items-center gap-2 mt-2">
               <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded ${roleColors[character.role] || roleColors.Minor}`}>
                 {character.role}
               </span>
               {character.smart_tags?.Faction && (
-                <span className="text-[9px] font-mono text-steel-500 bg-ink-800 px-1.5 py-0.5 rounded">
+                <span className="text-[9px] font-body text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded">
                   {character.smart_tags.Faction}
                 </span>
               )}
@@ -194,7 +194,7 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
           </div>
           <button
             onClick={handleEdit}
-            className="p-2 text-steel-500 hover:text-char-400 hover:bg-char-900/30 rounded-lg transition-all flex-shrink-0"
+            className="p-2 text-stone-500 hover:text-char-400 hover:bg-char-500/10 rounded-lg transition-all flex-shrink-0"
             title="Edit dossier"
           >
             <Edit3 size={16} />
@@ -207,16 +207,16 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
         <Section title="Eras" icon={<Clock size={13} />} count={character.eras.length} accentColor="text-ember-400">
           <div className="space-y-1.5">
             {character.eras.map(era => (
-              <div key={era.id} className="flex items-center gap-3 p-2 rounded-lg bg-ink-900/40 border border-ink-800/60">
+              <div key={era.id} className="flex items-center gap-3 p-2 rounded-lg bg-stone-50 border border-stone-200">
                 <div className="w-1.5 h-8 rounded-full bg-ember-500/40 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-semibold text-steel-200">{era.name}</p>
+                  <p className="text-[12px] font-semibold text-ink">{era.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {era.age_appearance && (
-                      <span className="text-[9px] font-mono text-steel-500">{era.age_appearance}</span>
+                      <span className="text-[9px] font-body text-stone-600">{era.age_appearance}</span>
                     )}
                     {era.visual_tags.length > 0 && (
-                      <span className="text-[9px] text-steel-600 truncate">{era.visual_tags.join(', ')}</span>
+                      <span className="text-[9px] text-stone-500 truncate">{era.visual_tags.join(', ')}</span>
                     )}
                   </div>
                 </div>
@@ -229,14 +229,14 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
       {/* Storyboard appearances */}
       <Section title="Storyboard" icon={<PenTool size={13} />} count={panelAppearances.length} accentColor="text-ember-400">
         {panelAppearances.length === 0 ? (
-          <p className="text-[11px] text-steel-600 italic">Not yet placed in any panels</p>
+          <p className="text-[11px] text-stone-500 italic">Not yet placed in any panels</p>
         ) : (
           <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
             {panelAppearances.slice(0, 20).map((app, i) => (
               <PanelThumb key={`${app.panel.id}-${i}`} appearance={app} />
             ))}
             {panelAppearances.length > 20 && (
-              <p className="text-[9px] text-steel-600 font-mono text-center py-1">
+              <p className="text-[9px] text-stone-500 font-body text-center py-1">
                 +{panelAppearances.length - 20} more appearances
               </p>
             )}
@@ -247,7 +247,7 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
       {/* Linked Lore */}
       <Section title="Lore Connections" icon={<BookOpen size={13} />} count={linkedLore.length} accentColor="text-lore-400">
         {linkedLore.length === 0 ? (
-          <p className="text-[11px] text-steel-600 italic">No lore entries linked</p>
+          <p className="text-[11px] text-stone-500 italic">No lore entries linked</p>
         ) : (
           <div className="space-y-1.5">
             {linkedLore.map(entry => {
@@ -294,11 +294,11 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
 
       {/* Smart Tags */}
       {Object.keys(character.smart_tags || {}).length > 0 && (
-        <Section title="Tags" icon={<Tag size={13} />} accentColor="text-steel-500">
+        <Section title="Tags" icon={<Tag size={13} />} accentColor="text-stone-500">
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(character.smart_tags).map(([key, val]) => val ? (
-              <span key={key} className="text-[10px] bg-ink-800 border border-ink-700 text-steel-300 px-2 py-1 rounded-md">
-                <span className="text-steel-500">{key}:</span> {val}
+              <span key={key} className="text-[10px] bg-stone-100 border border-stone-200 text-ink px-2 py-1 rounded-md">
+                <span className="text-stone-600">{key}:</span> {val}
               </span>
             ) : null)}
           </div>
@@ -306,8 +306,8 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
       )}
 
       {/* Meta */}
-      <div className="px-5 py-3 border-t border-ink-800/60">
-        <p className="text-[9px] font-mono text-steel-700">
+      <div className="px-5 py-3 border-t border-stone-200">
+        <p className="text-[9px] font-body text-stone-500">
           Created {timeAgo(character.createdAt)} · Updated {timeAgo(character.updatedAt)}
         </p>
       </div>
@@ -346,8 +346,8 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
   // Type-specific fields
   const renderTypeFields = () => {
     const fieldClass = "flex items-center gap-2 text-[11px]";
-    const labelClass = "text-steel-500 flex-shrink-0";
-    const valueClass = "text-steel-300";
+    const labelClass = "text-stone-600 flex-shrink-0";
+    const valueClass = "text-ink";
 
     switch (entry.type) {
       case LoreType.FACTION: {
@@ -359,10 +359,10 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
             {f.influence && (
               <div className={fieldClass}>
                 <span className={labelClass}>Influence</span>
-                <div className="flex-1 h-1.5 bg-ink-800 rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-stone-200 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-400/60 rounded-full" style={{ width: `${(f.influence / 10) * 100}%` }} />
                 </div>
-                <span className="text-[9px] font-mono text-steel-600">{f.influence}/10</span>
+                <span className="text-[9px] font-body text-stone-600">{f.influence}/10</span>
               </div>
             )}
           </div>
@@ -412,8 +412,8 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
         return (
           <div className="space-y-2">
             <div className={fieldClass}>
-              <Lock size={12} className={r.canonLocked ? 'text-amber-400' : 'text-steel-600'} />
-              <span className={r.canonLocked ? 'text-amber-400 font-bold text-[10px] uppercase' : 'text-steel-500 text-[10px]'}>
+              <Lock size={12} className={r.canonLocked ? 'text-amber-400' : 'text-stone-400'} />
+              <span className={r.canonLocked ? 'text-amber-400 font-bold text-[10px] uppercase' : 'text-stone-600 text-[10px]'}>
                 {r.canonLocked ? 'Canon Locked' : 'Unlocked'}
               </span>
             </div>
@@ -438,13 +438,13 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
             <div className={`text-[9px] font-bold uppercase tracking-wider mb-1 ${cfg.color}`}>
               {cfg.label}
             </div>
-            <h3 className="text-xl font-display font-bold text-steel-100 leading-tight">{entry.name}</h3>
+            <h3 className="text-xl font-display font-bold text-ink leading-tight">{entry.name}</h3>
           </div>
         </div>
 
         {/* Description */}
         {entry.description && (
-          <p className="text-[12px] text-steel-300 leading-relaxed mt-3">
+          <p className="text-[12px] text-stone-600 leading-relaxed mt-3">
             {entry.description}
           </p>
         )}
@@ -453,7 +453,7 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
         {entry.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {entry.tags.map(tag => (
-              <span key={tag} className="text-[9px] bg-ink-800 border border-ink-700 text-steel-500 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+              <span key={tag} className="text-[9px] bg-stone-100 border border-stone-200 text-stone-600 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                 #{tag}
               </span>
             ))}
@@ -469,7 +469,7 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
       {/* Linked Characters */}
       <Section title="Characters" icon={<Users size={13} />} count={allLinkedChars.length} accentColor="text-char-400">
         {allLinkedChars.length === 0 ? (
-          <p className="text-[11px] text-steel-600 italic">No characters linked</p>
+          <p className="text-[11px] text-stone-500 italic">No characters linked</p>
         ) : (
           <div className="space-y-1.5">
             {allLinkedChars.map(char => (
@@ -510,8 +510,8 @@ const LoreDetail: React.FC<{ entry: LoreEntry }> = ({ entry }) => {
       )}
 
       {/* Meta */}
-      <div className="px-5 py-3 border-t border-ink-800/60">
-        <p className="text-[9px] font-mono text-steel-700">
+      <div className="px-5 py-3 border-t border-stone-200">
+        <p className="text-[9px] font-body text-stone-500">
           Created {timeAgo(entry.createdAt)} · Updated {timeAgo(entry.updatedAt)}
         </p>
       </div>
@@ -539,32 +539,32 @@ const DetailPanel: React.FC = () => {
     <div className="fixed inset-0 z-[90] flex justify-end pointer-events-none">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/15 backdrop-blur-[2px] pointer-events-auto"
+        className="absolute inset-0 bg-black/15 pointer-events-auto"
         onClick={closeDetail}
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-md bg-ink-950 border-l border-ink-700 h-full flex flex-col pointer-events-auto animate-slide-in shadow-2xl">
+      <div className="relative w-full max-w-md bg-paper border-l border-stone-200 h-full flex flex-col pointer-events-auto animate-slide-in shadow-2xl">
         {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-ink-700 bg-ink-900 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 bg-card flex-shrink-0">
           <div className="flex items-center gap-2">
             {canGoBack && (
               <button
                 onClick={goBackDetail}
-                className="p-1.5 text-steel-500 hover:text-steel-200 hover:bg-ink-800 rounded-lg transition-all"
+                className="p-1.5 text-stone-500 hover:text-ink hover:bg-stone-100 rounded-lg transition-all"
                 title="Go back"
               >
                 <ArrowLeft size={16} />
               </button>
             )}
             <div className={`w-1.5 h-1.5 rounded-full ${accentColor === 'char' ? 'bg-char-500' : 'bg-lore-500'}`} />
-            <span className="text-[10px] font-mono text-steel-500 uppercase tracking-widest">
+            <span className="text-[10px] font-body text-stone-500 uppercase tracking-widest">
               {detailTarget.kind === 'character' ? 'Character' : 'Lore Entry'}
             </span>
           </div>
           <button
             onClick={closeDetail}
-            className="p-1.5 text-steel-500 hover:text-steel-200 hover:bg-ink-800 rounded-lg transition-all"
+            className="p-1.5 text-stone-500 hover:text-ink hover:bg-stone-100 rounded-lg transition-all"
           >
             <X size={16} />
           </button>
