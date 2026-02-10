@@ -419,7 +419,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
         </div>
       </div>
       {/* Accent underline */}
-      <div className={`h-[1px] ${showGutters ? 'bg-gray-300' : 'border-b border-stone-200'}`} />
+      <div className={`h-[1px] ${showGutters ? 'bg-gray-300' : 'bg-stone-200'}`} />
     </header>
   );
 };
