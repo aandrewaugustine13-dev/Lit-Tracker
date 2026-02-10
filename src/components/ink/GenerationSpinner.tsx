@@ -49,13 +49,13 @@ export const PanelGenerationOverlay: React.FC<PanelSpinnerProps> = ({ provider }
     }, []);
 
     return (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10 rounded-lg">
+        <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-3 z-10 rounded-lg">
             {/* Animated spinner ring with provider accent */}
             <div className={`w-10 h-10 rounded-full border-[3px] border-t-transparent animate-spin ${meta.bgColor}`} />
-            <p className={`text-xs font-mono font-bold uppercase tracking-widest ${meta.color}`}>
+            <p className={`text-xs font-body font-bold uppercase tracking-widest ${meta.color}`}>
                 Generating with {meta.label}
             </p>
-            <p className="text-[10px] text-steel-500 font-mono animate-pulse max-w-[200px] text-center">
+            <p className="text-[10px] text-stone-400 font-body animate-pulse max-w-[200px] text-center">
                 {GENERATION_TIPS[tipIndex]}
             </p>
         </div>
@@ -99,13 +99,13 @@ export const BatchProgressIndicator: React.FC<BatchProgressProps> = ({
             {/* Provider label */}
             <div className="flex items-center gap-2">
                 <div className={`w-3 h-3 rounded-full border-2 border-t-transparent animate-spin ${meta.bgColor}`} />
-                <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${meta.color}`}>
+                <span className={`text-[10px] font-body font-bold uppercase tracking-widest ${meta.color}`}>
                     Generating with {meta.label}
                 </span>
             </div>
 
             {/* Progress bar */}
-            <div className="w-full h-1.5 bg-ink-800 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
                 <div
                     className="h-full rounded-full transition-all duration-500 ease-out"
                     style={{
@@ -124,23 +124,23 @@ export const BatchProgressIndicator: React.FC<BatchProgressProps> = ({
 
             {/* Count + tip */}
             <div className="flex items-center justify-between w-full">
-                <span className="text-[10px] font-mono text-steel-400">
+                <span className="text-[10px] font-body text-stone-600">
                     Panel {current}/{total}
                 </span>
-                <span className="text-[9px] font-mono text-steel-600">
+                <span className="text-[9px] font-body text-stone-500">
                     {percent}%
                 </span>
             </div>
 
             {/* Rotating tip */}
-            <p className="text-[9px] text-steel-600 font-mono italic text-center">
+            <p className="text-[9px] text-stone-500 font-body italic text-center">
                 {GENERATION_TIPS[tipIndex]}
             </p>
 
             {/* Cancel */}
             <button
                 onClick={onCancel}
-                className="text-[10px] font-mono text-red-500 hover:text-red-400 uppercase tracking-widest transition-colors"
+                className="text-[10px] font-body text-red-600 hover:text-red-500 uppercase tracking-widest transition-colors"
             >
                 Cancel
             </button>
@@ -185,8 +185,8 @@ export const ScriptParsingProgress: React.FC<ScriptParsingProps> = ({ stage, pro
 
     return (
         <div className="flex flex-col items-center gap-4 py-8">
-            <div className="w-10 h-10 rounded-full border-[3px] border-cyan-500 border-t-transparent animate-spin" />
-            <p className="text-sm font-mono text-steel-300 font-bold uppercase tracking-widest">
+            <div className="w-10 h-10 rounded-full border-[3px] border-ink border-t-transparent animate-spin" />
+            <p className="text-sm font-body text-ink font-bold uppercase tracking-widest">
                 Parsing {formatLabel}
             </p>
 
@@ -199,15 +199,15 @@ export const ScriptParsingProgress: React.FC<ScriptParsingProps> = ({ stage, pro
                         <div key={s} className="flex items-center gap-3">
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all ${
                                 isDone
-                                    ? 'bg-green-500 text-white'
+                                    ? 'bg-green-600 text-white'
                                     : isCurrent
-                                        ? 'bg-cyan-500 text-white animate-pulse'
-                                        : 'bg-ink-800 text-steel-600'
+                                        ? 'bg-ink text-white animate-pulse'
+                                        : 'bg-stone-200 text-stone-500'
                             }`}>
                                 {isDone ? '✓' : idx + 1}
                             </div>
-                            <span className={`text-xs font-mono transition-colors ${
-                                isDone ? 'text-green-400' : isCurrent ? 'text-cyan-400' : 'text-steel-600'
+                            <span className={`text-xs font-body transition-colors ${
+                                isDone ? 'text-green-600' : isCurrent ? 'text-ink' : 'text-stone-500'
                             }`}>
                                 {STAGE_LABELS[s]}
                             </span>
@@ -260,8 +260,8 @@ export const StatusBarIndicator: React.FC<StatusBarProps> = ({
     if (!isActive) {
         return (
             <>
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
+                <div className="w-3 h-3 rounded-full bg-green-600" />
+                <span className="text-[10px] font-body uppercase tracking-[0.3em] font-bold">
                     Terminal Ready
                 </span>
             </>
@@ -271,8 +271,8 @@ export const StatusBarIndicator: React.FC<StatusBarProps> = ({
     if (exporting) {
         return (
             <>
-                <div className="w-3 h-3 rounded-full bg-blue-500 animate-ping" />
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
+                <div className="w-3 h-3 rounded-full bg-blue-600 animate-ping" />
+                <span className="text-[10px] font-body uppercase tracking-[0.3em] font-bold">
                     Exporting...
                 </span>
             </>
@@ -285,7 +285,7 @@ export const StatusBarIndicator: React.FC<StatusBarProps> = ({
     return (
         <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full animate-ping ${
-                meta ? '' : 'bg-ember-500'
+                meta ? '' : 'bg-ink'
             }`} style={meta ? { backgroundColor: provider === 'gemini' ? '#60a5fa'
                 : provider === 'leonardo' ? '#fb923c'
                 : provider === 'grok' ? '#9ca3af'
@@ -294,7 +294,7 @@ export const StatusBarIndicator: React.FC<StatusBarProps> = ({
                 : '#4ade80' } : undefined}
             />
             <div className="flex flex-col">
-                <span className={`text-[10px] font-mono uppercase tracking-[0.2em] font-bold ${meta?.color || 'text-ember-500'}`}>
+                <span className={`text-[10px] font-body uppercase tracking-[0.2em] font-bold ${meta?.color || 'text-ink'}`}>
                     {isGeneratingAll
                         ? `Generating with ${meta?.label || 'AI'} (${currentPanel}/${totalPanels})`
                         : batching
@@ -303,7 +303,7 @@ export const StatusBarIndicator: React.FC<StatusBarProps> = ({
                 </span>
                 {isGeneratingAll && totalPanels > 0 && (
                     <div className="flex items-center gap-2 mt-0.5">
-                        <div className={`h-1 rounded-full overflow-hidden flex-1 ${showGutters ? 'bg-gray-300' : 'bg-ink-700'}`} style={{ width: 80 }}>
+                        <div className={`h-1 rounded-full overflow-hidden flex-1 ${showGutters ? 'bg-stone-300' : 'bg-stone-200'}`} style={{ width: 80 }}>
                             <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{
@@ -317,7 +317,7 @@ export const StatusBarIndicator: React.FC<StatusBarProps> = ({
                                 }}
                             />
                         </div>
-                        <span className="text-[9px] font-mono text-steel-500">{percent}%</span>
+                        <span className="text-[9px] font-body text-stone-600">{percent}%</span>
                     </div>
                 )}
             </div>
