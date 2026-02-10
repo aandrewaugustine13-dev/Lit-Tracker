@@ -13,8 +13,8 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
     return (
         <>
             {/* Art Style selector */}
-            <div className="p-6 border-t border-ink-700 bg-ink-950 space-y-3">
-                <h2 className="text-xs font-mono text-steel-500 uppercase tracking-widest px-1">Art Style</h2>
+            <div className="p-6 border-t border-stone-200 bg-paper space-y-3">
+                <h2 className="text-xs font-body text-stone-600 uppercase tracking-widest px-1">Art Style</h2>
                 <select
                     value={activeProject?.style}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -23,7 +23,7 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
                             dispatch({ type: 'UPDATE_PROJECT', id: activeProject!.id, updates: { customStylePrompt: '' } });
                         }
                     }}
-                    className="w-full bg-ink-800 border border-ink-700 rounded-lg px-2 py-2 text-xs text-steel-300 font-mono focus:outline-none focus:border-ember-500 transition-colors"
+                    className="w-full bg-white border border-stone-200 rounded-lg px-2 py-2 text-xs text-ink font-body focus:outline-none focus:border-ink transition-colors"
                 >
                     {Object.entries(STYLE_GROUPS).map(([groupName, styleIds]) => (
                         <optgroup key={groupName} label={groupName}>
@@ -38,7 +38,7 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
                 {/* Custom style input */}
                 {activeProject?.style === 'custom' && (
                     <div className="space-y-2 animate-fade-in">
-                        <label className="text-[9px] font-mono text-steel-500 uppercase">
+                        <label className="text-[9px] font-body text-stone-600 uppercase">
                             Custom Style Prompt
                         </label>
                         <textarea
@@ -48,9 +48,9 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
                                 dispatch({ type: 'UPDATE_PROJECT', id: activeProject!.id, updates: { customStylePrompt: e.target.value } })
                             }
                             rows={3}
-                            className="w-full bg-ink-800 border border-ink-700 rounded-lg px-3 py-2 text-xs text-steel-300 focus:outline-none focus:border-ember-500 transition-colors resize-none placeholder-steel-600"
+                            className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-xs text-ink focus:outline-none focus:border-ink transition-colors resize-none placeholder-stone-400"
                         />
-                        <p className="text-[8px] text-steel-600 italic">
+                        <p className="text-[8px] text-stone-500 italic">
                             Tip: Include artist names, techniques, color palettes, and mood descriptors.
                         </p>
                     </div>
@@ -59,13 +59,13 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
 
             {/* Panel & Text Style Settings */}
             {activeProject && (
-                <div className="p-6 border-t border-ink-700 bg-ink-950 space-y-4">
-                    <h2 className="text-xs font-mono text-steel-500 uppercase tracking-widest px-1">Panel & Text Styles</h2>
+                <div className="p-6 border-t border-stone-200 bg-paper space-y-4">
+                    <h2 className="text-xs font-body text-stone-600 uppercase tracking-widest px-1">Panel & Text Styles</h2>
 
                     {/* Panel Frame Style */}
                     <div className="space-y-1.5">
-                        <label className="text-[9px] font-mono text-steel-500 uppercase">Panel Frames</label>
-                        <div className="flex rounded-lg overflow-hidden border border-ink-700">
+                        <label className="text-[9px] font-body text-stone-600 uppercase">Panel Frames</label>
+                        <div className="flex rounded-lg overflow-hidden border border-stone-200">
                             {([
                                 { value: 'opaque-black' as PanelFrameStyle, label: 'Black' },
                                 { value: 'opaque-white' as PanelFrameStyle, label: 'White' },
@@ -74,10 +74,10 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
                                 <button
                                     key={opt.value}
                                     onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: activeProject.id, updates: { panelFrameStyle: opt.value } })}
-                                    className={`flex-1 text-[9px] font-mono py-2 transition-all ${
+                                    className={`flex-1 text-[9px] font-body py-2 transition-all ${
                                         (activeProject.panelFrameStyle || 'opaque-black') === opt.value
-                                            ? 'bg-ember-500 text-ink-950 font-bold'
-                                            : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                            ? 'bg-ink text-white font-bold'
+                                            : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink'
                                     }`}
                                 >
                                     {opt.label}
@@ -88,8 +88,8 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
 
                     {/* Text Overlay Style */}
                     <div className="space-y-1.5">
-                        <label className="text-[9px] font-mono text-steel-500 uppercase">Text Elements</label>
-                        <div className="flex rounded-lg overflow-hidden border border-ink-700">
+                        <label className="text-[9px] font-body text-stone-600 uppercase">Text Elements</label>
+                        <div className="flex rounded-lg overflow-hidden border border-stone-200">
                             {([
                                 { value: 'opaque' as TextOverlayStyle, label: 'Opaque' },
                                 { value: 'semi-transparent' as TextOverlayStyle, label: 'Semi-Trans' },
@@ -98,10 +98,10 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ activeProject, dispatch 
                                 <button
                                     key={opt.value}
                                     onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: activeProject.id, updates: { textOverlayStyle: opt.value } })}
-                                    className={`flex-1 text-[9px] font-mono py-2 transition-all ${
+                                    className={`flex-1 text-[9px] font-body py-2 transition-all ${
                                         (activeProject.textOverlayStyle || 'opaque') === opt.value
-                                            ? 'bg-ember-500 text-ink-950 font-bold'
-                                            : 'bg-ink-900 text-steel-500 hover:bg-ink-800 hover:text-steel-300'
+                                            ? 'bg-ink text-white font-bold'
+                                            : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink'
                                     }`}
                                 >
                                     {opt.label}
