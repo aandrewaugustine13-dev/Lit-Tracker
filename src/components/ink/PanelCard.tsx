@@ -196,9 +196,8 @@ const PanelCard: React.FC<PanelCardProps> = ({
         <div ref={setNodeRef} style={style}
             onClick={(e) => { if (onSelect && (e.target as HTMLElement).closest('button, input, textarea, [contenteditable]') === null) onSelect(); }}
             className={`group rounded-xl border transition-all flex flex-col ${
-                panelFrameStyle === 'opaque-white' ? 'bg-paper border-2 border-stone-200 shadow-md hover:shadow-lg'
-                    : panelFrameStyle === 'translucent' ? 'bg-transparent border border-stone-300 shadow-sm hover:shadow-md'
-                        : 'bg-paper border-2 border-stone-200 shadow-md hover:shadow-lg'
+                panelFrameStyle === 'translucent' ? 'bg-transparent border border-stone-300 shadow-sm hover:shadow-md'
+                    : 'bg-paper border-2 border-stone-200 shadow-md hover:shadow-lg'
             } ${isDragging ? 'ring-2 ring-ember-500 shadow-2xl' : ''} ${isResizing ? 'cursor-nwse-resize' : ''}`}
         >
             {/* HEADER */}

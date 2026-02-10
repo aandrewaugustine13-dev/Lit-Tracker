@@ -72,37 +72,31 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
                 icon={<FileText size={24} />}
                 title="Script Import"
                 description="Import existing comic scripts in markdown format. The parser automatically creates pages and panels from your script."
-                showGutters={showGutters}
               />
               <FeatureCard
                 icon={<Users size={24} />}
                 title="Character Tracker"
                 description="Create detailed character profiles with physical appearances. Characters are automatically included in panel prompts for consistency."
-                showGutters={showGutters}
               />
               <FeatureCard
                 icon={<Sparkles size={24} />}
                 title="Art Styles"
                 description="Choose from curated art style presets like Film Noir, Superhero, Horror, or create your own custom style prompt."
-                showGutters={showGutters}
               />
               <FeatureCard
                 icon={<Copy size={24} />}
                 title="Panel Linking"
                 description="Link panels together for visual consistency. Reference previous panels to maintain character appearances and scene continuity."
-                showGutters={showGutters}
               />
               <FeatureCard
                 icon={<MessageCircle size={24} />}
                 title="Text Elements"
                 description="Add dialogue bubbles, thought clouds, captions, and phone messages to your panels with adjustable positioning and styling."
-                showGutters={showGutters}
               />
               <FeatureCard
                 icon={<Layout size={24} />}
                 title="Page Templates"
                 description="Apply pre-built layouts like 2×2 Grid, Manga style, or Single Splash to quickly set up your pages."
-                showGutters={showGutters}
               />
             </div>
           </section>
@@ -121,12 +115,12 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <TableRow showGutters={showGutters} action="Add Panel" howTo='Click "ADD FRAME" button in header' />
-                  <TableRow showGutters={showGutters} action="Move Panel" howTo="Click and drag the panel move handle" />
-                  <TableRow showGutters={showGutters} action="Resize Panel" howTo="Drag the bottom-right corner of panel" />
-                  <TableRow showGutters={showGutters} action="Pan Canvas" howTo='Enable "NAV MODE" and drag canvas' />
-                  <TableRow showGutters={showGutters} action="Apply Layout" howTo='Click "TEMPLATES" and select a layout' />
-                  <TableRow showGutters={showGutters} action="Toggle Appearance" howTo='Click "GUTTERS" for light mode toggle' />
+                  <TableRow action="Add Panel" howTo='Click "ADD FRAME" button in header' />
+                  <TableRow action="Move Panel" howTo="Click and drag the panel move handle" />
+                  <TableRow action="Resize Panel" howTo="Drag the bottom-right corner of panel" />
+                  <TableRow action="Pan Canvas" howTo='Enable "NAV MODE" and drag canvas' />
+                  <TableRow action="Apply Layout" howTo='Click "TEMPLATES" and select a layout' />
+                  <TableRow action="Toggle Appearance" howTo='Click "GUTTERS" for light mode toggle' />
                 </tbody>
               </table>
             </div>
@@ -142,25 +136,21 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
                 icon={<FileImage size={20} />}
                 title="ZIP Page Images"
                 description="Download all panel images from the current page as a ZIP archive"
-                showGutters={showGutters}
               />
               <ExportCard
                 icon={<FileImage size={20} />}
                 title="CBZ Issue"
                 description="Export entire issue as a CBZ comic archive format, compatible with most comic reader apps"
-                showGutters={showGutters}
               />
               <ExportCard
                 icon={<FileImage size={20} />}
                 title="PDF Page"
                 description="Export current page panels as a PDF document"
-                showGutters={showGutters}
               />
               <ExportCard
                 icon={<FileImage size={20} />}
                 title="PDF Issue"
                 description="Export entire issue as a comprehensive PDF"
-                showGutters={showGutters}
               />
             </div>
           </section>
@@ -179,13 +169,13 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <TableRow showGutters={showGutters} action="Ctrl+Z / Cmd+Z" howTo="Undo last action" />
-                  <TableRow showGutters={showGutters} action="Ctrl+Y / Cmd+Shift+Z" howTo="Redo last undone action" />
-                  <TableRow showGutters={showGutters} action="← / ↑" howTo="Navigate to previous panel" />
-                  <TableRow showGutters={showGutters} action="→ / ↓" howTo="Navigate to next panel" />
-                  <TableRow showGutters={showGutters} action="Delete" howTo="Delete selected panel" />
-                  <TableRow showGutters={showGutters} action="Escape" howTo="Deselect panel / Exit presentation" />
-                  <TableRow showGutters={showGutters} action="Space (in presentation)" howTo="Advance to next panel" />
+                  <TableRow action="Ctrl+Z / Cmd+Z" howTo="Undo last action" />
+                  <TableRow action="Ctrl+Y / Cmd+Shift+Z" howTo="Redo last undone action" />
+                  <TableRow action="← / ↑" howTo="Navigate to previous panel" />
+                  <TableRow action="→ / ↓" howTo="Navigate to next panel" />
+                  <TableRow action="Delete" howTo="Delete selected panel" />
+                  <TableRow action="Escape" howTo="Deselect panel / Exit presentation" />
+                  <TableRow action="Space (in presentation)" howTo="Advance to next panel" />
                 </tbody>
               </table>
             </div>
@@ -200,22 +190,18 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
               <TipCard
                 title="Use Reference Panels"
                 description="Link subsequent panels to an initial establishing shot for visual consistency. Adjust the consistency strength slider based on how much variation you want."
-                showGutters={showGutters}
               />
               <TipCard
                 title="Build Your Cast First"
                 description="Create detailed character profiles before generating panels. The more detail you provide, the more consistent your character appearances will be."
-                showGutters={showGutters}
               />
               <TipCard
                 title="Export Regularly"
                 description="Don't rely solely on browser storage. Export your work as CBZ or PDF regularly to avoid data loss."
-                showGutters={showGutters}
               />
               <TipCard
                 title="Experiment with Custom Styles"
                 description="Create your own art style prompts by combining techniques, color palettes, and artist influences for unique results."
-                showGutters={showGutters}
               />
             </div>
           </section>
@@ -246,7 +232,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 };
 
 // Helper components
-const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string; showGutters: boolean }> = ({ icon, title, description, showGutters }) => (
+const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
   <div className="p-6 rounded-2xl border bg-card border-stone-200">
     <div className="mb-3 text-ember-500">{icon}</div>
     <h3 className="font-body text-sm uppercase tracking-wider mb-2 text-ink">{title}</h3>
@@ -254,7 +240,7 @@ const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description:
   </div>
 );
 
-const ExportCard: React.FC<{ icon: React.ReactNode; title: string; description: string; showGutters: boolean }> = ({ icon, title, description, showGutters }) => (
+const ExportCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
   <div className="p-4 rounded-xl border bg-card border-stone-200">
     <div className="flex items-start gap-3">
       <div className="mt-1 text-ember-500">{icon}</div>
@@ -266,14 +252,14 @@ const ExportCard: React.FC<{ icon: React.ReactNode; title: string; description: 
   </div>
 );
 
-const TableRow: React.FC<{ showGutters: boolean; action: string; howTo: string }> = ({ showGutters, action, howTo }) => (
+const TableRow: React.FC<{ action: string; howTo: string }> = ({ action, howTo }) => (
   <tr className="border-t border-stone-200">
     <td className="px-6 py-3 font-body text-sm text-ink">{action}</td>
     <td className="px-6 py-3 text-sm text-stone-600">{howTo}</td>
   </tr>
 );
 
-const TipCard: React.FC<{ title: string; description: string; showGutters: boolean }> = ({ title, description, showGutters }) => (
+const TipCard: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-4 rounded-xl border bg-card border-stone-200">
     <h3 className="font-body text-sm uppercase tracking-wide mb-2 text-ink">{title}</h3>
     <p className="text-sm text-stone-600">{description}</p>
