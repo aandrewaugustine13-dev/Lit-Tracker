@@ -43,7 +43,7 @@ const Gatekeeper: React.FC = () => {
   const mostRecentProject = inkState.projects[0]; // First project is most recent
 
   return (
-    <div className="h-screen w-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-8">
+    <div className="h-screen w-screen bg-paper text-ink flex items-center justify-center p-8">
       <div className="w-full max-w-5xl space-y-12 animate-fade-in">
         
         {/* Logo & Wordmark */}
@@ -51,19 +51,19 @@ const Gatekeeper: React.FC = () => {
           <div className="flex items-center justify-center">
             <div className="relative">
               <Flame 
-                className="w-16 h-16 text-amber-500 animate-pulse-glow" 
+                className="w-12 h-12 text-ink" 
                 strokeWidth={1.5}
               />
             </div>
           </div>
-          <h1 className="text-2xl font-mono tracking-widest text-amber-500">
-            LIT TRACKER
+          <h1 className="text-2xl font-display text-ink">
+            Lit Tracker
           </h1>
         </div>
 
         {/* Headline */}
         <div className="text-center">
-          <h2 className="text-5xl font-display text-zinc-100">
+          <h2 className="text-6xl font-display text-ink leading-tight">
             What are you working on?
           </h2>
         </div>
@@ -85,29 +85,29 @@ const Gatekeeper: React.FC = () => {
                     className={`
                       group relative p-6 rounded-xl transition-all duration-300 text-left
                       ${isMostRecent 
-                        ? 'bg-zinc-900 border-2 border-amber-500 shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 col-span-full lg:col-span-2' 
-                        : 'bg-zinc-900/60 border border-zinc-700 hover:bg-zinc-900 hover:border-zinc-600'
+                        ? 'bg-card border-2 border-amber-600 shadow-lg hover:shadow-xl col-span-full lg:col-span-2' 
+                        : 'bg-card border border-stone-200 hover:border-stone-300 hover:shadow-md'
                       }
                     `}
                   >
                     {isMostRecent && (
-                      <div className="absolute -top-3 -right-3 bg-amber-500 text-zinc-950 text-xs font-bold px-3 py-1 rounded-full">
+                      <div className="absolute -top-3 -right-3 bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                         Recent
                       </div>
                     )}
 
                     {/* Project Type Icon */}
                     <div className="mb-4">
-                      <ProjectTypeIcon className={`w-8 h-8 ${isMostRecent ? 'text-amber-500' : 'text-zinc-400'}`} />
+                      <ProjectTypeIcon className={`w-8 h-8 ${isMostRecent ? 'text-amber-600' : 'text-stone-500'}`} />
                     </div>
 
                     {/* Project Title */}
-                    <h3 className={`text-2xl font-bold mb-3 group-hover:text-amber-500 transition-colors ${isMostRecent ? 'text-zinc-50' : 'text-zinc-200'}`}>
+                    <h3 className={`text-2xl font-display mb-3 group-hover:text-amber-700 transition-colors ${isMostRecent ? 'text-ink' : 'text-ink'}`}>
                       {project.title}
                     </h3>
 
                     {/* Project Stats */}
-                    <div className="flex items-center gap-6 text-sm text-zinc-400">
+                    <div className="flex items-center gap-6 text-sm text-stone-500">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         <span>
@@ -125,7 +125,7 @@ const Gatekeeper: React.FC = () => {
 
                     {/* Project Type Badge */}
                     <div className="mt-4">
-                      <span className="inline-block px-3 py-1 bg-zinc-700/50 text-zinc-300 text-xs font-mono rounded-full">
+                      <span className="inline-block px-3 py-1 bg-stone-100 text-stone-700 text-xs font-body rounded-full border border-stone-200">
                         {getProjectTypeLabel(project.projectType)}
                       </span>
                     </div>
@@ -138,10 +138,10 @@ const Gatekeeper: React.FC = () => {
             <div className="flex justify-center pt-4">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="group flex items-center gap-3 px-6 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-600 hover:border-amber-500 rounded-xl transition-all duration-300"
+                className="group flex items-center gap-3 px-6 py-3 bg-card hover:bg-stone-50 border border-stone-300 hover:border-amber-500 rounded-xl transition-all duration-300"
               >
-                <Plus className="w-5 h-5 text-zinc-400 group-hover:text-amber-500 transition-colors" />
-                <span className="text-zinc-300 group-hover:text-amber-500 transition-colors font-medium">
+                <Plus className="w-5 h-5 text-stone-600 group-hover:text-amber-600 transition-colors" />
+                <span className="text-ink group-hover:text-amber-700 transition-colors font-medium font-body">
                   Create New Universe
                 </span>
               </button>
@@ -152,10 +152,10 @@ const Gatekeeper: React.FC = () => {
           <div className="flex justify-center">
             <button
               onClick={() => setShowNewProjectModal(true)}
-              className="group flex items-center gap-4 px-8 py-4 bg-amber-600 hover:bg-amber-500 rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30"
+              className="group flex items-center gap-4 px-8 py-4 bg-card hover:bg-stone-50 border-2 border-stone-300 hover:border-amber-500 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
             >
-              <Plus className="w-6 h-6 text-zinc-950" />
-              <span className="text-zinc-950 font-bold text-lg">
+              <Plus className="w-6 h-6 text-ink" />
+              <span className="text-ink font-bold text-lg font-body">
                 Create New Universe
               </span>
             </button>

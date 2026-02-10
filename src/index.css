@@ -1,14 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  /* Surface scale — LIGHT values for workspace (inverted from dark) */
-  --color-ink-600: #a1a1aa;    /* zinc-400 (was zinc-600) */
-  --color-ink-700: #d4d4d8;    /* zinc-300 (was zinc-700) */
-  --color-ink-750: #dadadd;    /* between zinc-300 and zinc-200 */
-  --color-ink-800: #e4e4e7;    /* zinc-200 (was zinc-800) */
-  --color-ink-850: #ececee;    /* between zinc-200 and zinc-100 */
-  --color-ink-900: #f4f4f5;    /* zinc-100 (was zinc-900) */
-  --color-ink-950: #fafafa;    /* zinc-50 (was zinc-950) */
+  /* New semantic "Paper & Ink" colors */
+  --color-paper: #F9F9F7;      /* Primary background — warm off-white */
+  --color-card: #FFFFFF;       /* Pure white for panels, sidebars, cards */
+  --color-ink: #2D2D2D;        /* Deep charcoal for primary text */
+  --color-border: #E7E5E4;     /* stone-200 — Light warm gray for borders */
+
+  /* Surface scale — Remapped to warm grays (stone palette) */
+  --color-ink-600: #A8A29E;    /* stone-400 */
+  --color-ink-700: #D6D3D1;    /* stone-300 */
+  --color-ink-750: #E0DDDB;    /* between stone-300 and stone-200 */
+  --color-ink-800: #E7E5E4;    /* stone-200 */
+  --color-ink-850: #F0EFEE;    /* between stone-200 and stone-100 */
+  --color-ink-900: #F5F5F4;    /* stone-100 */
+  --color-ink-950: #F9F9F7;    /* paper (warm off-white) */
 
   /* Primary accent — warm amber tones (unchanged) */
   --color-ember-300: #fcd34d;  /* amber-300 */
@@ -18,15 +24,15 @@
   --color-ember-700: #b45309;  /* amber-700 */
   --color-ember-900: rgba(217, 119, 6, 0.2);  /* amber-900/20 — subtle backgrounds */
 
-  /* Text scale — DARK values for readability on light backgrounds (inverted) */
-  --color-steel-50: #09090b;   /* zinc-950 (was zinc-50) */
-  --color-steel-100: #18181b;  /* zinc-900 (was zinc-100) */
-  --color-steel-200: #27272a;  /* zinc-800 (was zinc-200) */
-  --color-steel-300: #3f3f46;  /* zinc-700 (was zinc-300) */
-  --color-steel-400: #52525b;  /* zinc-600 (was zinc-400) */
-  --color-steel-500: #71717a;  /* zinc-500 (stays the same) */
-  --color-steel-600: #a1a1aa;  /* zinc-400 (was zinc-600) */
-  --color-steel-700: #d4d4d8;  /* zinc-300 (was zinc-700) */
+  /* Text scale — Dark charcoals and stone grays for light backgrounds */
+  --color-steel-50: #2D2D2D;   /* ink (deep charcoal) */
+  --color-steel-100: #2D2D2D;  /* ink (deep charcoal) */
+  --color-steel-200: #44403C;  /* stone-700 */
+  --color-steel-300: #57534E;  /* stone-600 */
+  --color-steel-400: #78716C;  /* stone-500 */
+  --color-steel-500: #A8A29E;  /* stone-400 */
+  --color-steel-600: #D6D3D1;  /* stone-300 */
+  --color-steel-700: #E7E5E4;  /* stone-200 */
 
   /* Character module accent — teal */
   --color-char-300: #5eead4;
@@ -50,26 +56,25 @@
 /* Base */
 body {
   font-family: var(--font-family-body);
-  background-color: var(--color-ink-950);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  color: var(--color-steel-300);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-ink-600) transparent;
+  scrollbar-color: var(--color-steel-500) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-ink-600); border-radius: 3px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-ink-700); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-steel-500); border-radius: 3px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-steel-400); }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -84,13 +89,13 @@ body {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.2); }
-  50% { box-shadow: 0 0 12px 4px rgba(217, 119, 6, 0.1); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 @keyframes subtlePulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.8; }
 }
 
 @keyframes shimmer {
@@ -98,16 +103,16 @@ body {
   100% { background-position: 200% 0; }
 }
 
-.animate-fade-in { animation: fadeIn 0.25s ease-out; }
-.animate-slide-in { animation: slideInRight 0.3s ease-out forwards; }
-.animate-slide-in-left { animation: slideInLeft 0.2s ease-out; }
-.animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-.animate-subtle-pulse { animation: subtlePulse 2s ease-in-out infinite; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+.animate-slide-in { animation: slideInRight 0.4s ease-out forwards; }
+.animate-slide-in-left { animation: slideInLeft 0.3s ease-out; }
+.animate-pulse-glow { animation: pulseGlow 3s ease-in-out infinite; }
+.animate-subtle-pulse { animation: subtlePulse 3s ease-in-out infinite; }
 
 /* Sidebar separator lines */
 .sidebar-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  background: var(--color-border);
   margin: 0 0.75rem;
 }
 
@@ -135,35 +140,34 @@ body {
   background: linear-gradient(90deg, var(--color-lore-500), var(--color-lore-600), transparent);
 }
 
-/* Glass panel — for floating sidebars and navigation (frosted white) */
+/* Glass panel — now solid white with stone border */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* Card — for content containers across all modules (soft white) */
+/* Card — for content containers across all modules (solid white) */
 .card {
-  background: rgba(255, 255, 255, 0.80);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: all 300ms ease;
 }
 .card:hover {
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--color-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
 /* Writer's input style — notebook paper feel */
 .writer-input {
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-ink-700);
+  border-bottom: 1px solid var(--color-border);
   border-radius: 0;
   transition: border-color 200ms ease;
 }
 .writer-input:focus {
   outline: none;
-  border-bottom-color: var(--color-ember-500);
+  border-bottom-color: var(--color-steel-400);
 }

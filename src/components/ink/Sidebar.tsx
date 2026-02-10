@@ -22,16 +22,16 @@ const Sidebar: React.FC<SidebarProps> = ({ state, dispatch, onOpenProjects, onOp
     const typeLabel = activeProject?.issueType === 'issue' ? 'Issue' : 'Chapter';
 
     return (
-        <aside className="w-72 bg-ink-900 border-r border-ink-700 flex flex-col overflow-hidden z-30">
-            <div className="p-6 border-b border-ink-700">
-                <h1 className="font-display text-3xl tracking-widest text-ember-500 mb-1 text-center">INK TRACKER</h1>
-                <p className="font-mono text-[10px] text-steel-500 uppercase tracking-tighter text-center">Script System v1.7</p>
+        <aside className="w-72 bg-card border-r border-stone-200 flex flex-col overflow-hidden z-30">
+            <div className="p-6 border-b border-stone-200">
+                <h1 className="font-display text-3xl text-ink mb-1 text-center">Ink Tracker</h1>
+                <p className="font-body text-[10px] text-stone-500 uppercase tracking-tighter text-center">Script System v1.7</p>
                 
                 {isSupabaseConfigured() && !user && (
                     <button
                         onClick={signInWithGoogle}
                         aria-label="Sign in with Google for cloud sync"
-                        className="w-full mt-4 py-2 px-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-[10px] font-mono uppercase tracking-widest rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
+                        className="w-full mt-4 py-2 px-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-[10px] font-body uppercase tracking-widest rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
                     >
                         <svg className="w-3 h-3" viewBox="0 0 24 24" aria-hidden="true">
                             <path

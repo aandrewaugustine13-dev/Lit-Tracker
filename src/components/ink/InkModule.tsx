@@ -26,7 +26,7 @@ const InkModule: React.FC = () => {
   const totalIssuePanels = logic.activeIssue?.pages.reduce((sum: number, p: any) => sum + p.panels.length, 0) || 0;
 
   return (
-    <div className={`flex-1 flex overflow-hidden font-sans selection:bg-ember-500/30 ${logic.showGutters ? 'bg-amber-50/60' : 'bg-ink-950'}`}>
+    <div className={`flex-1 flex overflow-hidden font-sans selection:bg-ember-500/30 ${logic.showGutters ? 'bg-paper' : 'bg-paper'}`}>
       <Sidebar
         state={logic.state as any}
         dispatch={logic.dispatch as any}
@@ -44,7 +44,7 @@ const InkModule: React.FC = () => {
         panning={{ disabled: !logic.zoomEnabled, velocityDisabled: true }}
         wheel={{ disabled: !logic.zoomEnabled }}
       >
-        <main className={`flex-1 flex flex-col overflow-hidden relative transition-colors ${logic.showGutters ? 'bg-amber-50/60' : 'bg-ink-950'} ${logic.zoomEnabled ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+        <main className={`flex-1 flex flex-col overflow-hidden relative transition-colors ${logic.showGutters ? 'bg-paper' : 'bg-paper'} ${logic.zoomEnabled ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <InkToolbar
             showGutters={logic.showGutters}
             activeProject={logic.activeProject}
@@ -244,15 +244,15 @@ const InkModule: React.FC = () => {
       
       {/* Side-by-side Script Panel */}
       {logic.showScriptPanel && logic.activeIssue?.scriptText && (
-        <div className="fixed right-0 top-0 h-full w-[400px] bg-ink-950 border-l border-ink-800 shadow-2xl z-[500] flex flex-col animate-slide-in">
-          <div className="flex items-center justify-between p-4 border-b border-ink-800">
-            <h3 className="font-mono text-xs uppercase tracking-widest text-steel-300">Script Reference</h3>
-            <button onClick={() => logic.setShowScriptPanel(false)} className="p-2 hover:bg-ink-800 rounded-lg text-steel-400 hover:text-steel-200 transition-colors">
+        <div className="fixed right-0 top-0 h-full w-[400px] bg-card border-l border-stone-200 shadow-2xl z-[500] flex flex-col animate-slide-in">
+          <div className="flex items-center justify-between p-4 border-b border-stone-200">
+            <h3 className="font-body text-xs uppercase tracking-widest text-stone-600">Script Reference</h3>
+            <button onClick={() => logic.setShowScriptPanel(false)} className="p-2 hover:bg-stone-100 rounded-lg text-stone-500 hover:text-ink transition-colors">
               <X size={18} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
-            <pre className="text-steel-300 text-sm font-mono whitespace-pre-wrap leading-relaxed">{logic.activeIssue.scriptText}</pre>
+            <pre className="text-ink text-sm font-mono whitespace-pre-wrap leading-relaxed">{logic.activeIssue.scriptText}</pre>
           </div>
         </div>
       )}
