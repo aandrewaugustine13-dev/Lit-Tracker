@@ -218,11 +218,12 @@ function extractLocations(text: string): ExtractedLocation[] {
 
     // Pattern 3: Interior/Exterior descriptions (with or without period)
     const interiorExteriorMatch = trimmedLine.match(
-      /(?:Panel\s+\d+\s+)?(Interior|Exterior)[.\s]+(.+)/i
+      /(?:Panel\s+\d+\s+)?(Interior|Exterior)[.\s]+([^.]+?)(?:\.|$)/i
     );
     if (interiorExteriorMatch) {
-      const locationName = interiorExteriorMatch[2].trim().replace(/\.$/, '');
-      if (locationName.length >= 3) {
+      const locationName = interiorExteriorMatch[2].trim();
+      // Filter out lines that are too long (likely full sentences)
+      if (locationName.length >= 3 && locationName.length <= 50) {
         const key = normalizeName(locationName);
         if (!locations.has(key)) {
           locations.set(key, {
@@ -314,19 +315,21 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
     const trimmedLine = line.trim();
     const lineNumber = i + 1;
 
-    // Skip empty lines
-    if (!trimmedLine) {
-      if (inTimelineTable) {
-        inTimelineTable = false;
-        tableHeaderSeen = false;
-      }
-      continue;
-    }
-
     // Pattern 1: Detect timeline table header
     if (/TIMELINE\s+OVERVIEW/i.test(trimmedLine)) {
       inTimelineTable = true;
       tableHeaderSeen = false;
+      continue;
+    }
+
+    // Exit table if we've been in it and encounter a non-table line
+    if (inTimelineTable && trimmedLine && !trimmedLine.startsWith('|')) {
+      inTimelineTable = false;
+      tableHeaderSeen = false;
+    }
+
+    // Skip empty lines but don't exit table
+    if (!trimmedLine) {
       continue;
     }
 
@@ -368,8 +371,12 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
 
     // Pattern 3: CAPTION patterns
     const captionPatterns = [
-      /CAPTION:\s*"?([A-Za-z]+\s+)?(\d{4})\s*[—-]?\s*(.*)?"?/i,
-      /CAPTION:\s*"?(\d{4})\s*[—-]?\s*(.*)?"?/i,
+      // Pattern with month and year: "CAPTION: "October 2025""
+      /CAPTION:\s*"([A-Za-z]+)\s+(\d{4})(?:\s*[—-]\s*(.*))?"/i,
+      // Pattern with year only: "CAPTION: "2035 — description""
+      /CAPTION:\s*"(\d{4})\s*[—-]\s*(.*)"/i,
+      // Pattern with just year: "CAPTION: "2035""
+      /CAPTION:\s*"(\d{4})"/i,
     ];
 
     for (const pattern of captionPatterns) {
@@ -379,13 +386,14 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
         let year: number;
         let description: string;
 
-        if (match[1] && match[2]) {
-          // Has month
+        // Determine which pattern matched
+        if (match[1] && /^[A-Za-z]+$/.test(match[1]) && match[2]) {
+          // Has month (pattern 1)
           month = match[1].trim();
           year = parseInt(match[2], 10);
           description = match[3] ? match[3].trim() : `${month} ${year}`;
-        } else if (match[1]) {
-          // No month
+        } else if (match[1] && /^\d{4}$/.test(match[1])) {
+          // Year only (patterns 2 or 3)
           year = parseInt(match[1], 10);
           description = match[2] ? match[2].trim() : `${year}`;
         } else {
