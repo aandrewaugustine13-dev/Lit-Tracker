@@ -170,8 +170,8 @@ export function parseScript(
     // ═══ STEP 2: Extract characters ═══
     
     // Pattern 1: NAME (age) or NAME (age, trait1, trait2)
-    // Example: ELIAS (30, DBS scar) or ZOEY (25)
-    const charWithAgeMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+)\s*\((\d+)(?:,\s*(.+?))?\)/);
+    // Example: ELIAS (30, DBS scar) or ZOEY (25) or DR. SARAH (45, scientist)
+    const charWithAgeMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)\s*\((\d+)(?:,\s*(.+?))?\)/);
     if (charWithAgeMatch) {
       const name = charWithAgeMatch[1].trim();
       const age = parseInt(charWithAgeMatch[2], 10);
@@ -202,7 +202,7 @@ export function parseScript(
     }
 
     // Pattern 2: NAME: "dialogue" (dialogue attribution)
-    const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+):\s*"(.+)"/);
+    const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+):\s*"(.+)"/);
     if (dialogueMatch) {
       const name = dialogueMatch[1].trim();
       
@@ -223,8 +223,8 @@ export function parseScript(
     // ═══ STEP 3: Extract locations ═══
     
     // Pattern 1: ALL-CAPS LOCATION - YEAR
-    // Example: WAREHOUSE - 2093
-    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+)\s*-\s*(\d{4})$/);
+    // Example: WAREHOUSE - 2093 or S.T.A.R. LABS - 2100
+    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)\s*-\s*(\d{4})$/);
     if (locationYearMatch) {
       const name = locationYearMatch[1].trim();
       const year = parseInt(locationYearMatch[2], 10);
@@ -244,7 +244,7 @@ export function parseScript(
     }
 
     // Pattern 2: Standalone ALL-CAPS line with location indicator
-    const capsOnlyMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+)$/);
+    const capsOnlyMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)$/);
     if (capsOnlyMatch && !locationYearMatch && !charWithAgeMatch && !dialogueMatch) {
       const name = capsOnlyMatch[1].trim();
       
@@ -296,7 +296,7 @@ export function parseScript(
         const afterVerb = verbMatch[1];
         
         // Look for ALL-CAPS words after the verb (minimum 2 chars total)
-        const capsMatches = Array.from(afterVerb.matchAll(/\b([A-Z][A-Z\s'-]+)\b/g));
+        const capsMatches = Array.from(afterVerb.matchAll(/\b([A-Z][A-Z\s'.-]+)\b/g));
         
         for (const capsMatch of capsMatches) {
           let objectName = capsMatch[1].trim();
@@ -324,7 +324,7 @@ export function parseScript(
     }
 
     // Also look for inline "a/the CAPS" patterns
-    const inlineCapsMatches = Array.from(trimmedLine.matchAll(/\b(?:a|an|the)\s+([A-Z][A-Z\s'-]+)\b/gi));
+    const inlineCapsMatches = Array.from(trimmedLine.matchAll(/\b(?:a|an|the)\s+([A-Z][A-Z\s'.-]+)\b/gi));
     for (const match of inlineCapsMatches) {
       let objectName = match[1].trim();
       
