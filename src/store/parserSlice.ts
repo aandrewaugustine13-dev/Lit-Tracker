@@ -217,7 +217,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
       let newNormalizedCharacters = prev.normalizedCharacters;
       let newNormalizedLocations = prev.normalizedLocations;
       let newNormalizedItems = prev.normalizedItems;
-      let newCharacters = [...prev.characters];
+      const newCharactersToAdd: Character[] = [];
       const newTimelineEntries: TimelineEntry[] = [];
       let currentEpoch = prev.timeline.lastEpoch;
 
@@ -242,7 +242,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           };
 
           newNormalizedCharacters = characterAdapter.upsertOne(newNormalizedCharacters, newChar);
-          newCharacters = [newChar, ...newCharacters];
+          newCharactersToAdd.push(newChar);
 
           const timelineEntry: TimelineEntry = {
             id: crypto.randomUUID(),
@@ -380,7 +380,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         normalizedCharacters: newNormalizedCharacters,
         normalizedLocations: newNormalizedLocations,
         normalizedItems: newNormalizedItems,
-        characters: newCharacters,
+        characters: newCharactersToAdd.length > 0 ? [...newCharactersToAdd, ...prev.characters] : prev.characters,
         timeline: {
           entries: [...prev.timeline.entries, ...newTimelineEntries],
           lastEpoch: currentEpoch,
