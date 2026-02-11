@@ -17,6 +17,17 @@ import { EntityState } from '../store/entityAdapter';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
+// Location name length constraints
+const MIN_LOCATION_NAME_LENGTH = 3; // Minimum characters for a valid location name
+const MAX_LOCATION_NAME_LENGTH = 50; // Maximum to avoid capturing full sentences
+
+// Timeline year range constraints (for sci-fi setting)
+const MIN_REASONABLE_YEAR = 2000; // Earliest year to consider valid
+const MAX_REASONABLE_YEAR = 2200; // Latest year for sci-fi timeline
+
+// Context window for character location inference
+const CONTEXT_WINDOW_SIZE = 3; // Lines before/after location mention to check for character names
+
 // Place indicator keywords for location extraction
 const PLACE_INDICATORS = new Set([
   'CENTER', 'CENTRE', 'ROOM', 'BUILDING', 'STREET', 'LAB', 'LABORATORY',
@@ -175,7 +186,7 @@ function extractLocations(text: string): ExtractedLocation[] {
       const timeOfDay = slugMatch[3] || '';
       const description = `${slugMatch[1]} ${timeOfDay}`.trim();
       
-      if (locationName.length >= 3) {
+      if (locationName.length >= MIN_LOCATION_NAME_LENGTH) {
         const key = normalizeName(locationName);
         if (!locations.has(key)) {
           locations.set(key, {
@@ -201,7 +212,7 @@ function extractLocations(text: string): ExtractedLocation[] {
       const match = trimmedLine.match(pattern);
       if (match) {
         const locationName = match[1].trim().replace(/\.$/, '');
-        if (locationName.length >= 3) {
+        if (locationName.length >= MIN_LOCATION_NAME_LENGTH) {
           const key = normalizeName(locationName);
           if (!locations.has(key)) {
             locations.set(key, {
@@ -223,7 +234,7 @@ function extractLocations(text: string): ExtractedLocation[] {
     if (interiorExteriorMatch) {
       const locationName = interiorExteriorMatch[2].trim();
       // Filter out lines that are too long (likely full sentences)
-      if (locationName.length >= 3 && locationName.length <= 50) {
+      if (locationName.length >= MIN_LOCATION_NAME_LENGTH && locationName.length <= MAX_LOCATION_NAME_LENGTH) {
         const key = normalizeName(locationName);
         if (!locations.has(key)) {
           locations.set(key, {
@@ -247,7 +258,7 @@ function extractLocations(text: string): ExtractedLocation[] {
       const match = trimmedLine.match(pattern);
       if (match) {
         const locationName = match[1].trim();
-        if (locationName.length >= 3 && locationName.length <= 50) {
+        if (locationName.length >= MIN_LOCATION_NAME_LENGTH && locationName.length <= MAX_LOCATION_NAME_LENGTH) {
           const key = normalizeName(locationName);
           if (!locations.has(key)) {
             locations.set(key, {
@@ -272,7 +283,7 @@ function extractLocations(text: string): ExtractedLocation[] {
           PLACE_INDICATORS.has(word.replace(/[,.-]/g, ''))
         );
 
-        if (hasPlaceIndicator && cleanPhrase.length >= 3 && cleanPhrase.length <= 50) {
+        if (hasPlaceIndicator && cleanPhrase.length >= MIN_LOCATION_NAME_LENGTH && cleanPhrase.length <= MAX_LOCATION_NAME_LENGTH) {
           const key = normalizeName(cleanPhrase);
           if (!locations.has(key)) {
             locations.set(key, {
@@ -450,8 +461,8 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
       const match = trimmedLine.match(pattern);
       if (match) {
         const year = parseInt(match[1], 10);
-        // Only include if it looks like a reasonable year (2000-2200 for sci-fi)
-        if (year >= 2000 && year <= 2200) {
+        // Only include if it looks like a reasonable year (sci-fi timeline range)
+        if (year >= MIN_REASONABLE_YEAR && year <= MAX_REASONABLE_YEAR) {
           events.push({
             year,
             description: trimmedLine.substring(0, 50),
@@ -494,8 +505,8 @@ function inferCharacterLocations(
 
   // For each extracted location, check nearby lines for character mentions
   for (const location of extractedLocations) {
-    const startLine = Math.max(0, location.lineNumber - 3);
-    const endLine = Math.min(lines.length, location.lineNumber + 3);
+    const startLine = Math.max(0, location.lineNumber - CONTEXT_WINDOW_SIZE);
+    const endLine = Math.min(lines.length, location.lineNumber + CONTEXT_WINDOW_SIZE);
 
     // Get context around the location mention
     const contextLines = lines.slice(startLine, endLine);
