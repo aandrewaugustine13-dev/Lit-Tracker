@@ -17,7 +17,27 @@ import { Character, LocationEntry } from '../types';
 import { Item, TimelineAction } from '../types/lore';
 import { EntityState } from '../store/entityAdapter';
 
+// ─── UUID Helper ────────────────────────────────────────────────────────────
+
+/**
+ * Generate a UUID with fallback for environments without crypto.randomUUID
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for older browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // ─── Constants ──────────────────────────────────────────────────────────────
+
+// Maximum script length sent to LLM (to avoid token limits and costs)
+const MAX_LLM_SCRIPT_LENGTH = 8000;
 
 // Common screenplay direction keywords to filter out
 const SCREENPLAY_KEYWORDS = new Set([
@@ -201,7 +221,7 @@ function runPass1(
         // New location
         discoveredNames.add(normalized);
         result.newEntities.push({
-          tempId: crypto.randomUUID(),
+          tempId: generateUUID(),
           entityType: 'location',
           name: toTitleCase(locationName),
           source: 'deterministic',
@@ -228,7 +248,7 @@ function runPass1(
       } else if (!discoveredNames.has(normalized)) {
         discoveredNames.add(normalized);
         result.newEntities.push({
-          tempId: crypto.randomUUID(),
+          tempId: generateUUID(),
           entityType: 'location',
           name: toTitleCase(locationName),
           source: 'deterministic',
@@ -259,7 +279,7 @@ function runPass1(
         // If we know the current location and character's location differs, propose a moved_to event
         if (currentLocationId && character.currentLocationId !== currentLocationId) {
           result.timelineEvents.push({
-            tempId: crypto.randomUUID(),
+            tempId: generateUUID(),
             source: 'deterministic',
             confidence: 0.8,
             contextSnippet: `${speakerName} at ${currentLocationName || 'location'}`,
@@ -276,7 +296,7 @@ function runPass1(
         // New character
         discoveredNames.add(normalized);
         result.newEntities.push({
-          tempId: crypto.randomUUID(),
+          tempId: generateUUID(),
           entityType: 'character',
           name: toTitleCase(speakerName),
           source: 'deterministic',
@@ -316,7 +336,7 @@ function runPass1(
           if (!discoveredNames.has(normalized)) {
             discoveredNames.add(normalized);
             result.newEntities.push({
-              tempId: crypto.randomUUID(),
+              tempId: generateUUID(),
               entityType: customPattern.entityType,
               name: toTitleCase(matchedText),
               source: 'deterministic',
@@ -337,7 +357,7 @@ function runPass1(
     if (settingMatch) {
       const date = settingMatch[1].trim();
       result.timelineEvents.push({
-        tempId: crypto.randomUUID(),
+        tempId: generateUUID(),
         source: 'deterministic',
         confidence: 1.0,
         contextSnippet: trimmedLine,
@@ -357,7 +377,7 @@ function runPass1(
     if (captionMatch) {
       const date = captionMatch[1].trim();
       result.timelineEvents.push({
-        tempId: crypto.randomUUID(),
+        tempId: generateUUID(),
         source: 'deterministic',
         confidence: 1.0,
         contextSnippet: trimmedLine,
@@ -392,7 +412,7 @@ function runPass1(
             if (!entityIndex.items.has(normalized) && !discoveredNames.has(normalized)) {
               discoveredNames.add(normalized);
               result.newEntities.push({
-                tempId: crypto.randomUUID(),
+                tempId: generateUUID(),
                 entityType: 'item',
                 name: toTitleCase(itemName),
                 source: 'deterministic',
@@ -487,14 +507,22 @@ RESPONSE FORMAT (strict JSON):
 }
 
 SCRIPT TO ANALYZE:
-${rawScriptText.substring(0, 8000)}`;
+${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
+
+  // Warn if script was truncated
+  if (rawScriptText.length > MAX_LLM_SCRIPT_LENGTH) {
+    warnings.push(`Script truncated to ${MAX_LLM_SCRIPT_LENGTH} characters for LLM analysis (original: ${rawScriptText.length})`);
+  }
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-goog-api-key': geminiApiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: systemPrompt }] }],
           generationConfig: {
@@ -524,7 +552,7 @@ ${rawScriptText.substring(0, 8000)}`;
 
     // Convert to proposals
     const newEntities: ProposedNewEntity[] = llmResponse.newEntities.map(e => ({
-      tempId: crypto.randomUUID(),
+      tempId: generateUUID(),
       entityType: e.type,
       name: e.name,
       source: 'llm' as const,
@@ -540,7 +568,7 @@ ${rawScriptText.substring(0, 8000)}`;
     }));
 
     const timelineEvents: ProposedTimelineEvent[] = llmResponse.timelineEvents.map(e => ({
-      tempId: crypto.randomUUID(),
+      tempId: generateUUID(),
       source: 'llm' as const,
       confidence: e.confidence,
       contextSnippet: e.context,

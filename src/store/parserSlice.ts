@@ -12,6 +12,23 @@ import { Item, TimelineEntry } from '../types/lore';
 import { EntityState } from './entityAdapter';
 import { createEntityAdapter } from './entityAdapter';
 
+// ─── UUID Helper ────────────────────────────────────────────────────────────
+
+/**
+ * Generate a UUID with fallback for environments without crypto.randomUUID
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for older browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // ─── Entity Adapters ────────────────────────────────────────────────────────
 
 const characterAdapter = createEntityAdapter<Character>((c) => c.id);
@@ -308,7 +325,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
       for (const proposed of approvedNewEntities) {
         if (proposed.entityType === 'character') {
           const newCharacter: Character = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             name: proposed.name,
             role: proposed.suggestedRole || 'Supporting',
             archetype: '',
@@ -342,7 +359,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           // Create timeline entry
           const epoch = newTimeline.lastEpoch + 1;
           const timelineEntry: TimelineEntry = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             epoch,
             timestamp,
             entityType: 'character',
@@ -360,7 +377,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           };
         } else if (proposed.entityType === 'location') {
           const newLocation: LocationEntry = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             name: proposed.name,
             type: LoreType.LOCATION,
             description: proposed.suggestedDescription || 'Auto-created from script parser',
@@ -382,7 +399,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           // Create timeline entry
           const epoch = newTimeline.lastEpoch + 1;
           const timelineEntry: TimelineEntry = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             epoch,
             timestamp,
             entityType: 'location',
@@ -400,7 +417,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           };
         } else if (proposed.entityType === 'item') {
           const newItem: Item = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             name: proposed.name,
             description: proposed.suggestedItemDescription || 'Auto-created from script parser',
             currentHolderId: proposed.suggestedHolderId || null,
@@ -418,7 +435,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           // Create timeline entry
           const epoch = newTimeline.lastEpoch + 1;
           const timelineEntry: TimelineEntry = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             epoch,
             timestamp,
             entityType: 'item',
@@ -467,7 +484,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         // Create timeline entry for update
         const epoch = newTimeline.lastEpoch + 1;
         const timelineEntry: TimelineEntry = {
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           epoch,
           timestamp,
           entityType: update.entityType as any,
@@ -489,7 +506,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
       for (const event of approvedTimelineEvents) {
         const epoch = newTimeline.lastEpoch + 1;
         const timelineEntry: TimelineEntry = {
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           epoch,
           timestamp,
           entityType: event.entityType,
