@@ -294,7 +294,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
             name: entity.name,
             description: entity.suggestedItemDescription || entity.suggestedDescription || '',
             currentHolderId: entity.suggestedHolderId || null,
-            locationId: entity.suggestedHolderId ? null : null,
+            locationId: null,
             tags: ['parser-extracted'],
             createdAt: now,
             updatedAt: now,
