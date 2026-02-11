@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { GripVertical, Trash2, ImageIcon, ChevronDown, ChevronUp, Sparkles, Loader2, Move, Link2, Unlink, MessageCircle, Cloud, Type, Smartphone, Upload, RefreshCw, Copy, ClipboardPaste, History, Plus, X, Settings2 } from 'lucide-react';
+import { Trash2, ImageIcon, Sparkles, Loader2, Move, Upload, RefreshCw, Plus, X, Settings2 } from 'lucide-react';
 import { Panel, Project, Character, AspectRatio, Page, TextElement, TextElementType, PanelFrameStyle, TextOverlayStyle } from '../../types';
 import { InkAction as Action } from '../../store/inkSlice';
 import { ASPECT_CONFIGS, ART_STYLES } from '../../constants';
@@ -8,6 +8,7 @@ import { getImage, saveImage } from '../../services/imageStorage';
 import { genId } from '../../utils/helpers';
 import TextOverlay from './TextOverlay';
 import { PanelGenerationOverlay } from './GenerationSpinner';
+import PanelSettingsPopover from './PanelSettingsPopover';
 
 import { generateImage as generateGeminiImage } from '../../services/geminiService';
 import { generateLeonardoImage } from '../../services/leonardoService';
@@ -75,11 +76,8 @@ const PanelCard: React.FC<PanelCardProps> = ({
     panelFrameStyle = 'opaque-black', textOverlayStyle = 'opaque',
 }) => {
     const [isGenerating, setIsGenerating] = useState(false);
-    const [showAspectMenu, setShowAspectMenu] = useState(false);
-    const [showCharMenu, setShowCharMenu] = useState(false);
-    const [showRefMenu, setShowRefMenu] = useState(false);
-    const [showPromptHistory, setShowPromptHistory] = useState(false);
-    const [showMoreOptions, setShowMoreOptions] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [promptFocused, setPromptFocused] = useState(false);
     const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
     const [isResizing, setIsResizing] = useState(false);
     const resizeRef = useRef<{ startX: number; startY: number; startWidth: number; startHeight: number } | null>(null);
@@ -163,8 +161,6 @@ const PanelCard: React.FC<PanelCardProps> = ({
     };
 
     const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { prompt: e.target.value } }); };
-    const handleAspectChange = (ratio: AspectRatio) => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { aspectRatio: ratio } }); setShowAspectMenu(false); };
-    const toggleCharacter = (charId: string) => { const newIds = panel.characterIds.includes(charId) ? panel.characterIds.filter(id => id !== charId) : [...panel.characterIds, charId]; dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { characterIds: newIds } }); };
     const handleDelete = () => { if (confirm('Delete this frame?')) dispatch({ type: 'DELETE_PANEL', panelId: panel.id, pageId }); };
     const handleClearImage = () => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { imageUrl: undefined } }); setImageDataUrl(null); };
 
@@ -188,7 +184,6 @@ const PanelCard: React.FC<PanelCardProps> = ({
     };
 
     const aspectConfig = ASPECT_CONFIGS[panel.aspectRatio];
-    const selectedChars = characters.filter(c => panel.characterIds.includes(c.id));
     const dialogueLines = panel.textElements.filter(el => el.x === -1 && el.y === -1);
     const overlayElements = panel.textElements.filter(el => !(el.x === -1 && el.y === -1));
 
@@ -201,30 +196,45 @@ const PanelCard: React.FC<PanelCardProps> = ({
             } ${isDragging ? 'ring-2 ring-ember-500 shadow-2xl' : ''} ${isResizing ? 'cursor-nwse-resize' : ''}`}
         >
             {/* HEADER */}
-            <div className={`flex items-center justify-between px-3 py-2 border-b ${
+            <div className={`flex items-center justify-between px-2 py-1 border-b ${
                 panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50'
                     : 'border-stone-200 bg-stone-50'
             } rounded-t-xl`}>
-                <div className="flex items-center gap-2">
-                    <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none hover:text-ember-500 transition-colors p-1 -ml-1 rounded hover:bg-stone-100" title="Drag to move">
-                        <Move size={16} className="text-stone-500" />
+                <div className="flex items-center gap-1.5">
+                    <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none hover:text-ember-500 transition-colors p-0.5 rounded hover:bg-stone-100" title="Drag to move">
+                        <Move size={14} className="text-stone-500" />
                     </div>
-                    <span className="text-xs font-body font-bold text-stone-600">{index + 1}/{total}</span>
+                    <div className="w-5 h-5 rounded-full bg-ember-500 text-white flex items-center justify-center font-bold text-[10px]">
+                        {index + 1}
+                    </div>
+                    <span className="text-[10px] font-body text-stone-500">{aspectConfig?.label.split(' ')[0]}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                    <div className="relative">
-                        <button onClick={() => setShowAspectMenu(!showAspectMenu)} className="text-[10px] font-body px-2 py-1 rounded flex items-center gap-1 transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200">
-                            {aspectConfig?.label.split(' ')[0]}<ChevronDown size={12} />
-                        </button>
-                        {showAspectMenu && (
-                            <div className="absolute right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 min-w-[140px] bg-card border-stone-200">
-                                {Object.entries(ASPECT_CONFIGS).map(([key, cfg]) => (
-                                    <button key={key} onClick={() => handleAspectChange(key as AspectRatio)} className={`w-full text-left px-3 py-1.5 text-xs font-body transition-colors ${panel.aspectRatio === key ? 'bg-ember-500 text-paper' : 'text-stone-600 hover:bg-stone-100'}`}>{cfg.label}</button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={handleDelete} className="p-1 text-stone-500 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                <div className="flex items-center gap-1 relative">
+                    <button 
+                        onClick={() => setShowSettings(!showSettings)} 
+                        className="p-1 text-stone-500 hover:text-ember-500 transition-colors" 
+                        title="Settings"
+                    >
+                        <Settings2 size={14} />
+                    </button>
+                    <button onClick={handleDelete} className="p-1 text-stone-500 hover:text-red-500 transition-colors" title="Delete">
+                        <Trash2 size={14} />
+                    </button>
+                    {showSettings && (
+                        <PanelSettingsPopover
+                            panel={panel}
+                            dispatch={dispatch}
+                            characters={characters}
+                            activePage={activePage}
+                            imageDataUrl={imageDataUrl}
+                            copiedSettings={copiedSettings}
+                            onCopySettings={onCopySettings}
+                            onPasteSettings={onPasteSettings}
+                            onAddTextElement={handleAddTextElement}
+                            onPromptChange={handlePromptChange}
+                            onClose={() => setShowSettings(false)}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -233,22 +243,25 @@ const PanelCard: React.FC<PanelCardProps> = ({
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
                 {/* IMAGE */}
-                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} bg-stone-100 border border-stone-200`}>
-                    <div className="absolute top-2 left-2 z-20"><div className="w-8 h-8 rounded-full bg-ember-500 text-white flex items-center justify-center font-bold text-sm shadow-lg">{index + 1}</div></div>
+                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} bg-stone-100 border border-stone-200 group`}>
                     {imageDataUrl ? (
                         <>
                             <img src={imageDataUrl} alt={`Panel ${index + 1}`} className="w-full h-full object-cover" />
                             {overlayElements.map(element => (<TextOverlay key={element.id} element={element} panelId={panel.id} dispatch={dispatch} textOverlayStyle={textOverlayStyle} />))}
                             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={handleGenerateImage} disabled={isGenerating} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors disabled:opacity-50" title="Regenerate"><RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /></button>
-                                <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Upload"><Upload size={12} /></button>
-                                <button onClick={handleClearImage} className="p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full transition-colors" title="Clear"><Trash2 size={12} /></button>
+                                <button onClick={handleAddDialogueLine} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={12} /></button>
+                                <button onClick={handleGenerateImage} disabled={isGenerating} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors disabled:opacity-50" title="Regenerate" aria-label="Regenerate image"><RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /></button>
+                                <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Upload" aria-label="Upload image"><Upload size={12} /></button>
+                                <button onClick={handleClearImage} className="p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full transition-colors" title="Clear" aria-label="Clear image"><Trash2 size={12} /></button>
                             </div>
                         </>
                     ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                             <ImageIcon size={32} className="text-stone-400" />
-                            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-body bg-ember-500 hover:bg-ember-400 text-white transition-colors"><Upload size={14} />Upload Image</button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-body bg-ember-500 hover:bg-ember-400 text-white transition-colors"><Upload size={14} />Upload Image</button>
+                                <button onClick={handleAddDialogueLine} className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200 transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={16} /></button>
+                            </div>
                             <span className="text-[10px] font-body text-stone-400">No image yet</span>
                         </div>
                     )}
@@ -276,155 +289,49 @@ const PanelCard: React.FC<PanelCardProps> = ({
                     </div>
                 )}
 
-                {/* Add dialogue button */}
-                <button onClick={handleAddDialogueLine} className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body uppercase tracking-wider transition-colors text-stone-500 hover:text-stone-700 hover:bg-stone-100 border border-dashed border-stone-300">
-                    <Plus size={12} />Add Dialogue
-                </button>
-
-                {/* PROMPT */}
-                <textarea value={panel.prompt || ''} onChange={handlePromptChange} placeholder="Describe this panel... (scene, action, mood)" rows={3}
-                    className="w-full rounded-lg px-3 py-2 text-sm resize-none transition-colors outline-none bg-stone-50 border border-stone-200 text-ink placeholder-stone-400 focus:border-ember-500"
-                />
-
-                {/* REFERENCE PANEL LINKER */}
-                {activePage.panels.length > 1 && (
-                    <div className="relative">
-                        <button onClick={() => setShowRefMenu(!showRefMenu)} className={`w-full text-left px-3 py-2 rounded-lg text-xs font-body flex items-center justify-between transition-colors ${panel.referencePanelId ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-600' : 'bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100'}`}>
-                            <span className="flex items-center gap-2"><Link2 size={12} />{panel.referencePanelId ? `Linked to Panel ${activePage.panels.findIndex(p => p.id === panel.referencePanelId) + 1}` : 'Link to previous panel...'}</span>
-                            <ChevronDown size={14} />
-                        </button>
-                        {showRefMenu && (
-                            <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
-                                <button onClick={() => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referencePanelId: undefined } }); setShowRefMenu(false); }}
-                                    className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${!panel.referencePanelId ? 'bg-ember-500/20 text-ember-500' : 'text-stone-600 hover:bg-stone-100'}`}>
-                                    <Unlink size={12} /><span>No reference (standalone)</span>
-                                </button>
-                                {activePage.panels.filter(p => p.id !== panel.id && p.imageUrl).map((refPanel) => {
-                                    const panelNum = activePage.panels.findIndex(p => p.id === refPanel.id) + 1;
-                                    return (
-                                        <button key={refPanel.id} onClick={() => { dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referencePanelId: refPanel.id } }); setShowRefMenu(false); }}
-                                            className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${panel.referencePanelId === refPanel.id ? 'bg-cyan-500/20 text-cyan-600' : 'text-stone-600 hover:bg-stone-100'}`}>
-                                            <Link2 size={12} /><span className="font-bold">Panel {panelNum}</span>
-                                            <span className="opacity-60 text-[10px] truncate flex-1">{refPanel.prompt?.slice(0, 30) || 'No prompt'}...</span>
-                                        </button>
-                                    );
-                                })}
-                                {activePage.panels.filter(p => p.id !== panel.id && p.imageUrl).length === 0 && (
-                                    <div className="px-3 py-2 text-xs italic text-stone-500">No other panels with images yet</div>
-                                )}
-                            </div>
-                        )}
-                        {panel.referencePanelId && (
-                            <div className="mt-2 px-1">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[9px] font-body uppercase text-stone-500">Consistency Strength</span>
-                                    <span className="text-[9px] font-body text-stone-600">{Math.round((panel.referenceStrength || 0.7) * 100)}%</span>
-                                </div>
-                                <input type="range" min="0.1" max="1" step="0.1" value={panel.referenceStrength || 0.7}
-                                    onChange={(e) => dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referenceStrength: parseFloat(e.target.value) } })}
-                                    className="w-full h-1 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
-                                <div className="flex justify-between text-[8px] font-body mt-0.5 text-stone-400"><span>Creative</span><span>Consistent</span></div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* MORE OPTIONS (collapsed) */}
-                <button onClick={() => setShowMoreOptions(!showMoreOptions)}
-                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body uppercase tracking-wider transition-colors text-stone-500 hover:text-stone-700 hover:bg-stone-100">
-                    <Settings2 size={12} />{showMoreOptions ? 'Less Options' : 'More Options'}{showMoreOptions ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                </button>
-
-                {showMoreOptions && (
-                    <div className="space-y-3 pt-1 border-t border-stone-200">
-                        {/* Character selector */}
-                        <div className="relative">
-                            <label className="block text-[10px] font-body uppercase mb-1 text-stone-500">Characters in this panel</label>
-                            {characters.length > 0 ? (
-                                <>
-                                    <button onClick={() => setShowCharMenu(!showCharMenu)}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-body flex items-center justify-between transition-colors ${selectedChars.length > 0 ? 'bg-ember-500/10 border border-ember-500/30 text-ember-500' : 'bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100'}`}>
-                                        <span>{selectedChars.length > 0 ? selectedChars.map(c => c.name).join(', ') : 'Select characters...'}</span><ChevronDown size={14} />
-                                    </button>
-                                    {showCharMenu && (
-                                        <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
-                                            {characters.map(char => {
-                                                const isSelected = panel.characterIds.includes(char.id);
-                                                const appearanceSummary = getAppearanceSummary(char);
-                                                return (
-                                                    <button key={char.id} onClick={() => toggleCharacter(char.id)}
-                                                        className={`w-full text-left px-3 py-2 text-xs transition-colors ${isSelected ? 'bg-ember-500/20' : 'hover:bg-stone-100'}`}>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`w-3 h-3 rounded border flex-shrink-0 ${isSelected ? 'bg-ember-500 border-ember-500' : 'border-stone-300'}`} />
-                                                            <span className={`font-bold ${isSelected ? 'text-ember-500' : 'text-ink'}`}>{char.name}</span>
-                                                        </div>
-                                                        {appearanceSummary && <p className="mt-1 ml-5 text-[10px] leading-tight text-stone-500">{appearanceSummary}</p>}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                    {selectedChars.length > 0 && (
-                                        <div className="mt-2 space-y-1 text-[10px] text-stone-600">
-                                            {selectedChars.map(char => { const summary = getAppearanceSummary(char); return summary ? (<div key={char.id} className="flex gap-1"><span className="font-bold text-ember-500">{char.name}:</span><span className="truncate">{summary}</span></div>) : null; })}
-                                        </div>
-                                    )}
-                                </>
-                            ) : (<p className="text-xs text-stone-500">No characters defined. Use the CHARACTERS button to add some.</p>)}
-                        </div>
-
-                        {/* Overlay bubble tools */}
-                        {imageDataUrl && (
-                            <div>
-                                <label className="block text-[10px] font-body uppercase mb-1.5 text-stone-500">Image Overlays</label>
-                                <div className="flex items-center gap-1">
-                                    <button onClick={() => handleAddTextElement('dialogue')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add dialogue bubble on image"><MessageCircle size={12} />Bubble</button>
-                                    <button onClick={() => handleAddTextElement('thought')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add thought cloud on image"><Cloud size={12} />Thought</button>
-                                    <button onClick={() => handleAddTextElement('caption')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add caption box on image"><Type size={12} />Caption</button>
-                                    <button onClick={() => handleAddTextElement('phone')} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Add phone/text on image"><Smartphone size={12} />Phone</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Copy/Paste settings */}
-                        <div className="flex items-center gap-2">
-                            {onCopySettings && (
-                                <button onClick={(e) => { e.stopPropagation(); onCopySettings(); }} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Copy panel settings"><Copy size={12} />Copy Settings</button>
-                            )}
-                            {onPasteSettings && copiedSettings && (
-                                <button onClick={(e) => { e.stopPropagation(); onPasteSettings(); }} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200" title="Paste panel settings"><ClipboardPaste size={12} />Paste Settings</button>
-                            )}
-                        </div>
-
-                        {/* Prompt History */}
-                        {panel.promptHistory && panel.promptHistory.length > 0 && (
-                            <div className="relative">
-                                <button onClick={() => setShowPromptHistory(!showPromptHistory)} className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-body transition-colors bg-stone-100 text-stone-600 hover:bg-stone-200">
-                                    <History size={12} />Prompt History ({panel.promptHistory.length})
-                                </button>
-                                {showPromptHistory && (
-                                    <div className="mt-1 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
-                                        {[...panel.promptHistory].reverse().map((historyPrompt, idx) => (
-                                            <button key={idx} onClick={() => { handlePromptChange({ target: { value: historyPrompt } } as React.ChangeEvent<HTMLTextAreaElement>); setShowPromptHistory(false); }}
-                                                className="w-full text-left px-3 py-2 text-xs transition-colors text-stone-700 hover:bg-stone-100">
-                                                <div className="text-[10px] mb-1 text-stone-500">{(panel.promptHistory?.length || 0) - idx} version{(panel.promptHistory?.length || 0) - idx === 1 ? '' : 's'} ago</div>
-                                                <div className="line-clamp-3">{historyPrompt}</div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                {/* PROMPT - Auto-collapse */}
+                {promptFocused ? (
+                    <textarea 
+                        value={panel.prompt || ''} 
+                        onChange={handlePromptChange}
+                        onBlur={() => setPromptFocused(false)}
+                        placeholder="Describe this panel..." 
+                        rows={4}
+                        autoFocus
+                        className="w-full rounded-lg px-3 py-2 text-sm resize-none transition-colors outline-none bg-stone-50 border border-ember-500 ring-1 ring-ember-500/30 text-ink placeholder-stone-400"
+                    />
+                ) : (
+                    <div
+                        onClick={() => setPromptFocused(true)}
+                        className="rounded-lg px-3 py-2 text-sm font-body cursor-text bg-stone-50 border border-stone-200 text-ink hover:border-stone-300 truncate min-h-[36px] flex items-center"
+                    >
+                        {panel.prompt || <span className="text-stone-400">Describe this panel…</span>}
                     </div>
                 )}
             </div>
 
             {/* GENERATE BUTTON */}
             <div className={`px-3 py-2 border-t ${panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50' : 'border-stone-200 bg-stone-50'} rounded-b-xl`}>
-                <button onClick={handleGenerateImage} disabled={isGenerating || (!panel.prompt?.trim() && panel.characterIds.length === 0)}
-                    className="w-full py-2 rounded-lg text-xs font-body font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-ember-500 hover:bg-ember-400 text-paper">
-                    {isGenerating ? (<><Loader2 size={14} className="animate-spin" />Generating with {project.imageProvider === 'gemini' ? 'Gemini' : project.imageProvider === 'leonardo' ? 'Leonardo' : project.imageProvider === 'grok' ? 'Grok' : project.imageProvider === 'fal' ? 'FAL' : project.imageProvider === 'seaart' ? 'SeaArt' : project.imageProvider === 'openai' ? 'OpenAI' : 'AI'}...</>)
-                    : (<><Sparkles size={14} />Generate</>)}
+                <button 
+                    onClick={handleGenerateImage} 
+                    disabled={isGenerating || (!panel.prompt?.trim() && panel.characterIds.length === 0)}
+                    className={`w-full rounded-lg text-xs font-body font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                        imageDataUrl 
+                            ? 'py-1.5 border border-stone-300 text-stone-600 hover:border-ember-500 hover:text-ember-500 bg-transparent' 
+                            : 'py-2.5 bg-ember-500 hover:bg-ember-400 text-paper shadow-sm'
+                    }`}
+                >
+                    {isGenerating ? (
+                        <>
+                            <Loader2 size={14} className="animate-spin" />
+                            Generating with {project.imageProvider === 'gemini' ? 'Gemini' : project.imageProvider === 'leonardo' ? 'Leonardo' : project.imageProvider === 'grok' ? 'Grok' : project.imageProvider === 'fal' ? 'FAL' : project.imageProvider === 'seaart' ? 'SeaArt' : project.imageProvider === 'openai' ? 'OpenAI' : 'AI'}...
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles size={14} />
+                            {imageDataUrl ? 'Regenerate' : 'Generate'}
+                        </>
+                    )}
                 </button>
             </div>
 
