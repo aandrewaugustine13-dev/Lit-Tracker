@@ -112,13 +112,7 @@ export function ZoomableCanvas({
           : 'repeating-linear-gradient(0deg, transparent, transparent 39px, #e7e5e4 39px, #e7e5e4 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, #e7e5e4 39px, #e7e5e4 40px)'
       }}
     >
-    {!activePage || activePage.panels.length === 0 ? (
-      <div className="sticky top-4 right-0 w-full flex justify-start pl-2 pointer-events-none" style={{ zIndex: 10 }}>
-        <p className={`font-body text-sm tracking-wide pointer-events-auto ${showGutters ? 'text-gray-500' : 'text-stone-500'}`}>
-          ← Click the 📁 in the sidebar to start storyboarding
-        </p>
-      </div>
-    ) : (
+    {!activePage || activePage.panels.length === 0 ? null : (
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} modifiers={modifiers}>
       {activePage.panels.map((panel: any, idx: number) => (
         <PanelCard
