@@ -41,6 +41,13 @@ export interface ComicParseResult {
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
+// Timeline year range constraints
+const MIN_VALID_YEAR = 2000;
+const MAX_VALID_YEAR = 2199;
+
+// Maximum context snippet length
+const MAX_CONTEXT_LENGTH = 100;
+
 // Noise words to filter out (screenplay/panel keywords and common words)
 const NOISE_WORDS = new Set([
   'PANEL', 'PAGE', 'SCENE', 'INT', 'EXT', 'CUT', 'FADE', 'DISSOLVE',
@@ -164,7 +171,7 @@ export function parseScript(
     
     // Pattern 1: NAME (age) or NAME (age, trait1, trait2)
     // Example: ELIAS (30, DBS scar) or ZOEY (25)
-    const charWithAgeMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+?)\s*\((\d+)(?:,\s*(.+?))?\)/);
+    const charWithAgeMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+)\s*\((\d+)(?:,\s*(.+?))?\)/);
     if (charWithAgeMatch) {
       const name = charWithAgeMatch[1].trim();
       const age = parseInt(charWithAgeMatch[2], 10);
@@ -195,7 +202,7 @@ export function parseScript(
     }
 
     // Pattern 2: NAME: "dialogue" (dialogue attribution)
-    const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+?):\s*"(.+)"/);
+    const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+):\s*"(.+)"/);
     if (dialogueMatch) {
       const name = dialogueMatch[1].trim();
       
@@ -217,12 +224,12 @@ export function parseScript(
     
     // Pattern 1: ALL-CAPS LOCATION - YEAR
     // Example: WAREHOUSE - 2093
-    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+?)\s*-\s*(\d{4})$/);
+    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'-]+)\s*-\s*(\d{4})$/);
     if (locationYearMatch) {
       const name = locationYearMatch[1].trim();
       const year = parseInt(locationYearMatch[2], 10);
       
-      if (!isNoiseWord(name) && year >= 2000 && year <= 2199) {
+      if (!isNoiseWord(name) && year >= MIN_VALID_YEAR && year <= MAX_VALID_YEAR) {
         const normalizedName = normalizeName(name);
         
         if (!locationsMap.has(normalizedName)) {
@@ -263,7 +270,7 @@ export function parseScript(
 
     // ═══ STEP 4: Extract timeline entries ═══
     
-    // Scan for 4-digit years in 2000–2199 range
+    // Scan for 4-digit years in valid range
     const yearMatches = Array.from(trimmedLine.matchAll(/\b(2[0-1]\d{2})\b/g));
     for (const match of yearMatches) {
       const year = parseInt(match[1], 10);
@@ -271,7 +278,7 @@ export function parseScript(
       if (!timelineMap.has(year)) {
         timelineMap.set(year, {
           year,
-          context: trimmedLine.substring(0, 100),
+          context: trimmedLine.substring(0, MAX_CONTEXT_LENGTH),
         });
         console.log(`[comicParser] Found timeline year: ${year}`);
       }
@@ -288,8 +295,8 @@ export function parseScript(
       if (verbMatch) {
         const afterVerb = verbMatch[1];
         
-        // Look for ALL-CAPS words after the verb
-        const capsMatches = Array.from(afterVerb.matchAll(/\b([A-Z][A-Z\s'-]{2,})\b/g));
+        // Look for ALL-CAPS words after the verb (minimum 2 chars total)
+        const capsMatches = Array.from(afterVerb.matchAll(/\b([A-Z][A-Z\s'-]+)\b/g));
         
         for (const capsMatch of capsMatches) {
           let objectName = capsMatch[1].trim();
@@ -317,7 +324,7 @@ export function parseScript(
     }
 
     // Also look for inline "a/the CAPS" patterns
-    const inlineCapsMatches = Array.from(trimmedLine.matchAll(/\b(?:a|an|the)\s+([A-Z][A-Z\s'-]{2,})\b/gi));
+    const inlineCapsMatches = Array.from(trimmedLine.matchAll(/\b(?:a|an|the)\s+([A-Z][A-Z\s'-]+)\b/gi));
     for (const match of inlineCapsMatches) {
       let objectName = match[1].trim();
       
@@ -359,7 +366,8 @@ export function parseScript(
 // ─── Self-Test Block ────────────────────────────────────────────────────────
 
 // Only run tests if this file is executed directly (not imported)
-if (typeof process !== 'undefined' && process.argv && process.argv[1] && process.argv[1].endsWith('comicScriptParser.ts')) {
+if (typeof process !== 'undefined' && process.argv && process.argv[1] && 
+    (process.argv[1].endsWith('comicScriptParser.ts') || process.argv[1].endsWith('comicScriptParser.js'))) {
   console.log('\n═══════════════════════════════════════════════════════');
   console.log('Running self-tests for comicScriptParser');
   console.log('═══════════════════════════════════════════════════════\n');
