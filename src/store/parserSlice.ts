@@ -360,7 +360,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
               ...baseEntity,
               description: proposed.suggestedItemDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
               currentHolderId: proposed.suggestedHolderId || null,
-              // If item has a holder, locationId is null. Otherwise, location is unknown (null).
+              // Location is unknown at extraction time; will be set via timeline events if location context exists
               locationId: null,
               tags: ['auto-extracted'],
             });

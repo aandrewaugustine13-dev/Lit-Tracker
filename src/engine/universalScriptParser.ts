@@ -169,7 +169,7 @@ function pass1DeterministicExtraction(
     }
 
     // 3. Detect dialogue speakers (all-caps name + indented next line)
-    const speakerMatch = trimmedLine.match(/^([A-Z][A-Z '.'-]{1,29})$/);
+    const speakerMatch = trimmedLine.match(/^([A-Z][A-Z '.-]{1,29})$/);
     if (speakerMatch && lineIdx + 1 < lines.length) {
       const nextLine = lines[lineIdx + 1];
       // Check if next line is indented (dialogue)
