@@ -60,12 +60,6 @@ export interface LoreSlice {
   linkLoreToCharacter: (loreEntryId: string, characterId: string) => void;
   unlinkLoreFromCharacter: (loreEntryId: string, characterId: string) => void;
 
-  // ─── Character CRUD Actions ─────────────────────────────────────────────────
-  
-  addCharacter: (character: Character) => void;
-  updateCharacter: (id: string, updates: Partial<Character>) => void;
-  deleteCharacter: (id: string) => void;
-
   // ─── Location CRUD Actions ──────────────────────────────────────────────────
   
   addLocation: (location: LocationEntry) => void;
@@ -173,17 +167,20 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
     
     if (entry) {
       // It's a location - update in normalized storage
+      // Cast updates to LocationEntry since we know it's a location
+      const locationUpdates = updates as Partial<LocationEntry>;
+      
       return {
         normalizedLocations: locationAdapter.updateOne(
           state.normalizedLocations, 
           id, 
-          { ...updates, updatedAt: Date.now() }
+          { ...locationUpdates, updatedAt: Date.now() }
         ),
         loreEntries: deriveLoreEntries({
           normalizedLocations: locationAdapter.updateOne(
             state.normalizedLocations, 
             id, 
-            { ...updates, updatedAt: Date.now() }
+            { ...locationUpdates, updatedAt: Date.now() }
           )
         }),
       };
@@ -296,70 +293,6 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
           ? { ...e, characterIds: e.characterIds.filter(id => id !== characterId), updatedAt: Date.now() } as LoreEntry
           : e
       ),
-    };
-  }),
-
-  // ─── Character CRUD Actions ─────────────────────────────────────────────────
-
-  addCharacter: (character) => set((state) => {
-    const timelineEntry = createTimelineEntry(
-      state,
-      'character',
-      character.id,
-      'created',
-      { name: character.name },
-      `Character "${character.name}" created`
-    );
-
-    return {
-      normalizedCharacters: characterAdapter.addOne(state.normalizedCharacters, character),
-      timeline: {
-        entries: [...state.timeline.entries, timelineEntry],
-        lastEpoch: timelineEntry.epoch,
-      },
-    };
-  }),
-
-  updateCharacter: (id, updates) => set((state) => {
-    const timelineEntry = createTimelineEntry(
-      state,
-      'character',
-      id,
-      'updated',
-      updates,
-      `Character updated`
-    );
-
-    return {
-      normalizedCharacters: characterAdapter.updateOne(
-        state.normalizedCharacters,
-        id,
-        { ...updates, updatedAt: Date.now() }
-      ),
-      timeline: {
-        entries: [...state.timeline.entries, timelineEntry],
-        lastEpoch: timelineEntry.epoch,
-      },
-    };
-  }),
-
-  deleteCharacter: (id) => set((state) => {
-    const character = state.normalizedCharacters.entities[id];
-    const timelineEntry = createTimelineEntry(
-      state,
-      'character',
-      id,
-      'deleted',
-      { name: character?.name },
-      `Character "${character?.name}" deleted`
-    );
-
-    return {
-      normalizedCharacters: characterAdapter.removeOne(state.normalizedCharacters, id),
-      timeline: {
-        entries: [...state.timeline.entries, timelineEntry],
-        lastEpoch: timelineEntry.epoch,
-      },
     };
   }),
 
