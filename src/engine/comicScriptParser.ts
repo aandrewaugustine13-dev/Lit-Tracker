@@ -323,8 +323,9 @@ export function parseScript(
       }
     }
 
-    // Also look for inline "a/the CAPS" patterns
-    const inlineCapsMatches = Array.from(trimmedLine.matchAll(/\b(?:a|an|the)\s+([A-Z][A-Z\s'.-]+)\b/gi));
+    // Also look for inline "a/the CAPS" patterns (conservative)
+    // Match "a/an/the" followed by 1-3 uppercase words
+    const inlineCapsMatches = Array.from(trimmedLine.matchAll(/\b(?:a|an|the)\s+([A-Z]+(?:\s+[A-Z]+){0,2})(?=\s|[.,!?;:]|$)/gi));
     for (const match of inlineCapsMatches) {
       let objectName = match[1].trim();
       
