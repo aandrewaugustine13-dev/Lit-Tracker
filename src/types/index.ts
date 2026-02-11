@@ -46,6 +46,11 @@ export interface Character extends EntityBase {
   // Legacy Ink Tracker compat
   description?: string;
   appearance?: CharacterAppearance;
+  // CRM fields (optional for backward compatibility)
+  currentLocationId?: string | null;
+  status?: string;
+  inventory?: string[];
+  relationships?: Record<string, string>;
 }
 
 export interface CharacterAppearance {
@@ -265,3 +270,6 @@ export interface LitProject {
 // These allow ported Ink Tracker components to use their original type names
 export type Project = InkProject;
 export type AppState = InkAppState;
+
+// ─── Re-export Lore CRM Types ───────────────────────────────────────────────
+export * from './lore';

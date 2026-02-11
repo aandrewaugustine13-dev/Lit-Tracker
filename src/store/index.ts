@@ -23,20 +23,28 @@ export const useLitStore = create<LitStore>()(
     {
       name: 'lit-tracker-v1',
       storage: createJSONStorage(() => localStorage),
-      // Only persist data, not UI state.
+      // Persist data, including new normalized stores and timeline.
       // Ink state persists itself to 'ink_tracker_data' for backward compat.
       partialize: (state) => ({
+        // Legacy state (backward compatible)
         characters: state.characters,
         relationships: state.relationships,
         loreEntries: state.loreEntries,
         projectName: state.projectName,
         activeModule: state.activeModule,
+        
+        // New normalized state
+        normalizedCharacters: state.normalizedCharacters,
+        normalizedLocations: state.normalizedLocations,
+        normalizedItems: state.normalizedItems,
+        timeline: state.timeline,
       }),
     }
   )
 );
 
-// Convenience selectors
+// ─── Legacy Selectors (Backward Compatible) ─────────────────────────────────
+
 export const useCharacters = () => useLitStore((s) => s.characters);
 export const useLoreEntries = () => useLitStore((s) => s.loreEntries);
 export const useActiveModule = () => useLitStore((s) => s.activeModule);
@@ -55,3 +63,7 @@ export const useLoreEntryCharacters = (loreEntryId: string) =>
     if (!entry) return [];
     return s.characters.filter(c => entry.characterIds.includes(c.id));
   });
+
+// ─── Re-export New Selectors ────────────────────────────────────────────────
+
+export * from './selectors';
