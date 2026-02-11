@@ -529,6 +529,15 @@ function inferCharacterLocations(
   return inferences;
 }
 
+/**
+ * Infer location region from inferred tags
+ */
+function inferRegionFromTags(tags: string[]): string {
+  if (tags.includes('real')) return 'Earth';
+  if (tags.includes('dimensional')) return 'Abstract';
+  return '';
+}
+
 // ─── Main Parser Function ───────────────────────────────────────────────────
 
 export async function parseTimelineAndLocations(
@@ -576,8 +585,12 @@ export async function parseTimelineAndLocations(
       // Propose an update to enrich the existing location
       const currentLocation = existingState.normalizedLocations.entities[existing.id];
       
-      // Only propose update if we have new info
-      if (loc.description && loc.description !== currentLocation.description) {
+      // Only propose update if we have new info and a valid description
+      if (loc.description && currentLocation.description !== loc.description) {
+        const enhancedDescription = currentLocation.description
+          ? `${currentLocation.description}; ${loc.description}`
+          : loc.description;
+        
         updatedEntities.push({
           entityId: existing.id,
           entityType: 'location',
@@ -588,9 +601,7 @@ export async function parseTimelineAndLocations(
           lineNumber: loc.lineNumber,
           changeDescription: `Enrich description with: ${loc.description}`,
           updates: {
-            description: currentLocation.description
-              ? `${currentLocation.description}; ${loc.description}`
-              : loc.description,
+            description: enhancedDescription,
           },
         });
       }
@@ -614,7 +625,7 @@ export async function parseTimelineAndLocations(
         contextSnippet: loc.contextSnippet,
         lineNumber: loc.lineNumber,
         suggestedDescription: loc.description,
-        suggestedRegion: tags.includes('real') ? 'Earth' : tags.includes('dimensional') ? 'Abstract' : '',
+        suggestedRegion: inferRegionFromTags(tags),
       });
     }
   }
@@ -631,8 +642,11 @@ export async function parseTimelineAndLocations(
       confidence: 1.0,
       contextSnippet: event.contextSnippet,
       lineNumber: event.lineNumber,
-      entityType: 'location', // Timeline events for epoch markers
-      entityId: '', // No specific entity
+      // Note: Using 'location' as entityType for epoch markers since TimelineEntityType
+      // is limited to 'character' | 'location' | 'item'. These are global timeline events
+      // not tied to specific entities (entityId is empty string).
+      entityType: 'location',
+      entityId: '', // No specific entity for epoch markers
       entityName: event.description,
       action: 'created',
       payload: {
