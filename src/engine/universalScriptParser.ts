@@ -267,6 +267,7 @@ function runPass1(
 
     // ─── Dialogue speaker detection ─────────────────────────────────────────
     // Match: All-caps name on own line, optionally followed by parenthetical
+    // Pattern allows 1 uppercase letter + up to 29 more chars = MAX_CHARACTER_NAME_LENGTH (30)
     const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.,-]{0,29})(?:\s*\(.*?\))?$/);
     if (dialogueMatch && i + 1 < lines.length) {
       const nextLine = lines[i + 1].trim();
@@ -587,8 +588,18 @@ Analyze the script text and return pure JSON (no markdown, no explanation).`;
       return { newEntities: [], updatedEntities: [], newTimelineEvents: [] };
     }
 
-    // Parse JSON response
-    const llmResponse: LLMExtractionResponse = JSON.parse(contentText);
+    // Parse and validate JSON response
+    let llmResponse: LLMExtractionResponse;
+    try {
+      llmResponse = JSON.parse(contentText);
+      // Validate structure - ensure arrays exist
+      if (!llmResponse.newEntities) llmResponse.newEntities = [];
+      if (!llmResponse.updatedEntities) llmResponse.updatedEntities = [];
+      if (!llmResponse.newTimelineEvents) llmResponse.newTimelineEvents = [];
+    } catch (parseError) {
+      console.warn('Failed to parse LLM response JSON:', parseError);
+      return { newEntities: [], updatedEntities: [], newTimelineEvents: [] };
+    }
 
     // Validate and convert to ProposedNewEntity[], etc.
     const newEntities: ProposedNewEntity[] = (llmResponse.newEntities || []).map(e => ({

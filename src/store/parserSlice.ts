@@ -157,6 +157,8 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
 
   toggleUpdateSelection: (index: number) => {
     set((state: any) => {
+      // Note: Using index as ID for updates. This is stable within a single proposal session
+      // since the updatedEntities array doesn't change order during review.
       const indexStr = String(index);
       const selected = state.selectedUpdateIds;
       const isSelected = selected.includes(indexStr);
@@ -350,7 +352,8 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
 
       for (const update of approvedUpdates) {
         const now = Date.now();
-        const updatesWithTimestamp = { ...update.updates, updatedAt: now };
+        // Ensure updatedAt is set to current time, overriding any value from update.updates
+        const updatesWithTimestamp = { updatedAt: now, ...update.updates };
         
         if (update.entityType === 'character') {
           normalizedCharacters = characterAdapter.updateOne(

@@ -433,11 +433,18 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
               </button>
               <button
                 onClick={handleCommit}
-                className="px-6 py-2 bg-ember-500 text-white rounded-lg hover:bg-ember-600 font-bold transition-colors flex items-center gap-2"
+                className="px-6 py-2 bg-ember-500 text-white rounded-lg hover:bg-ember-600 font-bold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={
                   selectedNewEntityIds.length === 0 &&
                   selectedUpdateIds.length === 0 &&
                   selectedTimelineEventIds.length === 0
+                }
+                aria-label={
+                  selectedNewEntityIds.length === 0 &&
+                  selectedUpdateIds.length === 0 &&
+                  selectedTimelineEventIds.length === 0
+                    ? 'Commit to Lore Tracker (no proposals selected)'
+                    : 'Commit to Lore Tracker'
                 }
               >
                 <Check size={18} />
