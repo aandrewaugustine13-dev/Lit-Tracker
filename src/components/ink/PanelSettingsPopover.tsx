@@ -309,21 +309,25 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                     </button>
                     {showPromptHistory && (
                         <div className="mt-1 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
-                            {[...panel.promptHistory].reverse().map((historyPrompt, idx) => (
-                                <button 
-                                    key={idx} 
-                                    onClick={() => {
-                                        onPromptChange({ target: { value: historyPrompt } } as React.ChangeEvent<HTMLTextAreaElement>);
-                                        setShowPromptHistory(false);
-                                    }}
-                                    className="w-full text-left px-3 py-2 text-xs transition-colors text-stone-700 hover:bg-stone-100"
-                                >
-                                    <div className="text-[10px] mb-1 text-stone-500">
-                                        {(panel.promptHistory?.length || 0) - idx} version{(panel.promptHistory?.length || 0) - idx === 1 ? '' : 's'} ago
-                                    </div>
-                                    <div className="line-clamp-3">{historyPrompt}</div>
-                                </button>
-                            ))}
+                            {[...panel.promptHistory].reverse().map((historyPrompt, idx) => {
+                                const historyLength = panel.promptHistory?.length || 0;
+                                const versionsAgo = historyLength - idx;
+                                return (
+                                    <button 
+                                        key={idx} 
+                                        onClick={() => {
+                                            onPromptChange({ target: { value: historyPrompt } } as React.ChangeEvent<HTMLTextAreaElement>);
+                                            setShowPromptHistory(false);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-xs transition-colors text-stone-700 hover:bg-stone-100"
+                                    >
+                                        <div className="text-[10px] mb-1 text-stone-500">
+                                            {versionsAgo} version{versionsAgo === 1 ? '' : 's'} ago
+                                        </div>
+                                        <div className="line-clamp-3">{historyPrompt}</div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

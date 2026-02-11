@@ -249,10 +249,10 @@ const PanelCard: React.FC<PanelCardProps> = ({
                             <img src={imageDataUrl} alt={`Panel ${index + 1}`} className="w-full h-full object-cover" />
                             {overlayElements.map(element => (<TextOverlay key={element.id} element={element} panelId={panel.id} dispatch={dispatch} textOverlayStyle={textOverlayStyle} />))}
                             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={handleAddDialogueLine} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Add dialogue line"><Plus size={12} /></button>
-                                <button onClick={handleGenerateImage} disabled={isGenerating} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors disabled:opacity-50" title="Regenerate"><RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /></button>
-                                <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Upload"><Upload size={12} /></button>
-                                <button onClick={handleClearImage} className="p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full transition-colors" title="Clear"><Trash2 size={12} /></button>
+                                <button onClick={handleAddDialogueLine} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={12} /></button>
+                                <button onClick={handleGenerateImage} disabled={isGenerating} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors disabled:opacity-50" title="Regenerate" aria-label="Regenerate image"><RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /></button>
+                                <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Upload" aria-label="Upload image"><Upload size={12} /></button>
+                                <button onClick={handleClearImage} className="p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full transition-colors" title="Clear" aria-label="Clear image"><Trash2 size={12} /></button>
                             </div>
                         </>
                     ) : (
@@ -260,7 +260,7 @@ const PanelCard: React.FC<PanelCardProps> = ({
                             <ImageIcon size={32} className="text-stone-400" />
                             <div className="flex items-center gap-2">
                                 <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-body bg-ember-500 hover:bg-ember-400 text-white transition-colors"><Upload size={14} />Upload Image</button>
-                                <button onClick={handleAddDialogueLine} className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200 transition-colors" title="Add dialogue line"><Plus size={16} /></button>
+                                <button onClick={handleAddDialogueLine} className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200 transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={16} /></button>
                             </div>
                             <span className="text-[10px] font-body text-stone-400">No image yet</span>
                         </div>
