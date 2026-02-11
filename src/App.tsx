@@ -9,6 +9,7 @@ const DetailPanel = lazy(() => import('./components/shared/DetailPanel'));
 const InkModule = lazy(() => import('./components/ink/InkModule'));
 const CharactersModule = lazy(() => import('./components/characters/CharactersModule'));
 const LoreModule = lazy(() => import('./components/lore/LoreModule'));
+const ParserTestPage = lazy(() => import('./components/parser/ParserTestPage').then(m => ({ default: m.ParserTestPage })));
 
 // Loading fallback component with branded workspace theme
 const WorkspaceLoadingFallback: React.FC = () => (
@@ -22,6 +23,9 @@ const WorkspaceLoadingFallback: React.FC = () => (
 
 function AppContent() {
   const { activeModule, inkState } = useLitStore();
+
+  // Check if we're in parser test mode
+  const isParserTestMode = window.location.search.includes('parser-test');
 
   // Keyboard shortcuts (only when app is active, not on Gatekeeper)
   useEffect(() => {
@@ -39,6 +43,15 @@ function AppContent() {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [inkState.activeProjectId]);
+
+  // Render parser test page if in test mode
+  if (isParserTestMode) {
+    return (
+      <Suspense fallback={<WorkspaceLoadingFallback />}>
+        <ParserTestPage />
+      </Suspense>
+    );
+  }
 
   const renderModule = () => {
     switch (activeModule) {
