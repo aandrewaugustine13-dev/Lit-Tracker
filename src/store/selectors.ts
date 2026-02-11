@@ -5,7 +5,7 @@
 // normalized entity stores. They prevent data duplication and ensure UI
 // components always show current state.
 
-import { useLitStore } from './index';
+import { useLitStore, LitStore } from './index';
 import { Character, LocationEntry, Item, TimelineEntry } from '../types';
 
 // =============================================================================
@@ -207,28 +207,28 @@ export const useEntityStateAtEpoch = (
  * Plain function to get a character by ID.
  * Use this in cross-slice actions or other non-React code.
  */
-export function getCharacterById(state: any, characterId: string): Character | undefined {
+export function getCharacterById(state: LitStore, characterId: string): Character | undefined {
   return state.normalizedCharacters.entities[characterId];
 }
 
 /**
  * Plain function to get a location by ID.
  */
-export function getLocationById(state: any, locationId: string): LocationEntry | undefined {
+export function getLocationById(state: LitStore, locationId: string): LocationEntry | undefined {
   return state.normalizedLocations.entities[locationId];
 }
 
 /**
  * Plain function to get an item by ID.
  */
-export function getItemById(state: any, itemId: string): Item | undefined {
+export function getItemById(state: LitStore, itemId: string): Item | undefined {
   return state.normalizedItems.entities[itemId];
 }
 
 /**
  * Plain function to get characters in a location.
  */
-export function getCharactersInLocation(state: any, locationId: string): Character[] {
+export function getCharactersInLocation(state: LitStore, locationId: string): Character[] {
   return state.normalizedCharacters.ids
     .map((id: string) => state.normalizedCharacters.entities[id])
     .filter((char: Character) => char.currentLocationId === locationId);
@@ -237,7 +237,7 @@ export function getCharactersInLocation(state: any, locationId: string): Charact
 /**
  * Plain function to get items at a location.
  */
-export function getItemsAtLocation(state: any, locationId: string): Item[] {
+export function getItemsAtLocation(state: LitStore, locationId: string): Item[] {
   return state.normalizedItems.ids
     .map((id: string) => state.normalizedItems.entities[id])
     .filter((item: Item) => item.locationId === locationId && item.currentHolderId === null);
@@ -247,7 +247,7 @@ export function getItemsAtLocation(state: any, locationId: string): Item[] {
  * Plain function to get timeline entries for an entity.
  */
 export function getTimelineForEntity(
-  state: any,
+  state: LitStore,
   entityType: TimelineEntry['entityType'],
   entityId: string
 ): TimelineEntry[] {

@@ -144,11 +144,11 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
     // Route LocationEntry types to normalized storage
     if (entry.type === LoreType.LOCATION) {
       const locationEntry = entry as LocationEntry;
+      const newLocations = locationAdapter.addOne(state.normalizedLocations, locationEntry);
+      
       return {
-        normalizedLocations: locationAdapter.addOne(state.normalizedLocations, locationEntry),
-        loreEntries: deriveLoreEntries({ 
-          normalizedLocations: locationAdapter.addOne(state.normalizedLocations, locationEntry) 
-        }),
+        normalizedLocations: newLocations,
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
         activeLoreEntryId: entry.id,
         isLoreEditorOpen: true,
       };
@@ -169,20 +169,15 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       // It's a location - update in normalized storage
       // Cast updates to LocationEntry since we know it's a location
       const locationUpdates = updates as Partial<LocationEntry>;
+      const newLocations = locationAdapter.updateOne(
+        state.normalizedLocations, 
+        id, 
+        { ...locationUpdates, updatedAt: Date.now() }
+      );
       
       return {
-        normalizedLocations: locationAdapter.updateOne(
-          state.normalizedLocations, 
-          id, 
-          { ...locationUpdates, updatedAt: Date.now() }
-        ),
-        loreEntries: deriveLoreEntries({
-          normalizedLocations: locationAdapter.updateOne(
-            state.normalizedLocations, 
-            id, 
-            { ...locationUpdates, updatedAt: Date.now() }
-          )
-        }),
+        normalizedLocations: newLocations,
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
       };
     }
     
@@ -199,11 +194,11 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
     
     if (entry) {
       // It's a location - remove from normalized storage
+      const newLocations = locationAdapter.removeOne(state.normalizedLocations, id);
+      
       return {
-        normalizedLocations: locationAdapter.removeOne(state.normalizedLocations, id),
-        loreEntries: deriveLoreEntries({
-          normalizedLocations: locationAdapter.removeOne(state.normalizedLocations, id)
-        }),
+        normalizedLocations: newLocations,
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
         activeLoreEntryId: state.activeLoreEntryId === id ? null : state.activeLoreEntryId,
       };
     }
@@ -233,19 +228,15 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
         updatedAt: Date.now(),
       };
       
+      const newLocations = locationAdapter.updateOne(
+        state.normalizedLocations,
+        loreEntryId,
+        updatedLocation
+      );
+      
       return {
-        normalizedLocations: locationAdapter.updateOne(
-          state.normalizedLocations,
-          loreEntryId,
-          updatedLocation
-        ),
-        loreEntries: deriveLoreEntries({
-          normalizedLocations: locationAdapter.updateOne(
-            state.normalizedLocations,
-            loreEntryId,
-            updatedLocation
-          )
-        }),
+        normalizedLocations: newLocations,
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
       };
     }
     
@@ -270,19 +261,15 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
         updatedAt: Date.now(),
       };
       
+      const newLocations = locationAdapter.updateOne(
+        state.normalizedLocations,
+        loreEntryId,
+        updatedLocation
+      );
+      
       return {
-        normalizedLocations: locationAdapter.updateOne(
-          state.normalizedLocations,
-          loreEntryId,
-          updatedLocation
-        ),
-        loreEntries: deriveLoreEntries({
-          normalizedLocations: locationAdapter.updateOne(
-            state.normalizedLocations,
-            loreEntryId,
-            updatedLocation
-          )
-        }),
+        normalizedLocations: newLocations,
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
       };
     }
     
@@ -308,11 +295,11 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       `Location "${location.name}" created`
     );
 
+    const newLocations = locationAdapter.addOne(state.normalizedLocations, location);
+
     return {
-      normalizedLocations: locationAdapter.addOne(state.normalizedLocations, location),
-      loreEntries: deriveLoreEntries({
-        normalizedLocations: locationAdapter.addOne(state.normalizedLocations, location)
-      }),
+      normalizedLocations: newLocations,
+      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
       timeline: {
         entries: [...state.timeline.entries, timelineEntry],
         lastEpoch: timelineEntry.epoch,
@@ -330,19 +317,15 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       `Location updated`
     );
 
+    const newLocations = locationAdapter.updateOne(
+      state.normalizedLocations,
+      id,
+      { ...updates, updatedAt: Date.now() }
+    );
+
     return {
-      normalizedLocations: locationAdapter.updateOne(
-        state.normalizedLocations,
-        id,
-        { ...updates, updatedAt: Date.now() }
-      ),
-      loreEntries: deriveLoreEntries({
-        normalizedLocations: locationAdapter.updateOne(
-          state.normalizedLocations,
-          id,
-          { ...updates, updatedAt: Date.now() }
-        )
-      }),
+      normalizedLocations: newLocations,
+      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
       timeline: {
         entries: [...state.timeline.entries, timelineEntry],
         lastEpoch: timelineEntry.epoch,
@@ -361,11 +344,11 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       `Location "${location?.name}" deleted`
     );
 
+    const newLocations = locationAdapter.removeOne(state.normalizedLocations, id);
+
     return {
-      normalizedLocations: locationAdapter.removeOne(state.normalizedLocations, id),
-      loreEntries: deriveLoreEntries({
-        normalizedLocations: locationAdapter.removeOne(state.normalizedLocations, id)
-      }),
+      normalizedLocations: newLocations,
+      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
       timeline: {
         entries: [...state.timeline.entries, timelineEntry],
         lastEpoch: timelineEntry.epoch,
