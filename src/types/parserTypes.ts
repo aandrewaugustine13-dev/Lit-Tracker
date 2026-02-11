@@ -66,7 +66,6 @@ export interface ProposedNewEntity {
   suggestedRegion?: string;
   
   // ─── Item-specific suggestions ─────────────────────────────────────────────
-  suggestedTimeOfDay?: string;
   suggestedHolderId?: string;
   suggestedItemDescription?: string;
 }

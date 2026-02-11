@@ -360,7 +360,8 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
               ...baseEntity,
               description: proposed.suggestedItemDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
               currentHolderId: proposed.suggestedHolderId || null,
-              locationId: proposed.suggestedHolderId ? null : null,
+              // If item has a holder, locationId is null. Otherwise, location is unknown (null).
+              locationId: null,
               tags: ['auto-extracted'],
             });
           }
