@@ -11,6 +11,7 @@ import { Character, LocationEntry, LoreType } from '../types';
 import { Item, TimelineEntry } from '../types/lore';
 import { EntityState } from './entityAdapter';
 import { createEntityAdapter } from './entityAdapter';
+import { parseTimelineAndLocations } from '../engine/timelineLocationsParser';
 
 // ─── UUID Helper ────────────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ export interface ParserSlice {
   updateProjectConfig: (updates: Partial<ProjectConfig>) => void;
   
   commitExtractionProposal: () => void;
+  parseTimelineAndLocations: (rawScriptText: string) => Promise<void>;
 }
 
 /**
@@ -555,6 +557,42 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         parserStatus: 'error',
         parserErrorMessage: error instanceof Error ? error.message : 'Unknown error',
       });
+    }
+  },
+
+  // ─── Parse Timeline and Locations ───────────────────────────────────────────
+  
+  parseTimelineAndLocations: async (rawScriptText: string) => {
+    const state = get();
+    
+    // Set status to parsing
+    set({ parserStatus: 'parsing', parserErrorMessage: null });
+
+    try {
+      // Read current state
+      const characters = state.characters || [];
+      const normalizedLocations = state.normalizedLocations || locationAdapter.getInitialState();
+      const loreEntries = deriveLoreEntries(normalizedLocations);
+
+      // Call the parser engine
+      const proposal = await parseTimelineAndLocations(rawScriptText, {
+        characters,
+        normalizedLocations,
+        loreEntries,
+      });
+
+      // Set the proposal (this auto-selects all and sets status to 'awaiting-review')
+      state.setCurrentProposal(proposal);
+
+      console.log('✅ Timeline and locations parsed successfully', {
+        newLocations: proposal.newEntities.filter(e => e.entityType === 'location').length,
+        timelineEvents: proposal.newTimelineEvents.length,
+        characterMoves: proposal.updatedEntities.filter(e => e.entityType === 'character').length,
+      });
+    } catch (error) {
+      console.error('❌ Failed to parse timeline and locations:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      state.setParserError(errorMessage);
     }
   },
 });
