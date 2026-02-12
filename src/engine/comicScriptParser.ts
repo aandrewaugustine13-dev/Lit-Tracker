@@ -6,6 +6,8 @@
 // This parser complements universalScriptParser.ts (screenplay format) and
 // timelineLocationsParser.ts (timeline/location enrichment).
 
+import { stripMarkdown } from '../utils/markdownStripper';
+
 // ─── Type Definitions ───────────────────────────────────────────────────────
 
 export interface ParsedCharacter {
@@ -74,7 +76,7 @@ const LOCATION_INDICATORS = new Set([
   'HANGAR', 'FACILITY', 'CENTER', 'CENTRE', 'THEATRE', 'THEATER',
   'BASE', 'COMMAND', 'DIMENSION', 'REALM', 'VOID',
   'SITE', 'INTERSECTION', 'CROSSWALK', 'SIDEWALK', 'LOBBY', 
-  'ELEVATOR', 'STUDIO', 'CLINIC',
+  'ELEVATOR', 'STUDIO', 'CLINIC', 'WARD',
 ]);
 
 // Action verbs that suggest object interaction (for echo extraction)
@@ -145,7 +147,11 @@ export function parseScript(
     return { characters: [], locations: [], timeline: [], echoes: [] };
   }
 
-  const lines = scriptText.split('\n');
+  // Strip Markdown formatting before parsing
+  const normalizedText = stripMarkdown(scriptText);
+  console.log(`[comicParser] Markdown stripped: ${scriptText.length} -> ${normalizedText.length} chars`);
+
+  const lines = normalizedText.split('\n');
   console.log('[comicParser] Total lines:', lines.length);
 
   // Storage for extracted data
@@ -379,10 +385,72 @@ export function parseScript(
     }
 
     // Pattern 4: Establishing shot patterns
-    if (/establishing\s+shot/i.test(trimmedLine)) {
+    // Extract location from establishing shot descriptions
+    // Example: "Wide establishing shot. NYC street near NYU at dusk"
+    const establishingMatch = trimmedLine.match(/establishing\s+shot[.\s]+(.+?)(?:\s+at\s+|\s+in\s+|\.|\s*$)/i);
+    if (establishingMatch) {
       console.log(`[comicParser] Establishing shot detected at line ${lineNumber}`);
-      // Extract location from nearby lines if possible
-      // For simplicity, we'll skip detailed extraction here
+      const locationDescription = establishingMatch[1].trim();
+      
+      // Try to extract a location from the description
+      // Look for location indicators in the description
+      if (locationDescription.length >= 3 && locationDescription.length <= MAX_CONTEXT_LENGTH) {
+        const words = locationDescription.toUpperCase().split(/\s+/);
+        const hasIndicator = words.some(word => LOCATION_INDICATORS.has(word.replace(/[,.-]/g, '')));
+        
+        if (hasIndicator) {
+          // Extract up to the first phrase that looks like a location
+          const locationMatch = locationDescription.match(/^([^,]+?)(?:,|\s+near|\s+at|\s+in|$)/);
+          if (locationMatch) {
+            const locationName = locationMatch[1].trim();
+            const normalizedName = normalizeName(locationName);
+            
+            if (!locationsMap.has(normalizedName)) {
+              locationsMap.set(normalizedName, {
+                name: locationName,
+                firstMention: lineNumber,
+              });
+              console.log(`[comicParser] Found location (establishing shot): ${locationName}`);
+            }
+          }
+        }
+      }
+    }
+
+    // Pattern 5: General descriptive location patterns
+    // Extract locations from descriptive text containing location indicators
+    // Example: "Parking garage interior", "Construction site at dawn"
+    // Note: Keywords are hardcoded here for pattern clarity and specificity,
+    // rather than dynamically built from LOCATION_INDICATORS
+    if (!panelMatch && !charWithAgeMatch && !dialogueMatch) {
+      // Look for phrases with location indicators
+      // Matches phrases like "Parking garage" or "Hospital maternity ward"
+      const locationPatterns = [
+        // Pattern: "Location-indicator word(s)" at start of sentence
+        /^([A-Z][a-z]+(?:\s+[a-z]+)*\s+(?:garage|hospital|street|site|building|office|center|ward|room|hall|studio|clinic|lab|park|station))/i,
+        // Pattern: "Location-indicator word(s) interior/exterior"
+        /^([A-Z][a-z]+(?:\s+[a-z]+)*\s+(?:garage|hospital|site|building|office)\s+(?:interior|exterior))/i,
+      ];
+
+      for (const pattern of locationPatterns) {
+        const match = trimmedLine.match(pattern);
+        if (match) {
+          const locationName = match[1].trim();
+          
+          if (locationName.length >= 3 && locationName.length <= 50) {
+            const normalizedName = normalizeName(locationName);
+            
+            if (!locationsMap.has(normalizedName)) {
+              locationsMap.set(normalizedName, {
+                name: locationName,
+                firstMention: lineNumber,
+              });
+              console.log(`[comicParser] Found location (descriptive): ${locationName}`);
+            }
+          }
+          break;
+        }
+      }
     }
 
     // ═══ STEP 4: Extract timeline entries ═══
