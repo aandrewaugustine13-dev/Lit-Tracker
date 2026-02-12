@@ -16,6 +16,7 @@ import {
 import { Character, LocationEntry } from '../types';
 import { Item, TimelineAction } from '../types/lore';
 import { EntityState } from '../store/entityAdapter';
+import { parseScript as parseComicScript, ComicParseResult } from './comicScriptParser';
 
 // ─── UUID Helper ────────────────────────────────────────────────────────────
 
@@ -260,6 +261,86 @@ function runPass1(
       continue;
     }
 
+    // ═══ 2b. COMIC-STYLE LOCATION WITH YEAR ═══
+    // Pattern: LOCATION_NAME - YEAR
+    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)\s*-\s*(\d{4})\s*$/);
+    if (locationYearMatch) {
+      const locationName = locationYearMatch[1].trim();
+      const year = locationYearMatch[2].trim();
+      const normalized = normalizeName(locationName);
+
+      // Filter screenplay keywords
+      if (SCREENPLAY_KEYWORDS.has(locationName)) {
+        continue;
+      }
+
+      currentLocationName = locationName;
+
+      if (entityIndex.locations.has(normalized)) {
+        currentLocationId = entityIndex.locations.get(normalized)!.id;
+      } else if (!discoveredNames.has(normalized)) {
+        discoveredNames.add(normalized);
+        result.newEntities.push({
+          tempId: generateUUID(),
+          entityType: 'location',
+          name: toTitleCase(locationName),
+          source: 'deterministic',
+          confidence: 0.95,
+          contextSnippet: trimmedLine.substring(0, 100),
+          lineNumber,
+        });
+        currentLocationId = null; // Will be set once committed
+      }
+
+      // Also create a timeline event for the year
+      result.timelineEvents.push({
+        tempId: generateUUID(),
+        source: 'deterministic',
+        confidence: 1.0,
+        contextSnippet: trimmedLine,
+        lineNumber,
+        entityType: 'location',
+        entityId: currentLocationId || '',
+        entityName: locationName,
+        action: 'updated',
+        payload: { year },
+        description: `${locationName} in year ${year}`,
+      });
+      continue;
+    }
+
+    // ═══ 2c. STANDALONE LOCATION WITH INDICATORS ═══
+    // Pattern: Standalone ALL-CAPS line containing location indicator keywords
+    const standaloneLocationMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)$/);
+    if (standaloneLocationMatch) {
+      const locationName = standaloneLocationMatch[1].trim();
+      const normalized = normalizeName(locationName);
+
+      // Check if line contains location indicator keywords and isn't a screenplay keyword
+      const words = locationName.split(/\s+/);
+      const hasLocationIndicator = words.some(word => PLACE_INDICATORS.has(word.replace(/[,.-]/g, '')));
+
+      if (hasLocationIndicator && !SCREENPLAY_KEYWORDS.has(locationName)) {
+        currentLocationName = locationName;
+
+        if (entityIndex.locations.has(normalized)) {
+          currentLocationId = entityIndex.locations.get(normalized)!.id;
+        } else if (!discoveredNames.has(normalized)) {
+          discoveredNames.add(normalized);
+          result.newEntities.push({
+            tempId: generateUUID(),
+            entityType: 'location',
+            name: toTitleCase(locationName),
+            source: 'deterministic',
+            confidence: 0.85,
+            contextSnippet: trimmedLine.substring(0, 100),
+            lineNumber,
+          });
+        }
+        continue;
+      }
+    }
+
     // ═══ 3. DIALOGUE SPEAKER DETECTION ═══
     // Pattern: ALL-CAPS name on its own line, possibly followed by indented dialogue
     const speakerMatch = trimmedLine.match(/^([A-Z][A-Z\s'.,-]{2,29})$/);
@@ -305,6 +386,88 @@ function runPass1(
           lineNumber,
           suggestedRole: 'Supporting',
           suggestedDescription: `Character introduced in dialogue at line ${lineNumber}`,
+        });
+      }
+      continue;
+    }
+
+    // ═══ 3b. COMIC-STYLE DIALOGUE DETECTION ═══
+    // Pattern: NAME: "dialogue" or NAME: dialogue or NAME (modifier): dialogue
+    const comicDialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*:\s*(.+)/);
+    if (comicDialogueMatch) {
+      const speakerName = comicDialogueMatch[1].trim();
+      const normalized = normalizeName(speakerName);
+
+      // Filter screenplay keywords
+      if (SCREENPLAY_KEYWORDS.has(speakerName)) {
+        continue;
+      }
+
+      if (entityIndex.characters.has(normalized)) {
+        // Existing character - check for location updates
+        const character = entityIndex.characters.get(normalized)!;
+
+        if (currentLocationId && character.currentLocationId !== currentLocationId) {
+          result.timelineEvents.push({
+            tempId: generateUUID(),
+            source: 'deterministic',
+            confidence: 0.8,
+            contextSnippet: `${speakerName} at ${currentLocationName || 'location'}`,
+            lineNumber,
+            entityType: 'character',
+            entityId: character.id,
+            entityName: character.name,
+            action: 'moved_to',
+            payload: { locationId: currentLocationId, locationName: currentLocationName },
+            description: `${character.name} → ${currentLocationName}`,
+          });
+        }
+      } else if (!discoveredNames.has(normalized)) {
+        // New character
+        discoveredNames.add(normalized);
+        result.newEntities.push({
+          tempId: generateUUID(),
+          entityType: 'character',
+          name: toTitleCase(speakerName),
+          source: 'deterministic',
+          confidence: 0.9,
+          contextSnippet: trimmedLine.substring(0, 100),
+          lineNumber,
+          suggestedRole: 'Supporting',
+          suggestedDescription: `Character introduced in comic-style dialogue at line ${lineNumber}`,
+        });
+      }
+      continue;
+    }
+
+    // ═══ 3c. INLINE CHARACTER WITH AGE/TRAITS ═══
+    // Pattern: NAME (age, traits) at start of line
+    const inlineCharMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)\s*\((\d+)(?:,\s*(.+?))?\)/);
+    if (inlineCharMatch) {
+      const speakerName = inlineCharMatch[1].trim();
+      const normalized = normalizeName(speakerName);
+      const age = inlineCharMatch[2];
+      const traits = inlineCharMatch[3];
+
+      // Filter screenplay keywords
+      if (SCREENPLAY_KEYWORDS.has(speakerName)) {
+        continue;
+      }
+
+      if (!entityIndex.characters.has(normalized) && !discoveredNames.has(normalized)) {
+        // New character with age/traits
+        discoveredNames.add(normalized);
+        const description = `Character introduced at line ${lineNumber}${age ? `, age ${age}` : ''}${traits ? `, traits: ${traits}` : ''}`;
+        result.newEntities.push({
+          tempId: generateUUID(),
+          entityType: 'character',
+          name: toTitleCase(speakerName),
+          source: 'deterministic',
+          confidence: 0.95,
+          contextSnippet: trimmedLine.substring(0, 100),
+          lineNumber,
+          suggestedRole: 'Supporting',
+          suggestedDescription: description,
         });
       }
       continue;
@@ -588,6 +751,108 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
   }
 }
 
+// ─── Comic Parser Integration ──────────────────────────────────────────────
+
+/**
+ * Convert comic parser results to proposal objects.
+ * Filters out entities that already exist in the entity index.
+ */
+function convertComicParserResults(
+  comicResult: ComicParseResult,
+  entityIndex: EntityIndex
+): { newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[] } {
+  const newEntities: ProposedNewEntity[] = [];
+  const timelineEvents: ProposedTimelineEvent[] = [];
+
+  // Convert characters
+  for (const char of comicResult.characters) {
+    const normalized = normalizeName(char.name);
+    if (!entityIndex.characters.has(normalized)) {
+      const description = `Comic character${char.age ? `, age ${char.age}` : ''}${char.traits.length > 0 ? `, traits: ${char.traits.join(', ')}` : ''}`;
+      newEntities.push({
+        tempId: generateUUID(),
+        entityType: 'character',
+        name: toTitleCase(char.name),
+        source: 'deterministic',
+        confidence: 0.9,
+        contextSnippet: `Character from comic parser (line ${char.firstMention})`,
+        lineNumber: char.firstMention,
+        suggestedRole: 'Supporting',
+        suggestedDescription: description,
+      });
+    }
+  }
+
+  // Convert locations
+  for (const loc of comicResult.locations) {
+    const normalized = normalizeName(loc.name);
+    if (!entityIndex.locations.has(normalized)) {
+      newEntities.push({
+        tempId: generateUUID(),
+        entityType: 'location',
+        name: toTitleCase(loc.name),
+        source: 'deterministic',
+        confidence: 0.9,
+        contextSnippet: `Location from comic parser (line ${loc.firstMention})`,
+        lineNumber: loc.firstMention,
+      });
+    }
+
+    // Create timeline event if year is present
+    if (loc.year) {
+      timelineEvents.push({
+        tempId: generateUUID(),
+        source: 'deterministic',
+        confidence: 1.0,
+        contextSnippet: `${loc.name} - ${loc.year}`,
+        lineNumber: loc.firstMention,
+        entityType: 'location',
+        entityId: '',
+        entityName: loc.name,
+        action: 'updated',
+        payload: { year: loc.year },
+        description: `${loc.name} in year ${loc.year}`,
+      });
+    }
+  }
+
+  // Convert echoes (items)
+  for (const echo of comicResult.echoes) {
+    const normalized = normalizeName(echo.name);
+    if (!entityIndex.items.has(normalized)) {
+      newEntities.push({
+        tempId: generateUUID(),
+        entityType: 'item',
+        name: toTitleCase(echo.name),
+        source: 'deterministic',
+        confidence: 0.85,
+        contextSnippet: `Item from comic parser (line ${echo.firstMention})`,
+        lineNumber: echo.firstMention,
+        suggestedItemDescription: `Item detected in comic script`,
+      });
+    }
+  }
+
+  // Convert timeline entries
+  for (const entry of comicResult.timeline) {
+    timelineEvents.push({
+      tempId: generateUUID(),
+      source: 'deterministic',
+      confidence: 1.0,
+      contextSnippet: entry.context,
+      lineNumber: 0, // Comic parser doesn't track individual line numbers for timeline
+      entityType: 'location',
+      entityId: '',
+      entityName: 'Scene',
+      action: 'updated',
+      payload: { year: entry.year },
+      description: `Timeline: ${entry.year}`,
+    });
+  }
+
+  return { newEntities, timelineEvents };
+}
+
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 export interface ParseScriptOptions {
@@ -622,6 +887,39 @@ export async function parseScriptAndProposeUpdates(
   let llmWasUsed = false;
   const allWarnings = [...pass1Result.warnings];
 
+  // ═══ COMIC PARSER INTEGRATION (Supplementary Pass) ═══
+  // Detect if script contains comic format (PANEL indicators) or if Pass 1 found very few results
+  const hasPanelFormat = /^Panel\s+\d+/im.test(options.rawScriptText);
+  const pass1FoundFew = pass1Result.newEntities.length < 3;
+  
+  if (hasPanelFormat || pass1FoundFew) {
+    try {
+      console.log('[universalParser] Running comic parser as supplementary pass...');
+      const comicResult = parseComicScript(options.rawScriptText, 'comic');
+      const comicProposals = convertComicParserResults(comicResult, entityIndex);
+
+      // Deduplicate against Pass 1 results by normalized name
+      const existingNames = new Set(
+        pass1Result.newEntities.map(e => normalizeName(e.name))
+      );
+
+      for (const entity of comicProposals.newEntities) {
+        const normalized = normalizeName(entity.name);
+        if (!existingNames.has(normalized)) {
+          pass1Result.newEntities.push(entity);
+          existingNames.add(normalized);
+        }
+      }
+
+      // Add timeline events (these are typically unique)
+      pass1Result.timelineEvents.push(...comicProposals.timelineEvents);
+
+      console.log(`[universalParser] Comic parser added ${comicProposals.newEntities.length} entities, ${comicProposals.timelineEvents.length} timeline events`);
+    } catch (error) {
+      allWarnings.push(`Comic parser supplementary pass failed: ${error}`);
+    }
+  }
+
   // Run Pass 2 (optional LLM)
   if (options.enableLLM && options.geminiApiKey) {
     llmWasUsed = true;
@@ -648,6 +946,22 @@ export async function parseScriptAndProposeUpdates(
 
     pass1Result.timelineEvents.push(...pass2Result.timelineEvents);
     allWarnings.push(...pass2Result.warnings);
+  }
+
+  // ═══ EMPTY RESULTS FEEDBACK ═══
+  const totalResults = pass1Result.newEntities.length + pass1Result.updatedEntities.length + pass1Result.timelineEvents.length;
+  
+  if (totalResults === 0) {
+    allWarnings.push(
+      'No entities or timeline events were detected. Make sure your script uses recognizable formatting: ' +
+      'character names in ALL-CAPS (e.g., ELIAS or ELIAS: "dialogue"), ' +
+      'locations with INT./EXT. prefixes or PANEL format, ' +
+      'and item interactions with action verbs.'
+    );
+  } else if (totalResults <= 2 && !llmWasUsed) {
+    allWarnings.push(
+      `Only ${totalResults} item(s) detected. Consider checking your script formatting or enabling AI-assisted extraction (Pass 2) for better results.`
+    );
   }
 
   const endTime = Date.now();
