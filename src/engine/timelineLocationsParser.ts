@@ -39,6 +39,8 @@ const PLACE_INDICATORS = new Set([
   'CORRIDOR', 'BASEMENT', 'ROOFTOP', 'ROOF', 'BUNKER', 'CAVE', 'FOREST',
   'DOCK', 'PORT', 'HARBOR', 'HANGAR', 'FACILITY', 'THEATRE', 'THEATER',
   'BROWNSTONE', 'VOID', 'DIMENSION', 'REALM', 'COMMAND', 'BASE',
+  'SITE', 'INTERSECTION', 'CROSSWALK', 'SIDEWALK', 'LOBBY', 
+  'ELEVATOR', 'STUDIO', 'CLINIC',
 ]);
 
 // Keywords suggesting dimensional/abstract locations
@@ -380,14 +382,20 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
       }
     }
 
-    // Pattern 3: CAPTION patterns
+    // Pattern 3: CAPTION patterns (both quoted and unquoted)
     const captionPatterns = [
-      // Pattern with month and year: "CAPTION: "October 2025""
+      // Quoted patterns with month and year: "CAPTION: "October 2025""
       /CAPTION:\s*"([A-Za-z]+)\s+(\d{4})(?:\s*[—-]\s*(.*))?"/i,
-      // Pattern with year only: "CAPTION: "2035 — description""
+      // Quoted pattern with year only: "CAPTION: "2035 — description""
       /CAPTION:\s*"(\d{4})\s*[—-]\s*(.*)"/i,
-      // Pattern with just year: "CAPTION: "2035""
+      // Quoted pattern with just year: "CAPTION: "2035""
       /CAPTION:\s*"(\d{4})"/i,
+      // Unquoted pattern with month and year: "CAPTION: October 2025"
+      /CAPTION:\s*([A-Za-z]+)\s+(\d{4})(?:\s*[—-]\s*(.*))?$/i,
+      // Unquoted pattern with year and description: "CAPTION: 2028 - description"
+      /CAPTION:\s*(\d{4})\s*[—-]\s*(.*)$/i,
+      // Unquoted pattern with just year: "CAPTION: 2028"
+      /CAPTION:\s*(\d{4})$/i,
     ];
 
     for (const pattern of captionPatterns) {
@@ -399,12 +407,12 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
 
         // Determine which pattern matched
         if (match[1] && /^[A-Za-z]+$/.test(match[1]) && match[2]) {
-          // Has month (pattern 1)
+          // Has month (pattern 1 or 4)
           month = match[1].trim();
           year = parseInt(match[2], 10);
           description = match[3] ? match[3].trim() : `${month} ${year}`;
         } else if (match[1] && /^\d{4}$/.test(match[1])) {
-          // Year only (patterns 2 or 3)
+          // Year only (patterns 2, 3, 5, or 6)
           year = parseInt(match[1], 10);
           description = match[2] ? match[2].trim() : `${year}`;
         } else {
@@ -420,6 +428,20 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
         });
         break;
       }
+    }
+
+    // Pattern 3b: Setting header (e.g., "Setting: October 2025 | Pages: 22")
+    const settingMatch = trimmedLine.match(/Setting:\s*([A-Za-z]+)\s+(\d{4})/i);
+    if (settingMatch) {
+      const month = settingMatch[1].trim();
+      const year = parseInt(settingMatch[2], 10);
+      events.push({
+        year,
+        month,
+        description: `${month} ${year} (from Setting header)`,
+        lineNumber,
+        contextSnippet: trimmedLine.substring(0, 100),
+      });
     }
 
     // Pattern 4: Issue header dates

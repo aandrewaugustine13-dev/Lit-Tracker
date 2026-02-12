@@ -91,11 +91,11 @@ function parsePageNumber(str: string): number {
 
 // ============= PATTERN DEFINITIONS =============
 
-// Flexible PAGE patterns that match any word or number
+// Flexible PAGE patterns that match any word or number (including hyphenated numbers)
 const PAGE_PATTERNS = [
-    /^#{1,3}\s*PAGE\s+(\w+)/i,       // Matches: ### PAGE 14, ## PAGE FOURTEEN
-    /^\*\*PAGE\s+(\w+)\*\*/i,         // Matches: **PAGE 14**
-    /^(?:PAGE|PG)\s+(\w+)(?:\s*$|\s*\()/i,  // Matches: PAGE 14, PAGE FOURTEEN, PAGE 14 (note), PG 14 (etc.)
+    /^#{1,3}\s*PAGE\s+([\w\s-]+?)(?:\s*$|\s*\()/i,       // Matches: ### PAGE 14, ## PAGE FOURTEEN, PAGE TWENTY-TWO
+    /^\*\*PAGE\s+([\w\s-]+?)\*\*/i,         // Matches: **PAGE 14**, **PAGE TWENTY-TWO**
+    /^(?:PAGE|PG)\s+([\w-]+(?:\s+[\w-]+)?)(?:\s*$|\s*\()/i,  // Matches: PAGE 14, PAGE FOURTEEN, PAGE 14 (note), PG 14, PAGE TWENTY-TWO
 ];
 
 // FIXED: Simplified PANEL patterns
