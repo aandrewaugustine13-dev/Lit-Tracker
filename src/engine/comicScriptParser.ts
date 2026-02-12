@@ -73,6 +73,8 @@ const LOCATION_INDICATORS = new Set([
   'ROOF', 'BUNKER', 'CAVE', 'FOREST', 'DOCK', 'PORT', 'HARBOR',
   'HANGAR', 'FACILITY', 'CENTER', 'CENTRE', 'THEATRE', 'THEATER',
   'BASE', 'COMMAND', 'DIMENSION', 'REALM', 'VOID',
+  'SITE', 'INTERSECTION', 'CROSSWALK', 'SIDEWALK', 'LOBBY', 
+  'ELEVATOR', 'STUDIO', 'CLINIC',
 ]);
 
 // Action verbs that suggest object interaction (for echo extraction)
@@ -93,6 +95,10 @@ const ECHO_ACTION_VERBS = [
   'throws', 'throw', 'throwing',
   'catches', 'catch', 'catching',
 ];
+
+// Pattern for inline character introductions with descriptive or numeric ages
+// Matches: NAME (age, traits) or NAME (early 20s, traits) or NAME (older, traits)
+const INLINE_CHAR_WITH_AGE_PATTERN = /([A-Z][A-Z\s'.-]{2,}?)\s*\((\d+|early\s+\d+s|late\s+\d+s|mid-\d+s|older|younger)(?:,\s*(.+?))?\)/;
 
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
@@ -159,11 +165,37 @@ export function parseScript(
 
     if (!trimmedLine) continue;
 
-    // Detect PANEL N: headers
-    const panelMatch = trimmedLine.match(/^PANEL\s+(\d+):/i);
+    // Detect PANEL N or PANEL N: headers (colon optional)
+    // Also extract location from panel description if present
+    const panelMatch = trimmedLine.match(/^Panel\s+(\d+)\s*:?\s*(.*)/i);
     if (panelMatch) {
       currentPanel = parseInt(panelMatch[1], 10);
       console.log(`[comicParser] Panel ${currentPanel} detected at line ${lineNumber}`);
+      
+      // Check if the panel description contains a location
+      const panelDescription = panelMatch[2].trim();
+      if (panelDescription.length > 0) {
+        // Try to extract location from panel description
+        // Pattern: Simple location names with indicators (e.g., "Therapy office.", "Hospital pre-op.")
+        const simpleLocationMatch = panelDescription.match(/^([^.]+?)\.?$/);
+        if (simpleLocationMatch) {
+          const locationName = simpleLocationMatch[1].trim();
+          
+          // Check if it contains a location indicator and is reasonably short
+          if (locationName.length >= 3 && locationName.length <= 50 && hasLocationIndicator(locationName)) {
+            const normalizedName = normalizeName(locationName);
+            
+            if (!locationsMap.has(normalizedName)) {
+              locationsMap.set(normalizedName, {
+                name: locationName,
+                firstMention: lineNumber,
+              });
+              console.log(`[comicParser] Found location (panel description): ${locationName}`);
+            }
+          }
+        }
+      }
+      
       continue;
     }
 
@@ -201,8 +233,50 @@ export function parseScript(
       }
     }
 
-    // Pattern 2: NAME: "dialogue" (dialogue attribution)
-    const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+):\s*"(.+)"/);
+    // Pattern 1b: Inline character introduction (character mentioned mid-sentence)
+    // Example: "MAYA (early 20s, art student vibe - long dark hair) sees Elias"
+    // Also handles: "VASEK (older, same build and facial structure as Elias) moves"
+    if (!charWithAgeMatch) {
+      const inlineCharMatch = trimmedLine.match(INLINE_CHAR_WITH_AGE_PATTERN);
+      if (inlineCharMatch) {
+        const name = inlineCharMatch[1].trim();
+        // Try to extract age from pattern like "early 20s"
+        const ageStr = inlineCharMatch[2];
+        const ageMatch = ageStr.match(/(\d+)/);
+        const age = ageMatch ? parseInt(ageMatch[1], 10) : undefined;
+        const traitsStr = inlineCharMatch[3];
+        const traits = traitsStr ? traitsStr.split(',').map(t => t.trim()) : [];
+        
+        if (!isNoiseWord(name)) {
+          const normalizedName = normalizeName(name);
+          
+          if (charactersMap.has(normalizedName)) {
+            // Merge traits if character already exists
+            const existing = charactersMap.get(normalizedName)!;
+            if (age && !existing.age) existing.age = age;
+            const newTraits = traits.filter(t => !existing.traits.includes(t));
+            if (newTraits.length > 0) {
+              existing.traits.push(...newTraits);
+              console.log(`[comicParser] Updated character ${name} (inline) with new traits:`, newTraits);
+            }
+          } else {
+            charactersMap.set(normalizedName, {
+              name,
+              age,
+              traits,
+              firstMention: lineNumber,
+            });
+            console.log(`[comicParser] Found character (inline): ${name}, age: ${age}, traits:`, traits);
+          }
+        }
+      }
+    }
+
+    // Pattern 2: NAME: "dialogue" or NAME: dialogue (with optional parenthetical modifiers)
+    // Supports: ELIAS: Yes, Mom OR MOTHER (phone): Your sister OR ELIAS (thought caption): Here we go
+    // Note: This intentionally matches unquoted dialogue to support prose-style comic scripts.
+    // Character and location patterns are checked first to reduce false positives.
+    const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*:\s*(.+)/);
     if (dialogueMatch) {
       const name = dialogueMatch[1].trim();
       
@@ -243,8 +317,10 @@ export function parseScript(
       }
     }
 
-    // Pattern 2: Standalone ALL-CAPS line with location indicator
-    const capsOnlyMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)$/);
+    // Pattern 2: Standalone ALL-CAPS line with location indicator (including with trailing punctuation)
+    // Also matches when all-caps location is at the start of the line followed by period and more text
+    // Regex: Match all-caps phrase that ends with optional period followed by space/EOL
+    const capsOnlyMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\.\s?|$)/);
     if (capsOnlyMatch && !locationYearMatch && !charWithAgeMatch && !dialogueMatch) {
       const name = capsOnlyMatch[1].trim();
       
@@ -261,7 +337,48 @@ export function parseScript(
       }
     }
 
-    // Pattern 3: Establishing shot patterns
+    // Pattern 2b: Panel description with location indicator
+    // Example: "Panel 6 Therapy office." or "Panel 1 Hospital pre-op."
+    const panelLocationMatch = trimmedLine.match(/^Panel\s+\d+\s+(.+?)\.?$/i);
+    if (panelLocationMatch && currentPanel > 0) {
+      const locationName = panelLocationMatch[1].trim();
+      
+      // Check if it contains a location indicator and is reasonably short
+      if (locationName.length >= 3 && locationName.length <= 50 && hasLocationIndicator(locationName)) {
+        const normalizedName = normalizeName(locationName);
+        
+        if (!locationsMap.has(normalizedName)) {
+          locationsMap.set(normalizedName, {
+            name: locationName,
+            firstMention: lineNumber,
+          });
+          console.log(`[comicParser] Found location (panel description): ${locationName}`);
+        }
+      }
+    }
+
+    // Pattern 3: Interior/Exterior location patterns
+    // Example: "Interior. Elias's apartment building." or "Exterior apartment." or "Interior apartment."
+    const intExtMatch = trimmedLine.match(/^(Interior|Exterior)[.\s]+([^.]+?)\.?$/i);
+    if (intExtMatch) {
+      const locationType = intExtMatch[1];
+      const locationName = intExtMatch[2].trim();
+      
+      // Only process if it looks like a location name (not too long)
+      if (locationName.length >= 3 && locationName.length <= MAX_CONTEXT_LENGTH && !isNoiseWord(locationName)) {
+        const normalizedName = normalizeName(locationName);
+        
+        if (!locationsMap.has(normalizedName)) {
+          locationsMap.set(normalizedName, {
+            name: locationName,
+            firstMention: lineNumber,
+          });
+          console.log(`[comicParser] Found location (${locationType}): ${locationName}`);
+        }
+      }
+    }
+
+    // Pattern 4: Establishing shot patterns
     if (/establishing\s+shot/i.test(trimmedLine)) {
       console.log(`[comicParser] Establishing shot detected at line ${lineNumber}`);
       // Extract location from nearby lines if possible
