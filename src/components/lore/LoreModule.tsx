@@ -112,7 +112,7 @@ const LoreModule: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowScriptExtraction(true)}
-              className="ml-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all active:scale-95 text-sm"
+              className="ml-2 bg-ember-500 hover:bg-ember-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-ember-500/20 transition-all active:scale-95 text-sm"
             >
               <Sparkles size={16} />
               <span className="hidden sm:inline">Extract from Script</span>

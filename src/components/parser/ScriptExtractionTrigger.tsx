@@ -16,6 +16,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [enableLLM, setEnableLLM] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const projectConfig = useLitStore((s) => s.projectConfig);
   const characters = useLitStore((s) => s.characters);
@@ -27,12 +28,13 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
 
   const handleParse = async () => {
     if (!scriptText.trim()) {
-      alert('Please enter script text to parse');
+      setErrorMessage('Please enter script text to parse');
       return;
     }
 
     setIsLoading(true);
     setParserStatus('parsing');
+    setErrorMessage(null);
 
     try {
       const proposal = await parseScriptAndProposeUpdates({
@@ -49,8 +51,9 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       onClose(); // Close this modal, the ExtractionPreviewModal will show
     } catch (error) {
       console.error('Parsing error:', error);
-      setParserError(error instanceof Error ? error.message : 'Unknown parsing error');
-      alert(`Parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown parsing error';
+      setParserError(errorMsg);
+      setErrorMessage(`Parsing failed: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }
@@ -103,6 +106,29 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
                 The parser uses deterministic pattern matching by default. Enable LLM for advanced entity extraction.
               </p>
             </div>
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                  <X className="w-3 h-3 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-body font-semibold text-red-800 mb-1">
+                    Parsing Error
+                  </p>
+                  <p className="text-sm text-red-700">
+                    {errorMessage}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setErrorMessage(null)}
+                  className="flex-shrink-0 p-1 hover:bg-red-100 rounded transition-colors"
+                >
+                  <X className="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+            )}
 
             {/* Script Text Input */}
             <div>
