@@ -43,6 +43,7 @@ export const useLitStore = create<LitStore>()(
         
         // Parser state
         parserStatus: state.parserStatus,
+        currentProposal: state.currentProposal,
         projectConfig: state.projectConfig,
       }),
     }
