@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { Character, LoreType, LocationEntry, EventEntry, LoreEntry, Panel, Page, Issue } from '../types';
 import { genId, createDefaultEra } from '../utils/helpers';
+import { stripMarkdown } from '../utils/markdownStripper';
 
 // =============================================================================
 // CROSS-SLICE — Cross-cutting actions that orchestrate updates across multiple slices
@@ -319,8 +320,10 @@ function toTitleCase(str: string): string {
  * 3. All-caps phrases containing place indicator words
  */
 function extractLocations(text: string): string[] {
+  // Strip Markdown before processing
+  const normalizedText = stripMarkdown(text);
   const locations = new Set<string>();
-  const lines = text.split('\n');
+  const lines = normalizedText.split('\n');
 
   for (const line of lines) {
     const trimmedLine = line.trim();
@@ -361,6 +364,24 @@ function extractLocations(text: string): string[] {
         }
       }
     }
+
+    // 4. Check for mixed-case descriptive locations with place indicators
+    // Pattern: "Parking garage", "Construction site", "Hospital maternity ward"
+    const mixedCaseWords = trimmedLine.match(/\b[A-Z][a-z]+(?:\s+[a-z]+)*(?:\s+[A-Z]?[a-z]+)*\b/g);
+    if (mixedCaseWords) {
+      for (const phrase of mixedCaseWords) {
+        const cleanPhrase = phrase.trim();
+        // Check if phrase contains at least one place indicator (case-insensitive)
+        const words = cleanPhrase.toUpperCase().split(/\s+/);
+        const hasPlaceIndicator = words.some(word => 
+          PLACE_INDICATORS.has(word.replace(/[,.-]/g, ''))
+        );
+        
+        if (hasPlaceIndicator && cleanPhrase.length >= 3 && cleanPhrase.length <= 50) {
+          locations.add(cleanPhrase);
+        }
+      }
+    }
   }
 
   return Array.from(locations);
@@ -374,8 +395,10 @@ function extractLocations(text: string): string[] {
  * Tracks current page/scene context for descriptive purposes.
  */
 function extractTimeline(text: string): RawTimelineEvent[] {
+  // Strip Markdown before processing
+  const normalizedText = stripMarkdown(text);
   const events: RawTimelineEvent[] = [];
-  const lines = text.split('\n');
+  const lines = normalizedText.split('\n');
   let currentContext = 'Script';
 
   for (const line of lines) {
@@ -410,6 +433,27 @@ function extractTimeline(text: string): RawTimelineEvent[] {
       const date = captionMatch[1].trim();
       if (date) {
         events.push({ date, context: currentContext });
+      }
+    }
+
+    // Look for bare CAPTION: with date/year (without requiring 4 digits at start)
+    const bareCaptionMatch = trimmedLine.match(/^CAPTION:\s*(.+)/i);
+    if (bareCaptionMatch && !captionMatch) {
+      const dateText = bareCaptionMatch[1].trim();
+      // Check if it contains a year or looks like a date
+      if (dateText && (dateText.match(/\d{4}/) || dateText.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/i))) {
+        events.push({ date: dateText, context: currentContext });
+      }
+    }
+
+    // Look for table rows with year data (after Markdown stripping, table rows become space-separated)
+    // Pattern: Lines that start with a 4-digit year followed by content
+    const tableRowMatch = trimmedLine.match(/^(\d{4})\s+(.+)/);
+    if (tableRowMatch) {
+      const year = tableRowMatch[1];
+      const description = tableRowMatch[2].trim();
+      if (description && description !== '—' && description !== '-') {
+        events.push({ date: `${year}: ${description}`, context: currentContext });
       }
     }
   }
@@ -490,13 +534,16 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
   autoCreateFromScript: (text: string): ScriptExtractionResult => {
     const state = get();
     
+    // Strip Markdown formatting before extraction
+    const normalizedText = stripMarkdown(text);
+    
     // ===== CHARACTER EXTRACTION (existing logic) =====
     
     // Extract all-caps words/phrases using the specified regex pattern
     // Pattern matches sequences starting with uppercase letter, followed by 0-29 more chars (uppercase, space, period, apostrophe, hyphen)
     // Total length: 1 to MAX_CHARACTER_NAME_LENGTH characters
     const pattern = new RegExp(`\\b([A-Z][A-Z '.\\-]{0,${MAX_CHARACTER_NAME_LENGTH - 1}})\\b`, 'g');
-    const matches = text.match(pattern) || [];
+    const matches = normalizedText.match(pattern) || [];
     
     // Create a set of unique capitalized names, filtering out screenplay keywords
     const uniqueNames = new Set<string>();

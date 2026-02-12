@@ -14,6 +14,7 @@ import {
 } from '../types/parserTypes';
 import { Character, LocationEntry, LoreType } from '../types';
 import { EntityState } from '../store/entityAdapter';
+import { stripMarkdown } from '../utils/markdownStripper';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -170,8 +171,10 @@ interface ExtractedLocation {
  * Handles establishing shots, panel descriptions, slug-lines, and named patterns.
  */
 function extractLocations(text: string): ExtractedLocation[] {
+  // Strip Markdown before processing
+  const normalizedText = stripMarkdown(text);
   const locations: Map<string, ExtractedLocation> = new Map();
-  const lines = text.split('\n');
+  const lines = normalizedText.split('\n');
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -316,8 +319,10 @@ interface ExtractedTimelineEvent {
  * Handles markdown tables, CAPTION lines, issue headers, and bare year references.
  */
 function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
+  // Strip Markdown before processing
+  const normalizedText = stripMarkdown(text);
   const events: ExtractedTimelineEvent[] = [];
-  const lines = text.split('\n');
+  const lines = normalizedText.split('\n');
 
   // Track if we're in a timeline table
   let inTimelineTable = false;
@@ -335,10 +340,13 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
       continue;
     }
 
-    // Exit table if we've been in it and encounter a non-table line
-    if (inTimelineTable && trimmedLine && !trimmedLine.startsWith('|')) {
-      inTimelineTable = false;
-      tableHeaderSeen = false;
+    // Exit table if we've been in it and encounter a line that doesn't look like table data
+    if (inTimelineTable && trimmedLine) {
+      // Check if it's not a table row (doesn't start with year or pipe)
+      if (!trimmedLine.match(/^(\d{4}|\|)/)) {
+        inTimelineTable = false;
+        tableHeaderSeen = false;
+      }
     }
 
     // Skip empty lines but don't exit table
@@ -348,6 +356,29 @@ function extractTimelineEvents(text: string): ExtractedTimelineEvent[] {
 
     // Pattern 2: Parse markdown table rows in timeline table
     if (inTimelineTable) {
+      // After Markdown stripping, table rows are converted to space-separated text
+      // Original: |2005|Elias born|—|
+      // After stripping: 2005 Elias born —
+      
+      // Check if line looks like table data (year followed by content)
+      const tableDataMatch = trimmedLine.match(/^(\d{4})\s+(.+)/);
+      if (tableDataMatch) {
+        const year = parseInt(tableDataMatch[1], 10);
+        const description = tableDataMatch[2].trim();
+        
+        // Skip placeholder markers
+        if (description && description !== '—' && description !== '-' && year >= MIN_REASONABLE_YEAR && year <= MAX_REASONABLE_YEAR) {
+          events.push({
+            year,
+            description,
+            lineNumber,
+            contextSnippet: trimmedLine.substring(0, 100),
+          });
+        }
+        continue;
+      }
+      
+      // Legacy: Handle original pipe-separated format if still present
       // Skip table header separator (|---|---|)
       if (/^\|[\s-:|]+\|$/.test(trimmedLine)) {
         tableHeaderSeen = true;

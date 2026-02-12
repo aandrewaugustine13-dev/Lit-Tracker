@@ -6,6 +6,8 @@
 // This parser complements universalScriptParser.ts (screenplay format) and
 // timelineLocationsParser.ts (timeline/location enrichment).
 
+import { stripMarkdown } from '../utils/markdownStripper';
+
 // ─── Type Definitions ───────────────────────────────────────────────────────
 
 export interface ParsedCharacter {
@@ -145,7 +147,11 @@ export function parseScript(
     return { characters: [], locations: [], timeline: [], echoes: [] };
   }
 
-  const lines = scriptText.split('\n');
+  // Strip Markdown formatting before parsing
+  const normalizedText = stripMarkdown(scriptText);
+  console.log('[comicParser] Markdown stripped');
+
+  const lines = normalizedText.split('\n');
   console.log('[comicParser] Total lines:', lines.length);
 
   // Storage for extracted data
