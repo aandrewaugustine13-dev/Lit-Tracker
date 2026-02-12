@@ -4,17 +4,23 @@ import { LoreEntry, LoreType } from '../../types';
 import { LORE_TYPE_CONFIG } from '../../utils/loreConfig';
 import LoreCard from './LoreCard';
 import LoreEditor from './LoreEditor';
-import { Search, Plus, BookOpen } from 'lucide-react';
+import { Search, Plus, BookOpen, Sparkles } from 'lucide-react';
 import { genId } from '../../utils/helpers';
+import { ScriptExtractionTrigger, ExtractionPreviewModal } from '../parser';
 
 const LoreModule: React.FC = () => {
   const {
     loreEntries, loreSearchTerm, setLoreSearchTerm,
     loreFilterType, setLoreFilterType,
   } = useLitStore();
+  
+  const parserStatus = useLitStore((s) => s.parserStatus);
+  const currentProposal = useLitStore((s) => s.currentProposal);
+  const setCurrentProposal = useLitStore((s) => s.setCurrentProposal);
 
   const [editingEntry, setEditingEntry] = useState<LoreEntry | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [showScriptExtraction, setShowScriptExtraction] = useState(false);
 
   const filtered = useMemo(() => {
     return loreEntries.filter(e => {
@@ -103,13 +109,22 @@ const LoreModule: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={handleCreate}
-            className="ml-4 bg-lore-500 hover:bg-lore-400 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-lore-500/20 transition-all active:scale-95 text-sm"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">New Entry</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowScriptExtraction(true)}
+              className="ml-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all active:scale-95 text-sm"
+            >
+              <Sparkles size={16} />
+              <span className="hidden sm:inline">Extract from Script</span>
+            </button>
+            <button
+              onClick={handleCreate}
+              className="ml-2 bg-lore-500 hover:bg-lore-400 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-lore-500/20 transition-all active:scale-95 text-sm"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">New Entry</span>
+            </button>
+          </div>
         </div>
         {/* Accent underline */}
         <div className="h-[1px] header-gradient-lore" />
@@ -166,6 +181,16 @@ const LoreModule: React.FC = () => {
       {/* Editor */}
       {isEditorOpen && (
         <LoreEditor entry={editingEntry} onClose={() => setIsEditorOpen(false)} />
+      )}
+      
+      {/* Script Extraction Trigger */}
+      {showScriptExtraction && (
+        <ScriptExtractionTrigger onClose={() => setShowScriptExtraction(false)} />
+      )}
+      
+      {/* Extraction Preview Modal */}
+      {parserStatus === 'awaiting-review' && currentProposal && (
+        <ExtractionPreviewModal onClose={() => setCurrentProposal(null)} />
       )}
     </div>
   );
