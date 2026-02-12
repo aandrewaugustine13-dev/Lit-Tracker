@@ -14,38 +14,6 @@ import {
 } from '../types/parserTypes';
 import { Character, LocationEntry, Item, CharacterRole } from '../types';
 import { EntityState } from '../store/entityAdapter';
-
-// ─── Parser Options ─────────────────────────────────────────────────────────
-
-export interface ParseOptions {
-  rawScriptText: string;
-  config: ProjectConfig;
-  characters: Character[];
-  normalizedLocations: EntityState<LocationEntry>;
-  normalizedItems: EntityState<Item>;
-  geminiApiKey?: string;
-  enableLLM?: boolean;
-}
-
-// ─── Constants from crossSlice ──────────────────────────────────────────────
-
-// UNIVERSAL SCRIPT PARSER — Two-Pass Extraction Engine
-// =============================================================================
-// Pure function module that parses pasted script text, extracts entities
-// (Characters, Locations, Items) and timeline events, and returns a proposal.
-// Does NOT mutate store state — that's handled by parserSlice.commitExtractionProposal.
-
-import {
-  ParsedProposal,
-  ProposedNewEntity,
-  ProposedEntityUpdate,
-  ProposedTimelineEvent,
-  ProjectConfig,
-  LLMExtractionResponse,
-} from '../types/parserTypes';
-import { Character, LocationEntry } from '../types';
-import { Item, TimelineAction } from '../types/lore';
-import { EntityState } from '../store/entityAdapter';
 import { parseScript as parseComicScript, ComicParseResult } from './comicScriptParser';
 
 // ─── UUID Helper ────────────────────────────────────────────────────────────
@@ -77,9 +45,6 @@ const SCREENPLAY_KEYWORDS = new Set([
   'POV', 'INSERT', 'SUPER', 'TITLE', 'THE', 'AND', 'BUT', 'FOR', 'NOT',
   'WITH', 'FROM', 'PAGE', 'PANEL', 'SCENE', 'ACT', 'END', 'DAY', 'NIGHT',
   'MORNING', 'EVENING', 'LATER', 'CONTINUOUS', 'INTERCUT', 'FLASHBACK',
-  'MONTAGE', 'BEGIN', 'RESUME', 'BACK', 'SAME', 'TIME',
-]);
-
   'MONTAGE', 'BEGIN', 'RESUME', 'BACK', 'SAME', 'TIME', 'CAPTION', 'SETTING',
 ]);
 
@@ -95,14 +60,6 @@ const PLACE_INDICATORS = new Set([
   'DOCK', 'PORT', 'HARBOR', 'HANGAR', 'FACILITY',
 ]);
 
-const ITEM_ACTION_VERBS = new Set([
-  'picks up', 'grabs', 'takes', 'acquires', 'finds', 'discovers',
-  'drops', 'leaves', 'puts down', 'discards', 'loses',
-  'gives', 'hands', 'passes', 'offers', 'presents',
-]);
-
-// ─── Helper Functions ───────────────────────────────────────────────────────
-
 // Item keywords for detection
 const ITEM_KEYWORDS = new Set([
   'SWORD', 'BLADE', 'KNIFE', 'DAGGER', 'AXE', 'HAMMER', 'SPEAR', 'BOW',
@@ -113,11 +70,11 @@ const ITEM_KEYWORDS = new Set([
 ]);
 
 // Action verbs that suggest item interaction
-const ITEM_ACTION_VERBS = [
-  'holds', 'hold', 'draws', 'draw', 'picks up', 'pick up', 'grabs', 'grab',
-  'wields', 'wield', 'carries', 'carry', 'takes', 'take', 'uses', 'use',
-  'retrieves', 'retrieve', 'brandishes', 'brandish', 'equips', 'equip',
-];
+const ITEM_ACTION_VERBS = new Set([
+  'picks up', 'grabs', 'takes', 'acquires', 'finds', 'discovers',
+  'drops', 'leaves', 'puts down', 'discards', 'loses',
+  'gives', 'hands', 'passes', 'offers', 'presents',
+]);
 
 // Maximum length for character names
 const MAX_CHARACTER_NAME_LENGTH = 30;
@@ -148,15 +105,6 @@ function toTitleCase(str: string): string {
     .join(' ');
 }
 
-function getContextSnippet(text: string, index: number, length: number = 60): string {
-  const start = Math.max(0, index - length);
-  const end = Math.min(text.length, index + length);
-  const snippet = text.slice(start, end);
-  return (start > 0 ? '...' : '') + snippet + (end < text.length ? '...' : '');
-}
-
-function getLineNumber(text: string, index: number): number {
-  return text.slice(0, index).split('\n').length;
 /**
  * Escape special regex characters
  */
@@ -231,61 +179,6 @@ function buildEntityIndex(
 interface Pass1Result {
   newEntities: ProposedNewEntity[];
   updatedEntities: ProposedEntityUpdate[];
-  newTimelineEvents: ProposedTimelineEvent[];
-  currentLocation: string | null;
-}
-
-function pass1DeterministicExtraction(
-  text: string,
-  config: ProjectConfig,
-  characters: Character[],
-  normalizedLocations: EntityState<LocationEntry>,
-  normalizedItems: EntityState<Item>
-): Pass1Result {
-  const lines = text.split('\n');
-  const newEntities: ProposedNewEntity[] = [];
-  const updatedEntities: ProposedEntityUpdate[] = [];
-  const newTimelineEvents: ProposedTimelineEvent[] = [];
-  
-  const existingCharacterNames = new Set(characters.map(c => normalizeName(c.name)));
-  const existingLocationNames = new Set(
-    normalizedLocations.ids.map(id => normalizeName(normalizedLocations.entities[id].name))
-  );
-  const existingItemNames = new Set(
-    normalizedItems.ids.map(id => normalizeName(normalizedItems.entities[id].name))
-  );
-  
-  const knownEntityNamesSet = new Set(config.knownEntityNames.map(normalizeName));
-  const canonLocksSet = new Set(config.canonLocks.map(normalizeName));
-  
-  let currentLocation: string | null = null;
-  let currentCharIndex = 0;
-
-  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-    const line = lines[lineIdx];
-    const trimmedLine = line.trim();
-    
-    if (!trimmedLine) continue;
-
-    // 1. Detect slug-lines (INT./EXT. locations)
-    const slugMatch = trimmedLine.match(/^(INT\.|EXT\.)\s+([^-]+?)(?:\s+-\s+.*)?$/i);
-    if (slugMatch) {
-      const locationName = slugMatch[2].trim();
-      currentLocation = locationName;
-      
-      if (!existingLocationNames.has(normalizeName(locationName)) &&
-          !canonLocksSet.has(normalizeName(locationName))) {
-        newEntities.push({
-          tempId: crypto.randomUUID(),
-          entityType: 'location',
-          name: toTitleCase(locationName),
-          source: 'deterministic',
-          confidence: 0.95,
-          contextSnippet: trimmedLine,
-          lineNumber: lineIdx + 1,
-          suggestedRegion: slugMatch[1].toUpperCase() === 'INT.' ? 'Interior' : 'Exterior',
-        });
-        existingLocationNames.add(normalizeName(locationName));
   timelineEvents: ProposedTimelineEvent[];
   ambiguousPhrases: string[];
   warnings: string[];
@@ -346,17 +239,6 @@ function runPass1(
       continue;
     }
 
-    // 2. Detect Interior/Exterior descriptions
-    const interiorExteriorMatch = trimmedLine.match(/(?:Panel\s+\d+\s+)?(Interior|Exterior)[.\s]+(.+)/i);
-    if (interiorExteriorMatch) {
-      const locationName = interiorExteriorMatch[2].trim().replace(/\.$/, '');
-      currentLocation = locationName;
-      
-      if (locationName.length >= 3 &&
-          !existingLocationNames.has(normalizeName(locationName)) &&
-          !canonLocksSet.has(normalizeName(locationName))) {
-        newEntities.push({
-          tempId: crypto.randomUUID(),
     // ═══ 2. INTERIOR/EXTERIOR DETECTION ═══
     // Pattern: Panel N Interior/Exterior LOCATION
     const interiorExteriorMatch = trimmedLine.match(/(?:Panel\s+\d+\s+)?(Interior|Exterior)[.\s]+(.+)/i);
@@ -376,11 +258,6 @@ function runPass1(
           name: toTitleCase(locationName),
           source: 'deterministic',
           confidence: 0.9,
-          contextSnippet: trimmedLine,
-          lineNumber: lineIdx + 1,
-          suggestedRegion: interiorExteriorMatch[1],
-        });
-        existingLocationNames.add(normalizeName(locationName));
           contextSnippet: trimmedLine.substring(0, 100),
           lineNumber,
         });
@@ -388,30 +265,6 @@ function runPass1(
       continue;
     }
 
-    // 3. Detect dialogue speakers (all-caps name + indented next line)
-    const speakerMatch = trimmedLine.match(/^([A-Z][A-Z '.-]{1,29})$/);
-    if (speakerMatch && lineIdx + 1 < lines.length) {
-      const nextLine = lines[lineIdx + 1];
-      // Check if next line is indented (dialogue)
-      if (nextLine && nextLine.match(/^\s{2,}/)) {
-        const speakerName = speakerMatch[1].trim();
-        
-        if (!SCREENPLAY_KEYWORDS.has(speakerName) &&
-            !existingCharacterNames.has(normalizeName(speakerName)) &&
-            !canonLocksSet.has(normalizeName(speakerName))) {
-          newEntities.push({
-            tempId: crypto.randomUUID(),
-            entityType: 'character',
-            name: toTitleCase(speakerName),
-            source: 'deterministic',
-            confidence: 0.9,
-            contextSnippet: trimmedLine + ' / ' + nextLine.trim().slice(0, 40) + '...',
-            lineNumber: lineIdx + 1,
-            suggestedRole: 'Supporting',
-            suggestedDescription: `Character with dialogue starting at line ${lineIdx + 1}`,
-          });
-          existingCharacterNames.add(normalizeName(speakerName));
-        }
     // ═══ 2b. COMIC-STYLE LOCATION WITH YEAR ═══
     // Pattern: LOCATION_NAME - YEAR
     const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)\s*-\s*(\d{4})\s*$/);
@@ -542,107 +395,6 @@ function runPass1(
       continue;
     }
 
-    // 4. Detect known entity mentions (for timeline events)
-    for (const char of characters) {
-      const charNameLower = normalizeName(char.name);
-      if (normalizeName(trimmedLine).includes(charNameLower)) {
-        // Check for movement to current location
-        if (currentLocation && char.currentLocationId !== currentLocation) {
-          const locationEntity = normalizedLocations.ids
-            .map(id => normalizedLocations.entities[id])
-            .find(loc => normalizeName(loc.name) === normalizeName(currentLocation!));
-          
-          if (locationEntity) {
-            newTimelineEvents.push({
-              tempId: crypto.randomUUID(),
-              source: 'deterministic',
-              confidence: 0.85,
-              contextSnippet: trimmedLine,
-              lineNumber: lineIdx + 1,
-              entityType: 'character',
-              entityId: char.id,
-              entityName: char.name,
-              action: 'moved_to',
-              payload: { locationId: locationEntity.id },
-              description: `${char.name} moved to ${locationEntity.name}`,
-            });
-          }
-        }
-      }
-    }
-
-    // 5. Detect custom patterns
-    for (const pattern of config.customPatterns) {
-      try {
-        const regex = new RegExp(pattern.pattern, 'gi');
-        let match;
-        while ((match = regex.exec(trimmedLine)) !== null) {
-          const entityName = match[1] || match[0];
-          
-          if (pattern.entityType === 'character' &&
-              !existingCharacterNames.has(normalizeName(entityName)) &&
-              !canonLocksSet.has(normalizeName(entityName))) {
-            newEntities.push({
-              tempId: crypto.randomUUID(),
-              entityType: 'character',
-              name: toTitleCase(entityName),
-              source: 'deterministic',
-              confidence: 0.8,
-              contextSnippet: trimmedLine,
-              lineNumber: lineIdx + 1,
-              suggestedDescription: `Matched custom pattern: ${pattern.label}`,
-            });
-            existingCharacterNames.add(normalizeName(entityName));
-          } else if (pattern.entityType === 'location' &&
-                     !existingLocationNames.has(normalizeName(entityName)) &&
-                     !canonLocksSet.has(normalizeName(entityName))) {
-            newEntities.push({
-              tempId: crypto.randomUUID(),
-              entityType: 'location',
-              name: toTitleCase(entityName),
-              source: 'deterministic',
-              confidence: 0.8,
-              contextSnippet: trimmedLine,
-              lineNumber: lineIdx + 1,
-            });
-            existingLocationNames.add(normalizeName(entityName));
-          } else if (pattern.entityType === 'item' &&
-                     !existingItemNames.has(normalizeName(entityName)) &&
-                     !canonLocksSet.has(normalizeName(entityName))) {
-            newEntities.push({
-              tempId: crypto.randomUUID(),
-              entityType: 'item',
-              name: toTitleCase(entityName),
-              source: 'deterministic',
-              confidence: 0.8,
-              contextSnippet: trimmedLine,
-              lineNumber: lineIdx + 1,
-              suggestedItemDescription: `Matched custom pattern: ${pattern.label}`,
-            });
-            existingItemNames.add(normalizeName(entityName));
-          }
-        }
-      } catch (error) {
-        console.warn(`Invalid regex pattern: ${pattern.pattern}`, error);
-      }
-    }
-
-    // 6. Detect Setting/Caption timeline markers
-    const settingMatch = trimmedLine.match(/^Setting:\s*(.+)/i);
-    if (settingMatch) {
-      const date = settingMatch[1].trim();
-      newTimelineEvents.push({
-        tempId: crypto.randomUUID(),
-        source: 'deterministic',
-        confidence: 1.0,
-        contextSnippet: trimmedLine,
-        lineNumber: lineIdx + 1,
-        entityType: 'location',
-        entityId: '',
-        entityName: 'Story Timeline',
-        action: 'created',
-        payload: { date },
-        description: `Timeline marker: ${date}`,
     // ═══ 3b. COMIC-STYLE DIALOGUE DETECTION ═══
     // Pattern: NAME: "dialogue" or NAME: dialogue or NAME (modifier): dialogue
     const comicDialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)(?:\s*\([^)]*\))?\s*:\s*(.+)/);
@@ -787,21 +539,6 @@ function runPass1(
       continue;
     }
 
-    const captionMatch = trimmedLine.match(/^CAPTION:\s*(\d{4}.+)/i);
-    if (captionMatch) {
-      const date = captionMatch[1].trim();
-      newTimelineEvents.push({
-        tempId: crypto.randomUUID(),
-        source: 'deterministic',
-        confidence: 1.0,
-        contextSnippet: trimmedLine,
-        lineNumber: lineIdx + 1,
-        entityType: 'location',
-        entityId: '',
-        entityName: 'Story Timeline',
-        action: 'created',
-        payload: { date },
-        description: `Caption timeline: ${date}`,
     // Pattern: CAPTION: <year>...
     const captionMatch = trimmedLine.match(/^CAPTION:\s*(\d{4}.+)/i);
     if (captionMatch) {
