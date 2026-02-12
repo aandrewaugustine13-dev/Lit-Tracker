@@ -96,6 +96,10 @@ const ECHO_ACTION_VERBS = [
   'catches', 'catch', 'catching',
 ];
 
+// Pattern for inline character introductions with descriptive or numeric ages
+// Matches: NAME (age, traits) or NAME (early 20s, traits) or NAME (older, traits)
+const INLINE_CHAR_WITH_AGE_PATTERN = /([A-Z][A-Z\s'.-]{2,}?)\s*\((\d+|early\s+\d+s|late\s+\d+s|mid-\d+s|older|younger)(?:,\s*(.+?))?\)/;
+
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
 /**
@@ -233,8 +237,7 @@ export function parseScript(
     // Example: "MAYA (early 20s, art student vibe - long dark hair) sees Elias"
     // Also handles: "VASEK (older, same build and facial structure as Elias) moves"
     if (!charWithAgeMatch) {
-      // Try numeric or descriptive age patterns first
-      const inlineCharMatch = trimmedLine.match(/([A-Z][A-Z\s'.-]{2,}?)\s*\((\d+|early\s+\d+s|late\s+\d+s|older|younger|mid-\d+s)(?:,\s*(.+?))?\)/);
+      const inlineCharMatch = trimmedLine.match(INLINE_CHAR_WITH_AGE_PATTERN);
       if (inlineCharMatch) {
         const name = inlineCharMatch[1].trim();
         // Try to extract age from pattern like "early 20s"
@@ -271,6 +274,8 @@ export function parseScript(
 
     // Pattern 2: NAME: "dialogue" or NAME: dialogue (with optional parenthetical modifiers)
     // Supports: ELIAS: Yes, Mom OR MOTHER (phone): Your sister OR ELIAS (thought caption): Here we go
+    // Note: This intentionally matches unquoted dialogue to support prose-style comic scripts.
+    // Character and location patterns are checked first to reduce false positives.
     const dialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*:\s*(.+)/);
     if (dialogueMatch) {
       const name = dialogueMatch[1].trim();
@@ -314,7 +319,8 @@ export function parseScript(
 
     // Pattern 2: Standalone ALL-CAPS line with location indicator (including with trailing punctuation)
     // Also matches when all-caps location is at the start of the line followed by period and more text
-    const capsOnlyMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\.(?:\s|$)|$)/);
+    // Regex: Match all-caps phrase that ends with optional period followed by space/EOL
+    const capsOnlyMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\.\s?|$)/);
     if (capsOnlyMatch && !locationYearMatch && !charWithAgeMatch && !dialogueMatch) {
       const name = capsOnlyMatch[1].trim();
       
