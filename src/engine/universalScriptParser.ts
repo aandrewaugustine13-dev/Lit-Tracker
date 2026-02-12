@@ -81,6 +81,12 @@ const ITEM_ACTION_VERBS = [
 // Maximum length for character names
 const MAX_CHARACTER_NAME_LENGTH = 30;
 
+// Threshold for triggering comic parser fallback (if Pass 1 finds fewer entities)
+const MIN_ENTITIES_THRESHOLD = 3;
+
+// Threshold for displaying low results warning
+const LOW_RESULTS_THRESHOLD = 2;
+
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
 /**
@@ -263,7 +269,7 @@ function runPass1(
 
     // ═══ 2b. COMIC-STYLE LOCATION WITH YEAR ═══
     // Pattern: LOCATION_NAME - YEAR
-    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)\s*-\s*(\d{4})\s*$/);
+    const locationYearMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)\s*-\s*(\d{4})\s*$/);
     if (locationYearMatch) {
       const locationName = locationYearMatch[1].trim();
       const year = locationYearMatch[2].trim();
@@ -393,7 +399,7 @@ function runPass1(
 
     // ═══ 3b. COMIC-STYLE DIALOGUE DETECTION ═══
     // Pattern: NAME: "dialogue" or NAME: dialogue or NAME (modifier): dialogue
-    const comicDialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*:\s*(.+)/);
+    const comicDialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)(?:\s*\([^)]*\))?\s*:\s*(.+)/);
     if (comicDialogueMatch) {
       const speakerName = comicDialogueMatch[1].trim();
       const normalized = normalizeName(speakerName);
@@ -442,7 +448,7 @@ function runPass1(
 
     // ═══ 3c. INLINE CHARACTER WITH AGE/TRAITS ═══
     // Pattern: NAME (age, traits) at start of line
-    const inlineCharMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+?)\s*\((\d+)(?:,\s*(.+?))?\)/);
+    const inlineCharMatch = trimmedLine.match(/^([A-Z][A-Z\s'.-]+)\s*\((\d+)(?:,\s*(.+))?\)/);
     if (inlineCharMatch) {
       const speakerName = inlineCharMatch[1].trim();
       const normalized = normalizeName(speakerName);
@@ -890,7 +896,7 @@ export async function parseScriptAndProposeUpdates(
   // ═══ COMIC PARSER INTEGRATION (Supplementary Pass) ═══
   // Detect if script contains comic format (PANEL indicators) or if Pass 1 found very few results
   const hasPanelFormat = /^Panel\s+\d+/im.test(options.rawScriptText);
-  const pass1FoundFew = pass1Result.newEntities.length < 3;
+  const pass1FoundFew = pass1Result.newEntities.length < MIN_ENTITIES_THRESHOLD;
   
   if (hasPanelFormat || pass1FoundFew) {
     try {
@@ -958,7 +964,7 @@ export async function parseScriptAndProposeUpdates(
       'locations with INT./EXT. prefixes or PANEL format, ' +
       'and item interactions with action verbs.'
     );
-  } else if (totalResults <= 2 && !llmWasUsed) {
+  } else if (totalResults <= LOW_RESULTS_THRESHOLD && !llmWasUsed) {
     allWarnings.push(
       `Only ${totalResults} item(s) detected. Consider checking your script formatting or enabling AI-assisted extraction (Pass 2) for better results.`
     );
