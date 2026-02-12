@@ -367,6 +367,7 @@ function extractLocations(text: string): string[] {
 
     // 4. Check for mixed-case descriptive locations with place indicators
     // Pattern: "Parking garage", "Construction site", "Hospital maternity ward"
+    // Matches phrases like "Parking garage" or "Construction site"
     const mixedCaseWords = trimmedLine.match(/\b[A-Z][a-z]+(?:\s+[a-z]+)*(?:\s+[A-Z]?[a-z]+)*\b/g);
     if (mixedCaseWords) {
       for (const phrase of mixedCaseWords) {

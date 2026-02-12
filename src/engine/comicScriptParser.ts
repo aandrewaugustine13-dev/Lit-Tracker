@@ -149,7 +149,7 @@ export function parseScript(
 
   // Strip Markdown formatting before parsing
   const normalizedText = stripMarkdown(scriptText);
-  console.log('[comicParser] Markdown stripped');
+  console.log(`[comicParser] Markdown stripped: ${scriptText.length} -> ${normalizedText.length} chars`);
 
   const lines = normalizedText.split('\n');
   console.log('[comicParser] Total lines:', lines.length);
@@ -420,8 +420,11 @@ export function parseScript(
     // Pattern 5: General descriptive location patterns
     // Extract locations from descriptive text containing location indicators
     // Example: "Parking garage interior", "Construction site at dawn"
+    // Note: Keywords are hardcoded here for pattern clarity and specificity,
+    // rather than dynamically built from LOCATION_INDICATORS
     if (!panelMatch && !charWithAgeMatch && !dialogueMatch) {
       // Look for phrases with location indicators
+      // Matches phrases like "Parking garage" or "Hospital maternity ward"
       const locationPatterns = [
         // Pattern: "Location-indicator word(s)" at start of sentence
         /^([A-Z][a-z]+(?:\s+[a-z]+)*\s+(?:garage|hospital|street|site|building|office|center|ward|room|hall|studio|clinic|lab|park|station))/i,
