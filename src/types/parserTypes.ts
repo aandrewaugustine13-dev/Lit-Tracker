@@ -100,7 +100,7 @@ export interface ProposedEntityUpdate {
   /** ID of the existing entity to update */
   entityId: string;
   /** Type of entity being updated */
-  entityType: 'character' | 'location' | 'item';
+  entityType: ProposedEntityType;
   /** Name of entity (for display) */
   entityName: string;
   /** How this update was discovered */

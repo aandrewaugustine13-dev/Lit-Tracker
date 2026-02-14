@@ -310,6 +310,25 @@ interface EntityCardProps {
 }
 
 function EntityCard({ entity, isSelected, onToggle, getConfidenceColor, getEntityIcon }: EntityCardProps) {
+  const getTypeBadge = (entityType: string) => {
+    const badges: Record<string, { bg: string; text: string; label: string }> = {
+      character: { bg: 'bg-stone-200', text: 'text-stone-700', label: 'Character' },
+      location: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Location' },
+      item: { bg: 'bg-stone-200', text: 'text-stone-600', label: 'Item' },
+      faction: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Faction' },
+      event: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Event' },
+      concept: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Concept' },
+      artifact: { bg: 'bg-rose-100', text: 'text-rose-700', label: 'Artifact' },
+      rule: { bg: 'bg-cyan-100', text: 'text-cyan-700', label: 'Canon Rule' },
+    };
+    const badge = badges[entityType] || { bg: 'bg-stone-200', text: 'text-stone-600', label: entityType };
+    return (
+      <span className={`px-2 py-0.5 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>
+        {badge.label}
+      </span>
+    );
+  };
+
   return (
     <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-ember-500 transition-colors">
       <div className="flex items-start gap-3">
@@ -324,9 +343,7 @@ function EntityCard({ entity, isSelected, onToggle, getConfidenceColor, getEntit
           <div className="flex items-center gap-2 mb-2">
             <div className="text-steel-300">{getEntityIcon(entity.entityType)}</div>
             <h4 className="font-display font-semibold text-ink">{entity.name}</h4>
-            <span className="text-xs text-steel-400 capitalize">
-              {entity.entityType}
-            </span>
+            {getTypeBadge(entity.entityType)}
           </div>
 
           {/* Confidence Bar */}

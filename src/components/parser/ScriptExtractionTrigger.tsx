@@ -73,6 +73,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       // 2. Also parse for pages/panels/dialogue structure (for Ink Tracker)
       if (enableLLM && apiKey) {
         try {
+          console.log('[ScriptExtraction] Starting page/panel structure parse for Ink Tracker...');
           const parsedScript = await parseScriptWithLLM(
             scriptText,
             provider,
@@ -83,8 +84,12 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
             parsedScript.pages.length, 'pages and',
             parsedScript.characters.length, 'characters. Available for Ink Tracker import.');
         } catch (scriptError) {
-          console.error('Failed to parse script structure:', scriptError);
+          console.error('[ScriptExtraction] Failed to parse script structure for Ink Tracker:', scriptError);
+          const errMsg = scriptError instanceof Error ? scriptError.message : String(scriptError);
+          console.warn(`[ScriptExtraction] Ink Tracker import will be unavailable. Error: ${errMsg}`);
         }
+      } else {
+        console.log('[ScriptExtraction] Skipping Ink Tracker parse (LLM disabled or no API key)');
       }
 
       onClose();

@@ -520,6 +520,10 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         
         // Timeline entries for updates
         approvedUpdates.forEach((update: ProposedEntityUpdate) => {
+          // Timeline only supports character/location/item - skip other types
+          if (update.entityType !== 'character' && update.entityType !== 'location' && update.entityType !== 'item') {
+            return;
+          }
           currentEpoch++;
           newTimelineEntries.push({
             id: crypto.randomUUID(),

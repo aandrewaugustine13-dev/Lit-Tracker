@@ -667,10 +667,19 @@ async function callClaudeAPI(
   const text = data.content?.[0]?.text;
   if (!text) throw new Error('Claude returned no content');
 
-  // Strip markdown fences if present
-  const fencePattern = /^```(?:json)?\s*\n([\s\S]*?)\n```\s*$/;
-  const match = text.match(fencePattern);
-  return match ? match[1] : text;
+  // Strip markdown fences robustly — handle various wrapping formats
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
+    cleaned = cleaned.substring(0, lastBrace + 1);
+  }
+  return cleaned;
 }
 
 async function callGeminiAPI(
@@ -783,7 +792,15 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
       : await callClaudeAPI(systemPrompt, apiKey);
 
     // Parse LLM response
-    const llmResponse: LLMExtractionResponse = JSON.parse(textContent);
+    let llmResponse: LLMExtractionResponse;
+    try {
+      llmResponse = JSON.parse(textContent);
+    } catch (jsonError) {
+      console.error('[Pass2] JSON parse failed. Raw response (first 500 chars):', textContent.substring(0, 500));
+      console.error('[Pass2] JSON parse error:', jsonError);
+      warnings.push(`LLM returned invalid JSON. First 200 chars: ${textContent.substring(0, 200)}`);
+      return { newEntities: [], timelineEvents: [], warnings };
+    }
 
     // Convert to proposals (null-safe)
     const newEntities: ProposedNewEntity[] = (llmResponse.newEntities || []).map(e => ({
@@ -807,6 +824,12 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
       suggestedOrigin: e.suggestedOrigin,
     }));
 
+    // Log what the LLM found by type
+    const typeCounts: Record<string, number> = {};
+    newEntities.forEach(e => { typeCounts[e.entityType] = (typeCounts[e.entityType] || 0) + 1; });
+    console.log('[Pass2] LLM extracted entities by type:', typeCounts);
+    console.log('[Pass2] Entity names:', newEntities.map(e => `${e.entityType}:${e.name}`).join(', '));
+
     const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(e => ({
       tempId: generateUUID(),
       source: 'llm' as const,
@@ -823,7 +846,8 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
 
     return { newEntities, timelineEvents, warnings };
   } catch (error) {
-    warnings.push(`LLM Pass 2 failed: ${error}`);
+    console.error('[Pass2] LLM extraction failed:', error);
+    warnings.push(`LLM Pass 2 failed: ${error instanceof Error ? error.message : String(error)}`);
     return { newEntities: [], timelineEvents: [], warnings };
   }
 }
