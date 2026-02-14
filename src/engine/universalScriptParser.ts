@@ -988,7 +988,7 @@ export async function parseScriptAndProposeUpdates(
   // Run Pass 2 (optional LLM)
   // Resolve effective API key and provider (backwards compat)
   const effectiveApiKey = options.llmApiKey || options.geminiApiKey;
-  const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey && !options.llmApiKey ? 'gemini' : 'anthropic');
+  const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey ? 'gemini' : 'anthropic');
 
   if (options.enableLLM && effectiveApiKey) {
     llmWasUsed = true;

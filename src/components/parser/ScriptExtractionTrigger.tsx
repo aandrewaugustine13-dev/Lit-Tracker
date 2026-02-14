@@ -64,7 +64,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         normalizedLocations,
         normalizedItems,
         llmApiKey: enableLLM ? apiKey : undefined,
-        llmProvider: enableLLM ? (provider as LLMProvider) : undefined,
+        llmProvider: enableLLM ? (provider === 'anthropic' || provider === 'gemini' ? provider : 'anthropic') : undefined,
         enableLLM,
       });
 
