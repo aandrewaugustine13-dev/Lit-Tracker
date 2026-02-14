@@ -14,6 +14,7 @@ import {
 } from '../types/parserTypes';
 import { Character, LocationEntry, Item, CharacterRole } from '../types';
 import { EntityState } from '../store/entityAdapter';
+import { parseScript as parseComicScript, ComicParseResult } from './comicScriptParser';
 
 // ─── Parser Options ─────────────────────────────────────────────────────────
 
@@ -550,21 +551,6 @@ function runPass1(
       continue;
     }
 
-    const captionMatch = trimmedLine.match(/^CAPTION:\s*(\d{4}.+)/i);
-    if (captionMatch) {
-      const date = captionMatch[1].trim();
-      newTimelineEvents.push({
-        tempId: crypto.randomUUID(),
-        source: 'deterministic',
-        confidence: 1.0,
-        contextSnippet: trimmedLine,
-        lineNumber: lineIdx + 1,
-        entityType: 'location',
-        entityId: '',
-        entityName: 'Story Timeline',
-        action: 'created',
-        payload: { date },
-        description: `Caption timeline: ${date}`,
     // Pattern: CAPTION: <year>...
     const captionMatch = trimmedLine.match(/^CAPTION:\s*(\d{4}.+)/i);
     if (captionMatch) {

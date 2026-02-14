@@ -257,7 +257,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
     
     return {
       selectedUpdateIds: isSelected
-        ? current.filter((id: string) => id !== index)
+        ? current.filter((id: number) => id !== index)
         : [...current, index],
     };
   }),
@@ -280,7 +280,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
     
     return {
       selectedNewEntityIds: state.currentProposal.newEntities.map((e: ProposedNewEntity) => e.tempId),
-      selectedUpdateIds: state.currentProposal.updatedEntities.map((_: any, idx: number) => idx.toString()),
+      selectedUpdateIds: state.currentProposal.updatedEntities.map((_: any, idx: number) => idx),
       selectedTimelineEventIds: state.currentProposal.newTimelineEvents.map((e: ProposedTimelineEvent) => e.tempId),
     };
   }),
