@@ -40,7 +40,8 @@ export function ParserTestPage() {
         characters,
         normalizedLocations,
         normalizedItems,
-        geminiApiKey: enableLLM ? apiKey : undefined,
+        llmApiKey: enableLLM ? apiKey : undefined,
+        llmProvider: 'anthropic',
         enableLLM,
       });
 

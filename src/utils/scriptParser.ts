@@ -46,9 +46,9 @@ export interface Character {
 // ============= CONFIGURATION =============
 
 export const DEFAULT_MODELS: Record<string, string> = {
+  anthropic: 'claude-sonnet-4-5-20250929',
+  gemini: 'gemini-2.0-flash',
   openai: 'gpt-4o',
-  anthropic: 'claude-3-5-sonnet-20241022',
-  gemini: 'gemini-1.5-pro',
   grok: 'grok-2-latest',
   deepseek: 'deepseek-chat',
 };
@@ -150,10 +150,11 @@ async function callAnthropic(
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [
         { role: 'user', content: `${prompt}\n\n${script}` },
       ],
