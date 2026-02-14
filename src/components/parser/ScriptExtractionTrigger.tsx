@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, Upload, Sparkles } from 'lucide-react';
+import { X, Upload, Zap, Cpu } from 'lucide-react';
 import { useLitStore } from '../../store';
-import { parseScriptAndProposeUpdates } from '../../engine/universalScriptParser';
+import { parseScriptAndProposeUpdates, LLMProvider } from '../../engine/universalScriptParser';
 import { parseScriptWithLLM } from '../../utils/scriptParser';
 
 // =============================================================================
@@ -12,13 +12,27 @@ interface ScriptExtractionTriggerProps {
   onClose: () => void;
 }
 
+type ParseMode = 'llm' | 'deterministic';
+type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
+
+const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string }> = {
+  anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys' },
+  gemini:    { label: 'Gemini', placeholder: 'AIza...', helpUrl: 'https://aistudio.google.com/apikey' },
+  openai:    { label: 'OpenAI', placeholder: 'sk-...', helpUrl: 'https://platform.openai.com/api-keys' },
+  grok:      { label: 'Grok', placeholder: 'xai-...', helpUrl: 'https://console.x.ai' },
+  deepseek:  { label: 'DeepSeek', placeholder: 'sk-...', helpUrl: 'https://platform.deepseek.com/api_keys' },
+};
+
+const PROVIDERS: ProviderOption[] = ['anthropic', 'gemini', 'openai', 'grok', 'deepseek'];
+
 export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = ({ onClose }) => {
   const [scriptText, setScriptText] = useState('');
-  const [geminiApiKey, setGeminiApiKey] = useState('');
-  const [enableLLM, setEnableLLM] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [parseMode, setParseMode] = useState<ParseMode>('llm');
+  const [provider, setProvider] = useState<ProviderOption>('anthropic');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+
   const projectConfig = useLitStore((s) => s.projectConfig);
   const characters = useLitStore((s) => s.characters);
   const normalizedLocations = useLitStore((s) => s.normalizedLocations);
@@ -27,6 +41,9 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   const setParserStatus = useLitStore((s) => s.setParserStatus);
   const setParserError = useLitStore((s) => s.setParserError);
   const setParsedScriptResult = useLitStore((s) => s.setParsedScriptResult);
+
+  const enableLLM = parseMode === 'llm';
+  const meta = PROVIDER_META[provider];
 
   const handleParse = async () => {
     if (!scriptText.trim()) {
@@ -46,33 +63,31 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         characters,
         normalizedLocations,
         normalizedItems,
-        geminiApiKey: enableLLM ? geminiApiKey : undefined,
+        llmApiKey: enableLLM ? apiKey : undefined,
+        llmProvider: enableLLM ? (provider as LLMProvider) : undefined,
         enableLLM,
       });
 
       setCurrentProposal(proposal);
-      
+
       // 2. Also parse for pages/panels/dialogue structure (for Ink Tracker)
-      // This runs in parallel and stores the result for later use by Ink Tracker
-      if (enableLLM && geminiApiKey) {
+      if (enableLLM && apiKey) {
         try {
           const parsedScript = await parseScriptWithLLM(
             scriptText,
-            'gemini',
-            geminiApiKey
+            provider,
+            apiKey
           );
           setParsedScriptResult(parsedScript, scriptText);
-          console.log('[ScriptExtraction] Successfully parsed script structure with', 
-            parsedScript.pages.length, 'pages and', 
+          console.log('[ScriptExtraction] Successfully parsed script structure with',
+            parsedScript.pages.length, 'pages and',
             parsedScript.characters.length, 'characters. Available for Ink Tracker import.');
         } catch (scriptError) {
           console.error('Failed to parse script structure:', scriptError);
-          // Don't fail the whole operation if this fails
-          // User can still get lore extraction results
         }
       }
-      
-      onClose(); // Close this modal, the ExtractionPreviewModal will show
+
+      onClose();
     } catch (error) {
       console.error('Parsing error:', error);
       const errorMsg = error instanceof Error ? error.message : 'Unknown parsing error';
@@ -100,7 +115,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         {/* Header */}
         <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-ember-500" />
+            <Zap className="w-5 h-5 text-ember-500" />
             <h2 className="font-display text-2xl text-ink">Extract Lore from Script</h2>
           </div>
           <button
@@ -115,6 +130,32 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="space-y-4">
+            {/* Mode Toggle */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setParseMode('llm')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body font-semibold text-sm transition-colors ${
+                  parseMode === 'llm'
+                    ? 'bg-ember-500 text-white'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <Zap className="w-4 h-4" />
+                AI Extraction
+              </button>
+              <button
+                onClick={() => setParseMode('deterministic')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body font-semibold text-sm transition-colors ${
+                  parseMode === 'deterministic'
+                    ? 'bg-ember-500 text-white'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <Cpu className="w-4 h-4" />
+                Pattern Only
+              </button>
+            </div>
+
             {/* Instructions */}
             <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 text-sm text-stone-700">
               <p className="font-body mb-2">
@@ -127,7 +168,9 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
                 <li>Timeline events (character movements, item transfers)</li>
               </ul>
               <p className="mt-3 text-stone-600">
-                The parser uses deterministic pattern matching by default. Enable LLM for advanced entity extraction.
+                {parseMode === 'llm'
+                  ? 'AI extraction uses an LLM for advanced entity recognition on top of pattern matching.'
+                  : 'Pattern-only mode uses deterministic rules — no API key needed.'}
               </p>
             </div>
 
@@ -192,49 +235,51 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
               </div>
             </div>
 
-            {/* LLM Options */}
-            <div className="border border-stone-200 rounded-lg p-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={enableLLM}
-                  onChange={(e) => setEnableLLM(e.target.checked)}
-                  className="w-4 h-4 text-ember-500 border-stone-300 rounded focus:ring-ember-500"
-                />
-                <span className="font-body font-semibold text-ink">
-                  Enable LLM-Enhanced Extraction (Optional)
-                </span>
-              </label>
-              <p className="text-xs text-stone-600 mt-1 ml-6">
-                Use Gemini AI to extract implicit relationships, emotional states, and complex entity interactions.
-              </p>
-              
-              {enableLLM && (
-                <div className="mt-3 ml-6">
+            {/* LLM Provider & API Key (only in LLM mode) */}
+            {parseMode === 'llm' && (
+              <div className="border border-stone-200 rounded-lg p-4 space-y-3">
+                <p className="font-body font-semibold text-ink text-sm">AI Provider</p>
+                <div className="flex flex-wrap gap-2">
+                  {PROVIDERS.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setProvider(p)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-body font-semibold transition-colors ${
+                        provider === p
+                          ? 'bg-ember-500 text-white'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      }`}
+                    >
+                      {PROVIDER_META[p].label}
+                    </button>
+                  ))}
+                </div>
+
+                <div>
                   <label className="block text-sm font-body font-medium text-ink mb-1">
-                    Gemini API Key
+                    {meta.label} API Key
                   </label>
                   <input
                     type="password"
-                    value={geminiApiKey}
-                    onChange={(e) => setGeminiApiKey(e.target.value)}
-                    placeholder="Enter your Gemini API key..."
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder={meta.placeholder}
                     className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20"
                   />
                   <p className="text-xs text-stone-500 mt-1">
-                    Get your free API key at{' '}
+                    Get your API key at{' '}
                     <a
-                      href="https://aistudio.google.com/apikey"
+                      href={meta.helpUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-ember-500 hover:underline"
                     >
-                      Google AI Studio
+                      {meta.helpUrl.replace('https://', '')}
                     </a>
                   </p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -258,7 +303,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                {parseMode === 'llm' ? <Zap className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                 Parse Script
               </>
             )}

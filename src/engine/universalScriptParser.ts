@@ -18,12 +18,17 @@ import { parseScript as parseComicScript, ComicParseResult } from './comicScript
 
 // ─── Parser Options ─────────────────────────────────────────────────────────
 
+export type LLMProvider = 'anthropic' | 'gemini';
+
 export interface ParseOptions {
   rawScriptText: string;
   config: ProjectConfig;
   characters: Character[];
   normalizedLocations: EntityState<LocationEntry>;
   normalizedItems: EntityState<Item>;
+  llmApiKey?: string;
+  llmProvider?: LLMProvider;
+  /** @deprecated Use llmApiKey instead */
   geminiApiKey?: string;
   enableLLM?: boolean;
 }
@@ -631,18 +636,87 @@ function runPass1(
   return result;
 }
 
-// ─── Pass 2: Optional LLM Fallback ──────────────────────────────────────────
+// ─── Pass 2: LLM Helpers ────────────────────────────────────────────────────
+
+async function callClaudeAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 8192,
+      messages: [{ role: 'user', content: systemPrompt }],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Claude API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.content?.[0]?.text;
+  if (!text) throw new Error('Claude returned no content');
+
+  // Strip markdown fences if present
+  const fencePattern = /^```(?:json)?\s*\n([\s\S]*?)\n```\s*$/;
+  const match = text.match(fencePattern);
+  return match ? match[1] : text;
+}
+
+async function callGeminiAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: systemPrompt }] }],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: 'application/json',
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Gemini returned no content');
+  return text;
+}
 
 async function runPass2(
   rawScriptText: string,
   pass1Result: Pass1Result,
   config: ProjectConfig,
   entityIndex: EntityIndex,
-  geminiApiKey: string
+  apiKey: string,
+  provider: LLMProvider = 'anthropic'
 ): Promise<{ newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[]; warnings: string[] }> {
   const warnings: string[] = [];
 
-  // Build system prompt
+  // Build system prompt (same as before)
   const systemPrompt = `You are Lit-Tracker's narrative extraction engine. Your job is to analyze a screenplay/comic script and extract entities (characters, locations, items) and timeline events that were not caught by deterministic rules.
 
 CANON LOCKS (DO NOT modify these):
@@ -694,43 +768,15 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
   }
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-goog-api-key': geminiApiKey,
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: systemPrompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            responseMimeType: 'application/json',
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      warnings.push(`LLM API error: ${response.status} ${errorText}`);
-      return { newEntities: [], timelineEvents: [], warnings };
-    }
-
-    const data = await response.json();
-    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!textContent) {
-      warnings.push('LLM returned no content');
-      return { newEntities: [], timelineEvents: [], warnings };
-    }
+    const textContent = provider === 'gemini'
+      ? await callGeminiAPI(systemPrompt, apiKey)
+      : await callClaudeAPI(systemPrompt, apiKey);
 
     // Parse LLM response
     const llmResponse: LLMExtractionResponse = JSON.parse(textContent);
 
-    // Convert to proposals
-    const newEntities: ProposedNewEntity[] = llmResponse.newEntities.map(e => ({
+    // Convert to proposals (null-safe)
+    const newEntities: ProposedNewEntity[] = (llmResponse.newEntities || []).map(e => ({
       tempId: generateUUID(),
       entityType: e.type,
       name: e.name,
@@ -746,7 +792,7 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
       suggestedItemDescription: e.suggestedItemDescription,
     }));
 
-    const timelineEvents: ProposedTimelineEvent[] = llmResponse.timelineEvents.map(e => ({
+    const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(e => ({
       tempId: generateUUID(),
       source: 'llm' as const,
       confidence: e.confidence,
@@ -877,6 +923,9 @@ export interface ParseScriptOptions {
   characters: Character[];
   normalizedLocations: EntityState<LocationEntry>;
   normalizedItems: EntityState<Item>;
+  llmApiKey?: string;
+  llmProvider?: LLMProvider;
+  /** @deprecated Use llmApiKey instead */
   geminiApiKey?: string;
   enableLLM?: boolean;
 }
@@ -937,14 +986,19 @@ export async function parseScriptAndProposeUpdates(
   }
 
   // Run Pass 2 (optional LLM)
-  if (options.enableLLM && options.geminiApiKey) {
+  // Resolve effective API key and provider (backwards compat)
+  const effectiveApiKey = options.llmApiKey || options.geminiApiKey;
+  const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey && !options.llmApiKey ? 'gemini' : 'anthropic');
+
+  if (options.enableLLM && effectiveApiKey) {
     llmWasUsed = true;
     const pass2Result = await runPass2(
       options.rawScriptText,
       pass1Result,
       options.config,
       entityIndex,
-      options.geminiApiKey
+      effectiveApiKey,
+      effectiveProvider
     );
 
     // Merge Pass 2 results (deduplicate by name)
