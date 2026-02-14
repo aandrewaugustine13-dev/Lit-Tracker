@@ -84,6 +84,10 @@ export interface ProposedNewEntity {
   // Lore-specific fields (optional)
   suggestedLoreType?: string;
   suggestedTags?: string[];
+  suggestedIdeology?: string;  // factions
+  suggestedLeader?: string;    // factions
+  suggestedDate?: string;      // events
+  suggestedOrigin?: string;    // concepts, artifacts
 }
 
 // ─── Proposed Entity Update ─────────────────────────────────────────────────
@@ -228,6 +232,10 @@ export interface LLMExtractionResponse {
     suggestedHolderId?: string;
     suggestedItemDescription?: string;
     suggestedTags?: string[];
+    suggestedIdeology?: string;
+    suggestedLeader?: string;
+    suggestedDate?: string;
+    suggestedOrigin?: string;
   }[];
   /** Updates to existing entities */
   entityUpdates: {

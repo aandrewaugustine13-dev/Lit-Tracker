@@ -53,7 +53,7 @@ function generateUUID(): string {
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 // Maximum script length sent to LLM (to avoid token limits and costs)
-const MAX_LLM_SCRIPT_LENGTH = 8000;
+const MAX_LLM_SCRIPT_LENGTH = 100000;
 
 // Common screenplay direction keywords to filter out
 const SCREENPLAY_KEYWORDS = new Set([
@@ -652,7 +652,7 @@ async function callClaudeAPI(
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 8192,
+      max_tokens: 16384,
       messages: [{ role: 'user', content: systemPrompt }],
       temperature: 0.1,
     }),
@@ -801,6 +801,10 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
       suggestedHolderId: e.suggestedHolderId,
       suggestedItemDescription: e.suggestedItemDescription,
       suggestedTags: e.suggestedTags,
+      suggestedIdeology: (e as any).suggestedIdeology,
+      suggestedLeader: (e as any).suggestedLeader,
+      suggestedDate: (e as any).suggestedDate,
+      suggestedOrigin: (e as any).suggestedOrigin,
     }));
 
     const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(e => ({
