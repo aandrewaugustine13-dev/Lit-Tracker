@@ -29,6 +29,12 @@ import { seedCharactersFromScript, autoLinkPanelsToCharacters, detectLoreMention
 
 /**
  * Convert ParsedScript (from LLM parser) to ParseResult (expected by handleScriptImport)
+ * 
+ * NOTE: This is a bridge function between two data formats:
+ * - ParsedScript: Output from parseScriptWithLLM() in utils/scriptParser.ts
+ * - ParseResult: Legacy format expected by Ink Tracker storyboard generation
+ * 
+ * If this conversion is needed elsewhere, consider extracting to a shared utility module.
  */
 function convertParsedScriptToParseResult(parsedScript: ParsedScript): ParseResult {
   return {

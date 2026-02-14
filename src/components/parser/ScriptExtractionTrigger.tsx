@@ -62,6 +62,9 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
             geminiApiKey
           );
           setParsedScriptResult(parsedScript, scriptText);
+          console.log('[ScriptExtraction] Successfully parsed script structure with', 
+            parsedScript.pages.length, 'pages and', 
+            parsedScript.characters.length, 'characters. Available for Ink Tracker import.');
         } catch (scriptError) {
           console.error('Failed to parse script structure:', scriptError);
           // Don't fail the whole operation if this fails
