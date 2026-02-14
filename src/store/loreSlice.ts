@@ -111,10 +111,17 @@ function createTimelineEntry(
 
 // ─── Helper: Derive loreEntries from normalized locations ───────────────────
 
-function deriveLoreEntries(state: { normalizedLocations: EntityState<LocationEntry> }): LoreEntry[] {
-  // For now, only locations are stored in loreEntries for backward compatibility.
-  // We can extend this to include other lore types as needed.
-  return state.normalizedLocations.ids.map(id => state.normalizedLocations.entities[id]);
+function deriveLoreEntries(
+  state: { normalizedLocations: EntityState<LocationEntry> },
+  existingLoreEntries: LoreEntry[]
+): LoreEntry[] {
+  const nonLocationEntries = existingLoreEntries.filter(
+    entry => entry.type !== LoreType.LOCATION
+  );
+  const locationEntries = state.normalizedLocations.ids.map(
+    id => state.normalizedLocations.entities[id]
+  );
+  return [...nonLocationEntries, ...locationEntries];
 }
 
 // =============================================================================
@@ -148,7 +155,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       
       return {
         normalizedLocations: newLocations,
-        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
         activeLoreEntryId: entry.id,
         isLoreEditorOpen: true,
       };
@@ -177,7 +184,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       
       return {
         normalizedLocations: newLocations,
-        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
       };
     }
     
@@ -198,7 +205,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       
       return {
         normalizedLocations: newLocations,
-        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
         activeLoreEntryId: state.activeLoreEntryId === id ? null : state.activeLoreEntryId,
       };
     }
@@ -236,7 +243,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       
       return {
         normalizedLocations: newLocations,
-        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
       };
     }
     
@@ -269,7 +276,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
       
       return {
         normalizedLocations: newLocations,
-        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+        loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
       };
     }
     
@@ -299,7 +306,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
 
     return {
       normalizedLocations: newLocations,
-      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
       timeline: {
         entries: [...state.timeline.entries, timelineEntry],
         lastEpoch: timelineEntry.epoch,
@@ -325,7 +332,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
 
     return {
       normalizedLocations: newLocations,
-      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
       timeline: {
         entries: [...state.timeline.entries, timelineEntry],
         lastEpoch: timelineEntry.epoch,
@@ -348,7 +355,7 @@ export const createLoreSlice: StateCreator<LoreSlice, [], [], LoreSlice> = (set,
 
     return {
       normalizedLocations: newLocations,
-      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }),
+      loreEntries: deriveLoreEntries({ normalizedLocations: newLocations }, state.loreEntries),
       timeline: {
         entries: [...state.timeline.entries, timelineEntry],
         lastEpoch: timelineEntry.epoch,

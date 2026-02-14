@@ -726,75 +726,69 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
       return;
     }
 
-    // Step 1: Collect all character IDs referenced by panels in this project
-    const projectCharacterIds = new Set<string>();
-    project.issues.forEach((issue: any) => {
-      issue.pages.forEach((page: any) => {
-        page.panels.forEach((panel: any) => {
-          if (panel.characterIds && Array.isArray(panel.characterIds)) {
-            panel.characterIds.forEach((charId: string) => {
-              projectCharacterIds.add(charId);
-            });
-          }
-        });
-      });
-    });
+    // Step 1: Delete the project FIRST (moved from old Step 5)
+    state.inkDispatch({ type: 'DELETE_PROJECT', id: projectId });
 
-    // Also include legacy project.characters if present
-    if (project.characters && Array.isArray(project.characters)) {
-      project.characters.forEach((char: any) => {
-        if (char.id) {
-          projectCharacterIds.add(char.id);
-        }
-      });
-    }
-
-    // Step 2: Find character IDs that are ONLY used in this project
-    // Check all other projects to see if they reference these characters
-    const otherProjectCharacterIds = new Set<string>();
-    state.inkState.projects.forEach((p: any) => {
-      if (p.id === projectId) return; // Skip the project being deleted
-      
+    // Step 2: Get updated ink state and collect ALL character IDs from remaining projects
+    const updatedInkState = get().inkState;
+    const remainingReferencedCharIds = new Set<string>();
+    
+    updatedInkState.projects.forEach((p: any) => {
       p.issues.forEach((issue: any) => {
         issue.pages.forEach((page: any) => {
           page.panels.forEach((panel: any) => {
             if (panel.characterIds && Array.isArray(panel.characterIds)) {
               panel.characterIds.forEach((charId: string) => {
-                otherProjectCharacterIds.add(charId);
+                remainingReferencedCharIds.add(charId);
               });
             }
           });
         });
       });
 
-      // Also check legacy characters
+      // Also check legacy project.characters if present
       if (p.characters && Array.isArray(p.characters)) {
         p.characters.forEach((char: any) => {
           if (char.id) {
-            otherProjectCharacterIds.add(char.id);
+            remainingReferencedCharIds.add(char.id);
           }
         });
       }
     });
 
-    // Characters to delete are those used ONLY in this project
-    const characterIdsToDelete = Array.from(projectCharacterIds).filter(
-      charId => !otherProjectCharacterIds.has(charId)
+    // Step 3: Filter global characters array - keep only referenced characters
+    const updatedCharacters = state.characters.filter((char: Character) =>
+      remainingReferencedCharIds.has(char.id)
     );
 
-    // Step 3: Delete characters and their relationships
-    if (characterIdsToDelete.length > 0) {
-      // Use the existing deleteCharacter action for each character
-      // This will also clean up relationships
-      characterIdsToDelete.forEach(charId => {
-        state.deleteCharacter(charId);
+    // Determine which characters were deleted
+    const characterIdsToDelete = state.characters
+      .filter((char: Character) => !remainingReferencedCharIds.has(char.id))
+      .map((char: Character) => char.id);
+
+    // Step 4: Filter normalizedCharacters - keep only referenced characters
+    const updatedNormalizedCharacters = {
+      ...state.normalizedCharacters,
+      entities: { ...state.normalizedCharacters.entities }
+    };
+    
+    // Delete entities not in remainingReferencedCharIds
+    if (updatedNormalizedCharacters.entities) {
+      Object.keys(updatedNormalizedCharacters.entities).forEach(charId => {
+        if (!remainingReferencedCharIds.has(charId)) {
+          delete updatedNormalizedCharacters.entities[charId];
+        }
       });
     }
+    
+    // Filter ids array
+    if (updatedNormalizedCharacters.ids && Array.isArray(updatedNormalizedCharacters.ids)) {
+      updatedNormalizedCharacters.ids = updatedNormalizedCharacters.ids.filter(
+        (id: string) => remainingReferencedCharIds.has(id)
+      );
+    }
 
-    // Step 4: Clean up lore entries that reference deleted characters
-    // Two approaches:
-    // a) Remove the character ID from loreEntry.characterIds if other characters remain
-    // b) Delete the lore entry if it only referenced deleted characters
+    // Step 5: Clean up loreEntries and normalizedLocations for deleted character IDs
     if (characterIdsToDelete.length > 0) {
       const characterIdsToDeleteSet = new Set(characterIdsToDelete);
       
@@ -823,7 +817,10 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
       }
 
       // Update normalized locations
-      const updatedNormalizedLocations = { ...state.normalizedLocations };
+      const updatedNormalizedLocations = {
+        ...state.normalizedLocations,
+        entities: { ...state.normalizedLocations.entities }
+      };
       if (state.normalizedLocations && state.normalizedLocations.ids && Array.isArray(state.normalizedLocations.ids)) {
         state.normalizedLocations.ids.forEach((id: string) => {
           const location = state.normalizedLocations.entities[id];
@@ -843,34 +840,26 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
         });
       }
 
-      // Update normalized characters (remove deleted ones)
-      const updatedNormalizedCharacters = { ...state.normalizedCharacters };
-      const characterIdsToDeleteSet2 = new Set(characterIdsToDelete);
-      
-      // Delete entities
-      characterIdsToDelete.forEach(charId => {
-        if (updatedNormalizedCharacters.entities && updatedNormalizedCharacters.entities[charId]) {
-          delete updatedNormalizedCharacters.entities[charId];
-        }
-      });
-      
-      // Filter ids array once for better performance
-      if (updatedNormalizedCharacters.ids && Array.isArray(updatedNormalizedCharacters.ids)) {
-        updatedNormalizedCharacters.ids = updatedNormalizedCharacters.ids.filter(
-          (id: string) => !characterIdsToDeleteSet2.has(id)
-        );
-      }
+      // Clean up relationships array - remove relationships involving deleted characters
+      const updatedRelationships = state.relationships.filter((rel: any) =>
+        !characterIdsToDeleteSet.has(rel.fromId) && !characterIdsToDeleteSet.has(rel.toId)
+      );
 
-      // Apply lore updates
+      // Apply all updates
       set((prevState: any) => ({
+        characters: updatedCharacters,
+        normalizedCharacters: updatedNormalizedCharacters,
         loreEntries: updatedLoreEntries,
         normalizedLocations: updatedNormalizedLocations,
+        relationships: updatedRelationships,
+      }));
+    } else {
+      // Even if no characters deleted, still update characters and normalizedCharacters
+      set((prevState: any) => ({
+        characters: updatedCharacters,
         normalizedCharacters: updatedNormalizedCharacters,
       }));
     }
-
-    // Step 5: Delete the project itself using the existing inkDispatch action
-    state.inkDispatch({ type: 'DELETE_PROJECT', id: projectId });
   },
 
   /**
