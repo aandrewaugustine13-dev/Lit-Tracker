@@ -81,10 +81,14 @@ export async function saveParsedScript(
         throw new Error(`Failed to insert pages: ${pagesError.message}`);
       }
 
+      if (!insertedPages || insertedPages.length !== parsedData.pages.length) {
+        throw new Error('Mismatch between inserted pages and expected page count');
+      }
+
       // 4. Insert panels for each page
       const panelRecords: any[] = [];
       parsedData.pages.forEach((page, pageIdx) => {
-        const pageId = insertedPages![pageIdx].id;
+        const pageId = insertedPages[pageIdx].id;
         page.panels.forEach((panel) => {
           panelRecords.push({
             page_id: pageId,

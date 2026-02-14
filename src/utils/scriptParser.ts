@@ -107,7 +107,8 @@ async function callOpenAI(
   prompt: string,
   script: string,
   apiKey: string,
-  model: string
+  model: string,
+  signal?: AbortSignal
 ): Promise<string> {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -124,6 +125,7 @@ async function callOpenAI(
       response_format: { type: 'json_object' },
       temperature: 0.1,
     }),
+    signal,
   });
 
   if (!response.ok) {
@@ -139,7 +141,8 @@ async function callAnthropic(
   prompt: string,
   script: string,
   apiKey: string,
-  model: string
+  model: string,
+  signal?: AbortSignal
 ): Promise<string> {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -156,6 +159,7 @@ async function callAnthropic(
       ],
       temperature: 0.1,
     }),
+    signal,
   });
 
   if (!response.ok) {
@@ -171,7 +175,8 @@ async function callGemini(
   prompt: string,
   script: string,
   apiKey: string,
-  model: string
+  model: string,
+  signal?: AbortSignal
 ): Promise<string> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -191,6 +196,7 @@ async function callGemini(
           responseMimeType: 'application/json',
         },
       }),
+      signal,
     }
   );
 
@@ -207,7 +213,8 @@ async function callGrok(
   prompt: string,
   script: string,
   apiKey: string,
-  model: string
+  model: string,
+  signal?: AbortSignal
 ): Promise<string> {
   const response = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
@@ -223,6 +230,7 @@ async function callGrok(
       ],
       temperature: 0.1,
     }),
+    signal,
   });
 
   if (!response.ok) {
@@ -238,7 +246,8 @@ async function callDeepSeek(
   prompt: string,
   script: string,
   apiKey: string,
-  model: string
+  model: string,
+  signal?: AbortSignal
 ): Promise<string> {
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
@@ -254,6 +263,7 @@ async function callDeepSeek(
       ],
       temperature: 0.1,
     }),
+    signal,
   });
 
   if (!response.ok) {
@@ -340,30 +350,31 @@ export async function parseScriptWithLLM(
   const selectedModel = model || DEFAULT_MODELS[provider];
 
   // Create AbortController with 2-minute timeout
+  const abortController = new AbortController();
   const timeoutId = setTimeout(() => {
-    if (signal && !signal.aborted) {
-      throw new Error('Request timeout after 2 minutes');
-    }
+    abortController.abort();
   }, 120000);
 
   try {
+    // Use the signal from either the provided controller or our timeout controller
+    const effectiveSignal = signal || abortController.signal;
     let responseText: string;
 
     switch (provider) {
       case 'openai':
-        responseText = await callOpenAI(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel);
+        responseText = await callOpenAI(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
         break;
       case 'anthropic':
-        responseText = await callAnthropic(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel);
+        responseText = await callAnthropic(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
         break;
       case 'gemini':
-        responseText = await callGemini(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel);
+        responseText = await callGemini(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
         break;
       case 'grok':
-        responseText = await callGrok(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel);
+        responseText = await callGrok(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
         break;
       case 'deepseek':
-        responseText = await callDeepSeek(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel);
+        responseText = await callDeepSeek(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
         break;
       default:
         throw new Error(`Unsupported provider: ${provider}`);

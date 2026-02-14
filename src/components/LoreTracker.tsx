@@ -32,28 +32,26 @@ export const LoreTracker: React.FC<LoreTrackerProps> = ({ parsedData, onHighligh
     setExpandedCharacters(newExpanded);
   };
 
-  // Categorize lore candidates
+  // Categorize lore candidates - trust the LLM's categorization primarily
   const locations: LoreCandidate[] = [];
   const timeline: LoreCandidate[] = [];
   const echoes: LoreCandidate[] = [];
   const uncategorized: LoreCandidate[] = [];
 
   parsedData.lore_candidates.forEach((lore) => {
-    // Locations: ALL CAPS multi-word or explicitly categorized
-    if (lore.category === 'location' || (lore.text === lore.text.toUpperCase() && lore.text.split(/\s+/).length > 1)) {
-      locations.push(lore);
-    }
-    // Timeline: Year patterns
-    else if (lore.category === 'timeline' || /\b\d{4}\b/.test(lore.text)) {
-      timeline.push(lore);
-    }
-    // Echoes: Short ALL CAPS single-word
-    else if (lore.text === lore.text.toUpperCase() && lore.text.length <= 20 && lore.text.split(/\s+/).length === 1) {
-      echoes.push(lore);
-    }
-    // Everything else
-    else {
-      uncategorized.push(lore);
+    // Use the category provided by the LLM
+    switch (lore.category) {
+      case 'location':
+        locations.push(lore);
+        break;
+      case 'timeline':
+        timeline.push(lore);
+        break;
+      case 'echo':
+        echoes.push(lore);
+        break;
+      default:
+        uncategorized.push(lore);
     }
   });
 
