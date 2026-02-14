@@ -348,6 +348,15 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         const newItems: Item[] = [];
         const newLoreEntries: LoreEntry[] = [];
         
+        // Helper to create base lore entry fields
+        const createBaseLoreEntry = (baseEntity: any, proposed: ProposedNewEntity) => ({
+          ...baseEntity,
+          description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
+          tags: proposed.suggestedTags || ['auto-extracted'],
+          relatedEntryIds: [],
+          characterIds: [],
+        });
+        
         approvedNewEntities.forEach((proposed: ProposedNewEntity) => {
           const baseEntity = {
             id: crypto.randomUUID(),
@@ -395,60 +404,40 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
             });
           } else if (proposed.entityType === 'faction') {
             newLoreEntries.push({
-              ...baseEntity,
+              ...createBaseLoreEntry(baseEntity, proposed),
               type: LoreType.FACTION,
-              description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
-              tags: proposed.suggestedTags || ['auto-extracted'],
-              relatedEntryIds: [],
-              characterIds: [],
               ideology: '',
               leader: '',
               influence: 0,
             } as FactionEntry);
           } else if (proposed.entityType === 'event') {
             newLoreEntries.push({
-              ...baseEntity,
+              ...createBaseLoreEntry(baseEntity, proposed),
               type: LoreType.EVENT,
-              description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
-              tags: proposed.suggestedTags || ['auto-extracted'],
-              relatedEntryIds: [],
-              characterIds: [],
               date: '',
               participants: '',
               consequences: '',
             } as EventEntry);
           } else if (proposed.entityType === 'concept') {
             newLoreEntries.push({
-              ...baseEntity,
+              ...createBaseLoreEntry(baseEntity, proposed),
               type: LoreType.CONCEPT,
-              description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
-              tags: proposed.suggestedTags || ['auto-extracted'],
-              relatedEntryIds: [],
-              characterIds: [],
               origin: '',
               rules: '',
               complexity: '',
             } as ConceptEntry);
           } else if (proposed.entityType === 'artifact') {
             newLoreEntries.push({
-              ...baseEntity,
+              ...createBaseLoreEntry(baseEntity, proposed),
               type: LoreType.ARTIFACT,
-              description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
-              tags: proposed.suggestedTags || ['auto-extracted'],
-              relatedEntryIds: [],
-              characterIds: [],
               origin: '',
               currentHolder: '',
               properties: '',
             } as ArtifactEntry);
           } else if (proposed.entityType === 'rule') {
             newLoreEntries.push({
-              ...baseEntity,
+              ...createBaseLoreEntry(baseEntity, proposed),
               type: LoreType.RULE,
-              description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
-              tags: proposed.suggestedTags || ['auto-extracted'],
-              relatedEntryIds: [],
-              characterIds: [],
               scope: '',
               exceptions: '',
               canonLocked: false,
@@ -501,11 +490,25 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         // Timeline entries for new entities
         [...newCharacters, ...newLocations, ...newItems, ...newLoreEntries].forEach((entity: any) => {
           currentEpoch++;
+          
+          // Determine entity type for timeline entry
+          let entityType: any;
+          if (newCharacters.includes(entity)) {
+            entityType = 'character';
+          } else if (newLocations.includes(entity)) {
+            entityType = 'location';
+          } else if (newItems.includes(entity)) {
+            entityType = 'item';
+          } else {
+            // For lore entries, use the type field (faction, event, concept, artifact, rule)
+            entityType = entity.type;
+          }
+          
           newTimelineEntries.push({
             id: crypto.randomUUID(),
             epoch: currentEpoch,
             timestamp,
-            entityType: newCharacters.includes(entity) ? 'character' : newLocations.includes(entity) ? 'location' : newItems.includes(entity) ? 'item' : entity.type,
+            entityType,
             entityId: entity.id,
             action: 'created',
             payload: { name: entity.name },
