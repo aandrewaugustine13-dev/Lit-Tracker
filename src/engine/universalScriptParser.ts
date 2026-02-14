@@ -717,12 +717,22 @@ async function runPass2(
   const warnings: string[] = [];
 
   // Build system prompt (same as before)
-  const systemPrompt = `You are Lit-Tracker's narrative extraction engine. Your job is to analyze a screenplay/comic script and extract entities (characters, locations, items) and timeline events that were not caught by deterministic rules.
+  const systemPrompt = `You are Lit-Tracker's narrative extraction engine. Analyze a comic/screenplay script and extract all world-building elements.
+
+ENTITY TYPES YOU CAN EXTRACT:
+- "character": Named people/beings who speak or act
+- "location": Named places, settings (INT./EXT. locations, named regions)
+- "faction": Organizations, groups, teams, agencies, cults, governments
+- "event": Significant narrative moments, turning points, incidents (deaths, battles, discoveries, meetings)
+- "concept": Abstract ideas, powers, mechanics, phenomena, philosophies (e.g. "quantum immortality", "primehood", "echoes")
+- "artifact": Named significant objects, weapons, devices, documents
+- "rule": Established world rules, constraints, laws of the universe
+- "item": Generic trackable objects (use "artifact" instead if the item has narrative significance)
 
 CANON LOCKS (DO NOT modify these):
 ${config.canonLocks.map(name => `- ${name}`).join('\n') || '(none)'}
 
-EXISTING ENTITIES (DO NOT re-create these):
+EXISTING ENTITIES (DO NOT re-create):
 Characters: ${Array.from(entityIndex.characters.keys()).join(', ') || '(none)'}
 Locations: ${Array.from(entityIndex.locations.keys()).join(', ') || '(none)'}
 Items: ${Array.from(entityIndex.items.keys()).join(', ') || '(none)'}
@@ -730,29 +740,29 @@ Items: ${Array.from(entityIndex.items.keys()).join(', ') || '(none)'}
 ALREADY DISCOVERED IN PASS 1 (DO NOT duplicate):
 ${pass1Result.newEntities.map(e => `- ${e.entityType}: ${e.name}`).join('\n') || '(none)'}
 
-AMBIGUOUS PHRASES TO ANALYZE:
-${pass1Result.ambiguousPhrases.slice(0, 20).join(', ') || '(none)'}
-
 TASK:
-Analyze the script below and extract:
-1. New entities (characters, locations, items) not already discovered
-2. Timeline events that represent significant narrative moments
+Extract ALL world-building elements from the script. Be thorough. Look for:
+1. Named characters not already found
+2. Locations and settings
+3. Factions, organizations, groups
+4. Significant events and turning points
+5. Abstract concepts, powers, mechanics
+6. Named artifacts and significant objects
+7. Established rules or constraints of the world
 
-RESPONSE FORMAT (strict JSON):
+RESPONSE FORMAT (strict JSON, no markdown fences):
 {
   "newEntities": [
     {
       "name": "Entity Name",
-      "type": "character" | "location" | "item",
+      "type": "character" | "location" | "faction" | "event" | "concept" | "artifact" | "rule" | "item",
       "confidence": 0.0-1.0,
-      "context": "snippet of text",
-      "lineNumber": 123,
-      "suggestedRole": "Protagonist" | "Antagonist" | "Supporting" | "Minor" (for characters),
-      "suggestedDescription": "brief description",
-      "suggestedRegion": "region name" (for locations),
-      "suggestedTimeOfDay": "day/night/etc" (for locations),
-      "suggestedHolderId": "character id" (for items),
-      "suggestedItemDescription": "description" (for items)
+      "context": "brief quote or context where this appears",
+      "lineNumber": 0,
+      "suggestedDescription": "1-2 sentence description of what this is",
+      "suggestedRole": "Protagonist|Antagonist|Supporting|Minor (characters only)",
+      "suggestedRegion": "region (locations only)",
+      "suggestedTags": ["tag1", "tag2"]
     }
   ],
   "entityUpdates": [],
@@ -790,6 +800,7 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
       suggestedTimeOfDay: e.suggestedTimeOfDay,
       suggestedHolderId: e.suggestedHolderId,
       suggestedItemDescription: e.suggestedItemDescription,
+      suggestedTags: e.suggestedTags,
     }));
 
     const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(e => ({

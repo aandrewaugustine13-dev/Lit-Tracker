@@ -7,7 +7,7 @@ import {
   ProposedEntityUpdate,
   ProposedTimelineEvent,
 } from '../types/parserTypes';
-import { Character, LocationEntry, Item, TimelineEntry, LoreType, LoreEntry } from '../types';
+import { Character, LocationEntry, Item, TimelineEntry, LoreType, LoreEntry, FactionEntry, EventEntry, ConceptEntry, ArtifactEntry, RuleEntry } from '../types';
 import { createEntityAdapter, EntityState } from './entityAdapter';
 import { parseTimelineAndLocations } from '../engine/timelineLocationsParser';
 import type { ParsedScript } from '../utils/scriptParser';
@@ -346,6 +346,16 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         const newCharacters: Character[] = [];
         const newLocations: LocationEntry[] = [];
         const newItems: Item[] = [];
+        const newLoreEntries: LoreEntry[] = [];
+        
+        // Helper to create base lore entry fields
+        const createBaseLoreEntry = (baseEntity: any, proposed: ProposedNewEntity) => ({
+          ...baseEntity,
+          description: proposed.suggestedDescription || `Auto-extracted from script (line ${proposed.lineNumber})`,
+          tags: proposed.suggestedTags || ['auto-extracted'],
+          relatedEntryIds: [],
+          characterIds: [],
+        });
         
         approvedNewEntities.forEach((proposed: ProposedNewEntity) => {
           const baseEntity = {
@@ -392,6 +402,46 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
               locationId: null,
               tags: ['auto-extracted'],
             });
+          } else if (proposed.entityType === 'faction') {
+            newLoreEntries.push({
+              ...createBaseLoreEntry(baseEntity, proposed),
+              type: LoreType.FACTION,
+              ideology: '',
+              leader: '',
+              influence: 0,
+            } as FactionEntry);
+          } else if (proposed.entityType === 'event') {
+            newLoreEntries.push({
+              ...createBaseLoreEntry(baseEntity, proposed),
+              type: LoreType.EVENT,
+              date: '',
+              participants: '',
+              consequences: '',
+            } as EventEntry);
+          } else if (proposed.entityType === 'concept') {
+            newLoreEntries.push({
+              ...createBaseLoreEntry(baseEntity, proposed),
+              type: LoreType.CONCEPT,
+              origin: '',
+              rules: '',
+              complexity: '',
+            } as ConceptEntry);
+          } else if (proposed.entityType === 'artifact') {
+            newLoreEntries.push({
+              ...createBaseLoreEntry(baseEntity, proposed),
+              type: LoreType.ARTIFACT,
+              origin: '',
+              currentHolder: '',
+              properties: '',
+            } as ArtifactEntry);
+          } else if (proposed.entityType === 'rule') {
+            newLoreEntries.push({
+              ...createBaseLoreEntry(baseEntity, proposed),
+              type: LoreType.RULE,
+              scope: '',
+              exceptions: '',
+              canonLocked: false,
+            } as RuleEntry);
           }
         });
         
@@ -438,13 +488,27 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
         let currentEpoch = prevState.timeline.lastEpoch;
         
         // Timeline entries for new entities
-        [...newCharacters, ...newLocations, ...newItems].forEach((entity: any) => {
+        [...newCharacters, ...newLocations, ...newItems, ...newLoreEntries].forEach((entity: any) => {
           currentEpoch++;
+          
+          // Determine entity type for timeline entry
+          let entityType: any;
+          if (newCharacters.includes(entity)) {
+            entityType = 'character';
+          } else if (newLocations.includes(entity)) {
+            entityType = 'location';
+          } else if (newItems.includes(entity)) {
+            entityType = 'item';
+          } else {
+            // For lore entries, use the type field (faction, event, concept, artifact, rule)
+            entityType = entity.type;
+          }
+          
           newTimelineEntries.push({
             id: crypto.randomUUID(),
             epoch: currentEpoch,
             timestamp,
-            entityType: newCharacters.includes(entity) ? 'character' : newLocations.includes(entity) ? 'location' : 'item',
+            entityType,
             entityId: entity.id,
             action: 'created',
             payload: { name: entity.name },
@@ -504,6 +568,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           loreEntries: [
             ...prevState.loreEntries.filter((entry: LoreEntry) => entry.type !== LoreType.LOCATION),
             ...updatedNormalizedLocations.ids.map((id: string) => updatedNormalizedLocations.entities[id]),
+            ...newLoreEntries,
           ],
           
           // Update timeline
