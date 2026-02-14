@@ -767,7 +767,10 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
       .map((char: Character) => char.id);
 
     // Step 4: Filter normalizedCharacters - keep only referenced characters
-    const updatedNormalizedCharacters = { ...state.normalizedCharacters };
+    const updatedNormalizedCharacters = {
+      ...state.normalizedCharacters,
+      entities: { ...state.normalizedCharacters.entities }
+    };
     
     // Delete entities not in remainingReferencedCharIds
     if (updatedNormalizedCharacters.entities) {
@@ -814,7 +817,10 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
       }
 
       // Update normalized locations
-      const updatedNormalizedLocations = { ...state.normalizedLocations };
+      const updatedNormalizedLocations = {
+        ...state.normalizedLocations,
+        entities: { ...state.normalizedLocations.entities }
+      };
       if (state.normalizedLocations && state.normalizedLocations.ids && Array.isArray(state.normalizedLocations.ids)) {
         state.normalizedLocations.ids.forEach((id: string) => {
           const location = state.normalizedLocations.entities[id];
