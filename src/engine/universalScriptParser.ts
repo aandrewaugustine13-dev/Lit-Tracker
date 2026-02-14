@@ -801,10 +801,10 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
       suggestedHolderId: e.suggestedHolderId,
       suggestedItemDescription: e.suggestedItemDescription,
       suggestedTags: e.suggestedTags,
-      suggestedIdeology: (e as any).suggestedIdeology,
-      suggestedLeader: (e as any).suggestedLeader,
-      suggestedDate: (e as any).suggestedDate,
-      suggestedOrigin: (e as any).suggestedOrigin,
+      suggestedIdeology: e.suggestedIdeology,
+      suggestedLeader: e.suggestedLeader,
+      suggestedDate: e.suggestedDate,
+      suggestedOrigin: e.suggestedOrigin,
     }));
 
     const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(e => ({
