@@ -730,9 +730,11 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
     project.issues.forEach((issue: any) => {
       issue.pages.forEach((page: any) => {
         page.panels.forEach((panel: any) => {
-          panel.characterIds.forEach((charId: string) => {
-            projectCharacterIds.add(charId);
-          });
+          if (panel.characterIds && Array.isArray(panel.characterIds)) {
+            panel.characterIds.forEach((charId: string) => {
+              projectCharacterIds.add(charId);
+            });
+          }
         });
       });
     });
@@ -755,9 +757,11 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
       p.issues.forEach((issue: any) => {
         issue.pages.forEach((page: any) => {
           page.panels.forEach((panel: any) => {
-            panel.characterIds.forEach((charId: string) => {
-              otherProjectCharacterIds.add(charId);
-            });
+            if (panel.characterIds && Array.isArray(panel.characterIds)) {
+              panel.characterIds.forEach((charId: string) => {
+                otherProjectCharacterIds.add(charId);
+              });
+            }
           });
         });
       });
@@ -794,55 +798,67 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
       const characterIdsToDeleteSet = new Set(characterIdsToDelete);
       
       // Update lore entries to remove deleted character references
-      const updatedLoreEntries = state.loreEntries.map((entry: any) => {
-        if (!entry.characterIds || entry.characterIds.length === 0) {
-          return entry;
-        }
-        
-        const remainingCharacterIds = entry.characterIds.filter(
-          (charId: string) => !characterIdsToDeleteSet.has(charId)
-        );
-        
-        if (remainingCharacterIds.length !== entry.characterIds.length) {
-          return {
-            ...entry,
-            characterIds: remainingCharacterIds,
-            updatedAt: Date.now(),
-          };
-        }
-        
-        return entry;
-      });
-
-      // Update normalized locations
-      const updatedNormalizedLocations = { ...state.normalizedLocations };
-      state.normalizedLocations.ids.forEach((id: string) => {
-        const location = state.normalizedLocations.entities[id];
-        if (location && location.characterIds && location.characterIds.length > 0) {
-          const remainingCharacterIds = location.characterIds.filter(
+      let updatedLoreEntries = state.loreEntries;
+      if (state.loreEntries && Array.isArray(state.loreEntries)) {
+        updatedLoreEntries = state.loreEntries.map((entry: any) => {
+          if (!entry.characterIds || entry.characterIds.length === 0) {
+            return entry;
+          }
+          
+          const remainingCharacterIds = entry.characterIds.filter(
             (charId: string) => !characterIdsToDeleteSet.has(charId)
           );
           
-          if (remainingCharacterIds.length !== location.characterIds.length) {
-            updatedNormalizedLocations.entities[id] = {
-              ...location,
+          if (remainingCharacterIds.length !== entry.characterIds.length) {
+            return {
+              ...entry,
               characterIds: remainingCharacterIds,
               updatedAt: Date.now(),
             };
           }
-        }
-      });
+          
+          return entry;
+        });
+      }
+
+      // Update normalized locations
+      const updatedNormalizedLocations = { ...state.normalizedLocations };
+      if (state.normalizedLocations && state.normalizedLocations.ids && Array.isArray(state.normalizedLocations.ids)) {
+        state.normalizedLocations.ids.forEach((id: string) => {
+          const location = state.normalizedLocations.entities[id];
+          if (location && location.characterIds && location.characterIds.length > 0) {
+            const remainingCharacterIds = location.characterIds.filter(
+              (charId: string) => !characterIdsToDeleteSet.has(charId)
+            );
+            
+            if (remainingCharacterIds.length !== location.characterIds.length) {
+              updatedNormalizedLocations.entities[id] = {
+                ...location,
+                characterIds: remainingCharacterIds,
+                updatedAt: Date.now(),
+              };
+            }
+          }
+        });
+      }
 
       // Update normalized characters (remove deleted ones)
       const updatedNormalizedCharacters = { ...state.normalizedCharacters };
+      const characterIdsToDeleteSet2 = new Set(characterIdsToDelete);
+      
+      // Delete entities
       characterIdsToDelete.forEach(charId => {
-        if (updatedNormalizedCharacters.entities[charId]) {
+        if (updatedNormalizedCharacters.entities && updatedNormalizedCharacters.entities[charId]) {
           delete updatedNormalizedCharacters.entities[charId];
-          updatedNormalizedCharacters.ids = updatedNormalizedCharacters.ids.filter(
-            (id: string) => id !== charId
-          );
         }
       });
+      
+      // Filter ids array once for better performance
+      if (updatedNormalizedCharacters.ids && Array.isArray(updatedNormalizedCharacters.ids)) {
+        updatedNormalizedCharacters.ids = updatedNormalizedCharacters.ids.filter(
+          (id: string) => !characterIdsToDeleteSet2.has(id)
+        );
+      }
 
       // Apply lore updates
       set((prevState: any) => ({
