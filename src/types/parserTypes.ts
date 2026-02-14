@@ -40,7 +40,7 @@ export interface ProjectConfig {
 /**
  * Proposed entity type.
  */
-export type ProposedEntityType = 'character' | 'location' | 'item';
+export type ProposedEntityType = 'character' | 'location' | 'item' | 'faction' | 'event' | 'concept' | 'artifact' | 'rule';
 
 /**
  * Source of an extraction proposal.
@@ -57,7 +57,7 @@ export interface ProposedNewEntity {
   /** Temporary ID for UI selection (not persisted) */
   tempId: string;
   /** Type of entity to create */
-  entityType: 'character' | 'location' | 'item';
+  entityType: ProposedEntityType;
   /** Extracted entity name */
   name: string;
   /** How this entity was discovered */
@@ -80,6 +80,10 @@ export interface ProposedNewEntity {
   // Item-specific fields (optional)
   suggestedHolderId?: string;
   suggestedItemDescription?: string;
+  
+  // Lore-specific fields (optional)
+  suggestedLoreType?: string;
+  suggestedTags?: string[];
 }
 
 // ─── Proposed Entity Update ─────────────────────────────────────────────────
@@ -213,7 +217,7 @@ export interface LLMExtractionResponse {
   /** New entities discovered by LLM */
   newEntities: {
     name: string;
-    type: 'character' | 'location' | 'item';
+    type: 'character' | 'location' | 'item' | 'faction' | 'event' | 'concept' | 'artifact' | 'rule';
     confidence: number;
     context: string;
     lineNumber: number;
@@ -223,6 +227,7 @@ export interface LLMExtractionResponse {
     suggestedTimeOfDay?: string;
     suggestedHolderId?: string;
     suggestedItemDescription?: string;
+    suggestedTags?: string[];
   }[];
   /** Updates to existing entities */
   entityUpdates: {
