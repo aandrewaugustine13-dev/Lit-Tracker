@@ -266,6 +266,7 @@ export interface CrossSlice {
   updateEntity: (id: string, data: Partial<Character>) => void;
   autoCreateFromScript: (text: string) => ScriptExtractionResult;
   deleteProjectCascade: (projectId: string) => void;
+  deleteAllProjects: () => void;
 }
 
 // Helper to escape special regex characters in character names
@@ -870,5 +871,82 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
 
     // Step 5: Delete the project itself using the existing inkDispatch action
     state.inkDispatch({ type: 'DELETE_PROJECT', id: projectId });
+  },
+
+  /**
+   * Nuclear delete: wipes ALL projects and ALL associated data across every slice.
+   * Clears: projects, characters, relationships, lore entries, normalized stores,
+   * timeline, parser state, and IndexedDB image cache.
+   * Use with caution — this is irreversible.
+   */
+  deleteAllProjects: () => {
+    const state = get();
+
+    // Step 1: Nuke all Zustand-managed state across slices
+    set((prevState: any) => ({
+      // Character slice
+      characters: [],
+      relationships: [],
+      activeCharacterId: null,
+      activeEraId: null,
+      isCharacterEditorOpen: false,
+      isChatOpen: false,
+      activeChatCharacterId: null,
+      characterSearchTerm: '',
+
+      // Lore slice
+      loreEntries: [],
+      activeLoreEntryId: null,
+      isLoreEditorOpen: false,
+      loreSearchTerm: '',
+      loreFilterType: 'all',
+
+      // Normalized stores
+      normalizedCharacters: { ids: [], entities: {} },
+      normalizedLocations: { ids: [], entities: {} },
+      normalizedItems: { ids: [], entities: {} },
+      timeline: prevState.timeline
+        ? { ...prevState.timeline, entries: [] }
+        : { entries: [] },
+
+      // Parser slice
+      parserStatus: 'idle',
+      currentProposal: null,
+      selectedNewEntityIds: [],
+      selectedUpdateIds: [],
+      selectedTimelineEventIds: [],
+      parserErrorMessage: null,
+      parsedScriptResult: null,
+      rawScriptText: null,
+    }));
+
+    // Step 2: Reset ink state to a clean default via HYDRATE
+    state.inkDispatch({
+      type: 'HYDRATE',
+      payload: {
+        projects: [],
+        activeProjectId: null,
+        activeIssueId: null,
+        activePageId: null,
+      },
+    });
+
+    // Step 3: Clear the legacy ink_tracker_data from localStorage
+    try {
+      localStorage.removeItem('ink_tracker_data');
+    } catch (e) {
+      console.warn('Failed to clear ink_tracker_data from localStorage:', e);
+    }
+
+    // Step 4: Clear IndexedDB image cache
+    try {
+      const dbRequest = indexedDB.deleteDatabase('lit-tracker-images');
+      dbRequest.onerror = () => console.warn('Failed to delete IndexedDB image cache');
+      dbRequest.onsuccess = () => console.log('IndexedDB image cache cleared');
+    } catch (e) {
+      console.warn('Failed to clear IndexedDB:', e);
+    }
+
+    console.log('🔥 All projects and associated data deleted.');
   },
 });
