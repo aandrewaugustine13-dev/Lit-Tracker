@@ -4,6 +4,7 @@ import { InkAction as Action } from '../../store/inkSlice';
 import { Icons } from '../../constants';
 import NewProjectModal from './NewProjectModal';
 import EmptyState from './EmptyState';
+import { useLitStore } from '../../store';
 
 interface ProjectHubProps {
     state: AppState;
@@ -12,6 +13,7 @@ interface ProjectHubProps {
 }
 
 const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => {
+    const deleteProjectCascade = useLitStore((s) => s.deleteProjectCascade);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     const [localGeminiKey, setLocalGeminiKey] = useState<string>('');
@@ -106,7 +108,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
             <button
             onClick={(e) => {
                 e.stopPropagation();
-                if(confirm('Delete Project?')) dispatch({ type: 'DELETE_PROJECT', id: proj.id });
+                if(confirm('Delete Project?')) deleteProjectCascade(proj.id);
             }}
             className="w-8 h-8 flex items-center justify-center rounded-full text-stone-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
             >
