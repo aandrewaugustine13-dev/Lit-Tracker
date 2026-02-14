@@ -21,10 +21,46 @@ import { genId } from '../utils/helpers';
 import { getImage, saveImage } from '../services/imageStorage';
 import { ART_STYLES, ASPECT_CONFIGS, GENERATION_DELAY_MS } from '../constants';
 import { ParseResult } from '../services/scriptParser';
+import { ParsedScript } from '../utils/scriptParser';
 import { useAuth } from '../context/AuthContext';
 import { useCloudSync } from './useCloudSync';
 import { useImageGeneration } from './useImageGeneration';
 import { seedCharactersFromScript, autoLinkPanelsToCharacters, detectLoreMentions } from '../store/crossSlice';
+
+/**
+ * Convert ParsedScript (from LLM parser) to ParseResult (expected by handleScriptImport)
+ */
+function convertParsedScriptToParseResult(parsedScript: ParsedScript): ParseResult {
+  return {
+    success: true,
+    pages: parsedScript.pages.map(page => ({
+      pageNumber: page.page_number,
+      panels: page.panels.map(panel => ({
+        panelNumber: panel.panel_number,
+        description: panel.description,
+        bubbles: panel.dialogue.map(d => ({
+          type: d.type === 'spoken' ? 'dialogue' as const :
+                d.type === 'thought' ? 'thought' as const :
+                d.type === 'caption' ? 'caption' as const :
+                d.type === 'sfx' ? 'sfx' as const :
+                'dialogue' as const,
+          text: d.text,
+          character: d.character,
+        })),
+        artistNotes: [],
+        visualMarker: 'standard' as const,
+        aspectRatio: 'wide' as any,
+      })),
+    })),
+    characters: parsedScript.characters.map(char => ({
+      name: char.name,
+      description: char.description,
+      lineCount: char.panel_count,
+    })),
+    errors: [],
+    warnings: [],
+  };
+}
 
 import { generateImage as generateGeminiImage } from '../services/geminiService';
 import { generateLeonardoImage } from '../services/leonardoService';
@@ -552,6 +588,28 @@ export function useInkLogic() {
     if (summary) console.log(`[LIT Sync] ${summary}`);
   };
 
+  // Import script from store (parsed via Lore Tracker)
+  const handleImportFromStore = () => {
+    const parsedScriptResult = useLitStore.getState().parsedScriptResult;
+    const rawScriptText = useLitStore.getState().rawScriptText;
+    
+    if (!parsedScriptResult) {
+      alert('No parsed script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".');
+      return;
+    }
+    
+    if (!activeProject) {
+      alert('No active project. Please create or select a project first.');
+      return;
+    }
+    
+    // Convert ParsedScript to ParseResult format
+    const parseResult = convertParsedScriptToParseResult(parsedScriptResult);
+    
+    // Use existing handleScriptImport logic
+    handleScriptImport(parseResult, rawScriptText || '');
+  };
+
   // Auto-link: scan current issue's panels and link characters by name match
   const handleAutoLink = () => {
     if (!activeIssue || !activeProject) return;
@@ -776,6 +834,7 @@ export function useInkLogic() {
     
     // Handlers
     handleScriptImport,
+    handleImportFromStore,
     generatePage,
     handleGenerateAll,
     handleAutoLink,

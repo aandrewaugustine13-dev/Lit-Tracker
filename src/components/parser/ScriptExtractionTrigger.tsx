@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Upload, Sparkles } from 'lucide-react';
 import { useLitStore } from '../../store';
 import { parseScriptAndProposeUpdates } from '../../engine/universalScriptParser';
+import { parseScriptWithLLM } from '../../utils/scriptParser';
 
 // =============================================================================
 // SCRIPT EXTRACTION TRIGGER — Modal for inputting script text and triggering parser
@@ -25,6 +26,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   const setCurrentProposal = useLitStore((s) => s.setCurrentProposal);
   const setParserStatus = useLitStore((s) => s.setParserStatus);
   const setParserError = useLitStore((s) => s.setParserError);
+  const setParsedScriptResult = useLitStore((s) => s.setParsedScriptResult);
 
   const handleParse = async () => {
     if (!scriptText.trim()) {
@@ -37,6 +39,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
     setErrorMessage(null);
 
     try {
+      // 1. Parse for lore entities (characters, locations, items, timeline)
       const proposal = await parseScriptAndProposeUpdates({
         rawScriptText: scriptText,
         config: projectConfig,
@@ -48,6 +51,24 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       });
 
       setCurrentProposal(proposal);
+      
+      // 2. Also parse for pages/panels/dialogue structure (for Ink Tracker)
+      // This runs in parallel and stores the result for later use by Ink Tracker
+      if (enableLLM && geminiApiKey) {
+        try {
+          const parsedScript = await parseScriptWithLLM(
+            scriptText,
+            'gemini',
+            geminiApiKey
+          );
+          setParsedScriptResult(parsedScript, scriptText);
+        } catch (scriptError) {
+          console.error('Failed to parse script structure:', scriptError);
+          // Don't fail the whole operation if this fails
+          // User can still get lore extraction results
+        }
+      }
+      
       onClose(); // Close this modal, the ExtractionPreviewModal will show
     } catch (error) {
       console.error('Parsing error:', error);

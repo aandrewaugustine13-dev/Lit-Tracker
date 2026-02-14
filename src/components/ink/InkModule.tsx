@@ -3,7 +3,7 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { X } from 'lucide-react';
 
 import { useInkLogic } from '../../hooks/useInkLogic';
-import { ScriptImportModal } from './ScriptImportModal';
+// import { ScriptImportModal } from './ScriptImportModal'; // Removed - using store-based import now
 
 import Sidebar from './Sidebar';
 import ProjectHub from './ProjectHub';
@@ -31,7 +31,7 @@ const InkModule: React.FC = () => {
         state={logic.state as any}
         dispatch={logic.dispatch as any}
         onOpenProjects={() => logic.setProjectsOpen(true)}
-        onOpenScriptImport={() => logic.setShowScriptImport(true)}
+        onOpenScriptImport={logic.handleImportFromStore}
       />
 
       <TransformWrapper
@@ -233,7 +233,7 @@ const InkModule: React.FC = () => {
       </TransformWrapper>
 
       {logic.projectsOpen && <ProjectHub state={logic.state as any} dispatch={logic.dispatch as any} onClose={() => logic.setProjectsOpen(false)} />}
-      {logic.showScriptImport && logic.activeProject && <ScriptImportModal project={logic.activeProject as any} onClose={() => logic.setShowScriptImport(false)} onImport={logic.handleScriptImport} />}
+      {/* ScriptImportModal removed - now using handleImportFromStore which reads from Zustand store */}
       {logic.showCharacterBank && logic.activeProject && (
         <CharacterBank 
           characters={logic.characters as any} 
