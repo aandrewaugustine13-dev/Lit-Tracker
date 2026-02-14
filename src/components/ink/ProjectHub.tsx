@@ -14,6 +14,7 @@ interface ProjectHubProps {
 
 const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => {
     const deleteProjectCascade = useLitStore((s) => s.deleteProjectCascade);
+    const deleteAllProjects = useLitStore((s) => s.deleteAllProjects);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     const [localGeminiKey, setLocalGeminiKey] = useState<string>('');
@@ -292,6 +293,24 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
         <span className="font-display text-2xl uppercase tracking-widest text-center">Initialize Sequence</span>
         </button>
         </div>
+        )}
+
+        {state.projects.length > 0 && (
+          <div className="px-10 pb-6 border-t border-stone-200 pt-6">
+            <button
+              onClick={() => {
+                if (confirm('⚠️ DELETE ALL PROJECTS?\n\nThis will permanently remove ALL projects, characters, lore entries, locations, timeline events, and cached images.\n\nThis cannot be undone.')) {
+                  if (confirm('Are you absolutely sure? Type-level confirmation: this nukes EVERYTHING.')) {
+                    deleteAllProjects();
+                    onClose();
+                  }
+                }
+              }}
+              className="w-full py-3 px-4 rounded-xl border-2 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-500 transition-all font-display text-xs uppercase tracking-widest"
+            >
+              🔥 Delete All Projects
+            </button>
+          </div>
         )}
         </div>
         </div>
