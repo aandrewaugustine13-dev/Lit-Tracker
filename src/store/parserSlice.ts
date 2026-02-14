@@ -7,7 +7,7 @@ import {
   ProposedEntityUpdate,
   ProposedTimelineEvent,
 } from '../types/parserTypes';
-import { Character, LocationEntry, Item, TimelineEntry } from '../types';
+import { Character, LocationEntry, Item, TimelineEntry, LoreType, LoreEntry } from '../types';
 import { createEntityAdapter, EntityState } from './entityAdapter';
 import { parseTimelineAndLocations } from '../engine/timelineLocationsParser';
 import type { ParsedScript } from '../utils/scriptParser';
@@ -374,7 +374,7 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           } else if (proposed.entityType === 'location') {
             newLocations.push({
               ...baseEntity,
-              type: 'location' as any,
+              type: LoreType.LOCATION,
               description: `Auto-extracted from script (line ${proposed.lineNumber})`,
               tags: ['auto-extracted'],
               relatedEntryIds: [],
@@ -498,6 +498,12 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
           characters: [
             ...prevState.characters,
             ...newCharacters,
+          ],
+          
+          // Update lore entries: filter out location entries, then merge with normalized locations
+          loreEntries: [
+            ...prevState.loreEntries.filter((entry: LoreEntry) => entry.type !== LoreType.LOCATION),
+            ...updatedNormalizedLocations.ids.map((id: string) => updatedNormalizedLocations.entities[id]),
           ],
           
           // Update timeline
