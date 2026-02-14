@@ -154,7 +154,7 @@ async function callAnthropic(
     },
     body: JSON.stringify({
       model,
-      max_tokens: 8192,
+      max_tokens: 16384,
       messages: [
         { role: 'user', content: `${prompt}\n\n${script}` },
       ],
@@ -279,10 +279,18 @@ async function callDeepSeek(
 // ============= HELPER FUNCTIONS =============
 
 export function stripMarkdownFences(text: string): string {
-  // Remove markdown code fences if present
-  const fencePattern = /^```(?:json)?\s*\n([\s\S]*?)\n```\s*$/;
-  const match = text.match(fencePattern);
-  return match ? match[1] : text;
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
+    cleaned = cleaned.substring(0, lastBrace + 1);
+  }
+  return cleaned;
 }
 
 export function validateAndClean(data: any): ParsedScript {

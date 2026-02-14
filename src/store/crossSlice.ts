@@ -860,6 +860,26 @@ export const createCrossSlice: StateCreator<any, [], [], CrossSlice> = (set, get
         normalizedCharacters: updatedNormalizedCharacters,
       }));
     }
+
+    // Step 6: If NO projects remain, wipe all lore, items, and timeline
+    const finalInkState = get().inkState;
+    if (!finalInkState.projects || finalInkState.projects.length === 0) {
+      console.log('[deleteProjectCascade] No projects remain — wiping orphaned lore, items, and timeline');
+      set((prevState: any) => ({
+        loreEntries: [],
+        normalizedLocations: { ids: [], entities: {} },
+        normalizedItems: { ids: [], entities: {} },
+        timeline: prevState.timeline
+          ? { ...prevState.timeline, entries: [] }
+          : { entries: [] },
+        parsedScriptResult: null,
+        rawScriptText: null,
+        currentProposal: null,
+        selectedNewEntityIds: [],
+        selectedUpdateIds: [],
+        selectedTimelineEventIds: [],
+      }));
+    }
   },
 
   /**
