@@ -10,6 +10,11 @@ import {
   ChevronRight,
   Sparkles,
   Cpu,
+  Shield,
+  Zap,
+  Brain,
+  Gem,
+  BookOpen,
 } from 'lucide-react';
 import { useLitStore } from '../../store';
 import { getProposalCounts } from '../../store/parserSlice';
@@ -62,6 +67,16 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
         return <MapPin className="w-5 h-5" />;
       case 'item':
         return <Package className="w-5 h-5" />;
+      case 'faction':
+        return <Shield className="w-5 h-5" />;
+      case 'event':
+        return <Zap className="w-5 h-5" />;
+      case 'concept':
+        return <Brain className="w-5 h-5" />;
+      case 'artifact':
+        return <Gem className="w-5 h-5" />;
+      case 'rule':
+        return <BookOpen className="w-5 h-5" />;
       default:
         return null;
     }
