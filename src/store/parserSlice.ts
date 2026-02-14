@@ -10,6 +10,7 @@ import {
 import { Character, LocationEntry, Item, TimelineEntry } from '../types';
 import { createEntityAdapter, EntityState } from './entityAdapter';
 import { parseTimelineAndLocations } from '../engine/timelineLocationsParser';
+import type { ParsedScript } from '../utils/scriptParser';
 
 // Create adapters for entity management
 const characterAdapter = createEntityAdapter<Character>((c) => c.id);
@@ -37,6 +38,10 @@ export interface ParserSlice {
   parserErrorMessage: string | null;
   /** Project-level parser configuration */
   projectConfig: ProjectConfig;
+  /** Parsed script result with pages/panels/dialogue for Ink Tracker */
+  parsedScriptResult: ParsedScript | null;
+  /** Raw script text from last parse */
+  rawScriptText: string | null;
 
   // ─── Actions ────────────────────────────────────────────────────────────────
   
@@ -69,6 +74,9 @@ export interface ParserSlice {
   
   /** Commit the selected proposals to the store */
   commitExtractionProposal: () => void;
+  
+  /** Set the parsed script result for Ink Tracker consumption */
+  setParsedScriptResult: (result: ParsedScript | null, rawText?: string | null) => void;
 }
 
 // ─── Selector Functions ─────────────────────────────────────────────────────
@@ -202,6 +210,8 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
     canonLocks: [],
     customPatterns: [],
   },
+  parsedScriptResult: null,
+  rawScriptText: null,
 
   // ─── Basic Setters ──────────────────────────────────────────────────────────
   
@@ -296,6 +306,11 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
   updateProjectConfig: (updates) => set((state: any) => ({
     projectConfig: { ...state.projectConfig, ...updates },
   })),
+  
+  setParsedScriptResult: (result, rawText = null) => set({
+    parsedScriptResult: result,
+    rawScriptText: rawText,
+  }),
 
   // ─── Commit Extraction Proposal ─────────────────────────────────────────────
   
