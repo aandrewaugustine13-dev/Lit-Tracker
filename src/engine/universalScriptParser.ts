@@ -1076,13 +1076,15 @@ export function reconstructFormattedScript(parsedScript: ParsedScript): string {
   const lines: string[] = [];
 
   for (const page of parsedScript.pages) {
-    // Add page header
-    lines.push(`PAGE ${page.page_number}`);
+    // Add page header (use page_number if available, otherwise use index)
+    const pageNum = page.page_number || parsedScript.pages.indexOf(page) + 1;
+    lines.push(`PAGE ${pageNum}`);
     lines.push('');
 
     for (const panel of page.panels) {
-      // Add panel header with description
-      lines.push(`Panel ${panel.panel_number}: ${panel.description}`);
+      // Add panel header with description (use panel_number if available, otherwise use index)
+      const panelNum = panel.panel_number || page.panels.indexOf(panel) + 1;
+      lines.push(`Panel ${panelNum}: ${panel.description}`);
       lines.push('');
 
       // Add dialogue

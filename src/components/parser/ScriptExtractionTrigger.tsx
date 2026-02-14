@@ -79,13 +79,19 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
             characters: parsedScript.characters.length,
             loreCandidates: loreCandidates.length
           });
-          
-          // Store the parsed script result for Ink Tracker import
-          setParsedScriptResult(parsedScript, scriptText);
         } catch (formatError) {
-          console.error('[ScriptExtraction] AI formatting failed, falling back to raw script:', formatError);
-          const errMsg = formatError instanceof Error ? formatError.message : String(formatError);
-          console.warn(`AI formatting warning: ${errMsg}. Proceeding with raw script.`);
+          console.warn('[ScriptExtraction] AI formatting failed, falling back to raw script:', formatError);
+          // Continue without formatted script - the parser will work with raw text
+        }
+        
+        // Store the parsed script result for Ink Tracker import (if formatting succeeded)
+        if (parsedScript) {
+          try {
+            setParsedScriptResult(parsedScript, scriptText);
+          } catch (storeError) {
+            console.warn('[ScriptExtraction] Failed to store parsed script for Ink Tracker:', storeError);
+            // Non-fatal - continue with lore extraction
+          }
         }
       } else {
         console.log('[ScriptExtraction] Skipping AI formatting (LLM disabled or no API key)');

@@ -61,7 +61,7 @@ export const NORMALIZATION_PROMPT = `You are a comic script parser. Parse the pr
 1. Extract all pages and panels with their descriptions and dialogue
 2. Identify all characters with their descriptions
 3. Extract lore candidates across ALL categories:
-   - **Characters**: Main and supporting characters with roles and descriptions
+   - **Characters**: Only minor/background characters not worthy of main character list (protagonists go in 'characters' field)
    - **Locations**: Places, settings, buildings (ALL CAPS multi-word strings or high-confidence location names)
    - **Factions/Organizations**: Groups, teams, agencies, governments, organizations
    - **Events**: Significant narrative moments, battles, deaths, discoveries, ceremonies
