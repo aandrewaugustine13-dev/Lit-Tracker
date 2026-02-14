@@ -15,6 +15,7 @@ import {
 import { Character, LocationEntry, Item, CharacterRole } from '../types';
 import { EntityState } from '../store/entityAdapter';
 import { parseScript as parseComicScript, ComicParseResult } from './comicScriptParser';
+import { ParsedScript, LoreCandidate } from '../utils/scriptParser';
 
 // ─── Parser Options ─────────────────────────────────────────────────────────
 
@@ -954,6 +955,160 @@ function convertComicParserResults(
   return { newEntities, timelineEvents };
 }
 
+// ─── LLM Formatting Integration Helpers ─────────────────────────────────────
+
+/**
+ * Convert LoreCandidate objects from parseScriptWithLLM into ProposedNewEntity objects.
+ * Maps lore candidate categories to entity types and creates timeline events for 'timeline' category.
+ */
+export function convertLoreCandidatesToProposedEntities(
+  loreCandidates: LoreCandidate[],
+  scriptText: string
+): { newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[] } {
+  const newEntities: ProposedNewEntity[] = [];
+  const timelineEvents: ProposedTimelineEvent[] = [];
+
+  for (const lore of loreCandidates) {
+    // Skip timeline category - will handle separately
+    if (lore.category === 'timeline') {
+      // Create a timeline event for temporal markers
+      timelineEvents.push({
+        tempId: generateUUID(),
+        source: 'llm',
+        confidence: lore.confidence,
+        contextSnippet: lore.text,
+        lineNumber: 0, // LLM doesn't provide line numbers
+        entityType: 'character', // Default to character for timeline events
+        entityId: '',
+        entityName: 'Timeline',
+        action: 'created',
+        payload: { year: lore.text },
+        description: `Timeline marker: ${lore.text}`,
+      });
+      continue;
+    }
+
+    // Map lore category to entity type
+    let entityType: ProposedNewEntity['entityType'];
+    switch (lore.category) {
+      case 'location':
+        entityType = 'location';
+        break;
+      case 'faction':
+        entityType = 'faction';
+        break;
+      case 'event':
+        entityType = 'event';
+        break;
+      case 'concept':
+        entityType = 'concept';
+        break;
+      case 'artifact':
+        entityType = 'artifact';
+        break;
+      case 'rule':
+        entityType = 'rule';
+        break;
+      case 'item':
+        entityType = 'item';
+        break;
+      case 'character':
+        entityType = 'character';
+        break;
+      case 'echo':
+        // Classify echo as artifact or item based on confidence
+        entityType = lore.confidence > 0.7 ? 'artifact' : 'item';
+        break;
+      case 'uncategorized':
+      default:
+        // Best guess fallback
+        entityType = 'concept';
+        break;
+    }
+
+    // Build the proposed entity
+    const proposedEntity: ProposedNewEntity = {
+      tempId: generateUUID(),
+      entityType,
+      name: lore.text,
+      source: 'llm',
+      confidence: lore.confidence,
+      contextSnippet: lore.description || lore.text,
+      lineNumber: 0, // LLM doesn't provide line numbers from lore_candidates
+      suggestedDescription: lore.description,
+    };
+
+    // Add metadata fields based on entity type
+    if (lore.metadata) {
+      if (entityType === 'location') {
+        proposedEntity.suggestedRegion = lore.metadata.region;
+        proposedEntity.suggestedTimeOfDay = lore.metadata.timeOfDay;
+      } else if (entityType === 'faction') {
+        proposedEntity.suggestedIdeology = lore.metadata.ideology;
+        proposedEntity.suggestedLeader = lore.metadata.leader;
+      } else if (entityType === 'event') {
+        proposedEntity.suggestedDate = lore.metadata.date;
+      } else if (entityType === 'concept' || entityType === 'artifact') {
+        proposedEntity.suggestedOrigin = lore.metadata.origin;
+      }
+      
+      // Add tags if present
+      if (lore.metadata.tags && Array.isArray(lore.metadata.tags)) {
+        proposedEntity.suggestedTags = lore.metadata.tags;
+      }
+    }
+
+    newEntities.push(proposedEntity);
+  }
+
+  return { newEntities, timelineEvents };
+}
+
+/**
+ * Reconstruct a clean, formatted script text from ParsedScript structure.
+ * Uses standard formatting that the deterministic parser can easily recognize:
+ * - PAGE N headers
+ * - Panel N: description
+ * - CHARACTER: "dialogue"
+ * - INT./EXT. LOCATION format where appropriate
+ */
+export function reconstructFormattedScript(parsedScript: ParsedScript): string {
+  const lines: string[] = [];
+
+  for (const page of parsedScript.pages) {
+    // Add page header
+    lines.push(`PAGE ${page.page_number}`);
+    lines.push('');
+
+    for (const panel of page.panels) {
+      // Add panel header with description
+      lines.push(`Panel ${panel.panel_number}: ${panel.description}`);
+      lines.push('');
+
+      // Add dialogue
+      for (const dialogue of panel.dialogue) {
+        if (dialogue.type === 'thought') {
+          lines.push(`${dialogue.character} (thinking)`);
+          lines.push(`"${dialogue.text}"`);
+        } else if (dialogue.type === 'caption') {
+          lines.push(`CAPTION: ${dialogue.text}`);
+        } else if (dialogue.type === 'sfx') {
+          lines.push(`SFX: ${dialogue.text}`);
+        } else {
+          // spoken dialogue
+          lines.push(`${dialogue.character}`);
+          lines.push(`"${dialogue.text}"`);
+        }
+        lines.push('');
+      }
+    }
+
+    lines.push(''); // Extra line between pages
+  }
+
+  return lines.join('\n');
+}
+
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 export interface ParseScriptOptions {
@@ -967,6 +1122,10 @@ export interface ParseScriptOptions {
   /** @deprecated Use llmApiKey instead */
   geminiApiKey?: string;
   enableLLM?: boolean;
+  /** Optional pre-formatted script text (if AI formatting was already done) */
+  formattedScriptText?: string;
+  /** Optional external lore candidates to merge into the proposal */
+  externalLoreCandidates?: LoreCandidate[];
 }
 
 /**
@@ -986,10 +1145,41 @@ export async function parseScriptAndProposeUpdates(
   );
 
   // Run Pass 1 (deterministic)
-  const pass1Result = runPass1(options.rawScriptText, options.config, entityIndex);
+  // Use formatted script text if provided, otherwise use raw text
+  const scriptTextForPass1 = options.formattedScriptText || options.rawScriptText;
+  const pass1Result = runPass1(scriptTextForPass1, options.config, entityIndex);
 
   let llmWasUsed = false;
   const allWarnings = [...pass1Result.warnings];
+
+  // ═══ EXTERNAL LORE CANDIDATES INTEGRATION ═══
+  // If external lore candidates were provided (from parseScriptWithLLM), merge them
+  if (options.externalLoreCandidates && options.externalLoreCandidates.length > 0) {
+    console.log(`[universalParser] Merging ${options.externalLoreCandidates.length} external lore candidates from AI formatting...`);
+    const loreCandidateResult = convertLoreCandidatesToProposedEntities(
+      options.externalLoreCandidates,
+      options.rawScriptText
+    );
+
+    // Deduplicate against Pass 1 results by normalized name
+    const existingNames = new Set(
+      pass1Result.newEntities.map(e => normalizeName(e.name))
+    );
+
+    for (const entity of loreCandidateResult.newEntities) {
+      const normalized = normalizeName(entity.name);
+      if (!existingNames.has(normalized)) {
+        pass1Result.newEntities.push(entity);
+        existingNames.add(normalized);
+      }
+    }
+
+    // Add timeline events
+    pass1Result.timelineEvents.push(...loreCandidateResult.timelineEvents);
+    
+    // Mark that LLM was used (via formatting step)
+    llmWasUsed = true;
+  }
 
   // ═══ COMIC PARSER INTEGRATION (Supplementary Pass) ═══
   // Detect if script contains comic format (PANEL indicators) or if Pass 1 found very few results

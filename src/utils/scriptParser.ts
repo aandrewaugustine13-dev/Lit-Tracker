@@ -32,9 +32,11 @@ export interface DialogueLine {
 
 export interface LoreCandidate {
   text: string;
-  category: 'location' | 'timeline' | 'echo' | 'uncategorized';
+  category: 'location' | 'timeline' | 'echo' | 'uncategorized' | 'faction' | 'event' | 'concept' | 'artifact' | 'rule' | 'item' | 'character';
   confidence: number; // 0.0 to 1.0
   panels: string[]; // panel_ids where this appears
+  description?: string; // Optional description for the entity
+  metadata?: Record<string, any>; // Optional metadata (ideology, leader, date, origin, etc.)
 }
 
 export interface Character {
@@ -58,13 +60,26 @@ export const NORMALIZATION_PROMPT = `You are a comic script parser. Parse the pr
 **Instructions:**
 1. Extract all pages and panels with their descriptions and dialogue
 2. Identify all characters with their descriptions
-3. Extract lore candidates:
-   - Locations: ALL CAPS multi-word strings or high-confidence location names
-   - Timeline/Years: Text matching year patterns (e.g., "2025", "1999")
-   - Echoes/Objects: Short ALL CAPS single-word strings (≤20 chars)
-   - Uncategorized: Everything else that might be lore
+3. Extract lore candidates across ALL categories:
+   - **Characters**: Main and supporting characters with roles and descriptions
+   - **Locations**: Places, settings, buildings (ALL CAPS multi-word strings or high-confidence location names)
+   - **Factions/Organizations**: Groups, teams, agencies, governments, organizations
+   - **Events**: Significant narrative moments, battles, deaths, discoveries, ceremonies
+   - **Concepts**: Abstract ideas, powers, abilities, magic systems, phenomena, philosophies
+   - **Artifacts**: Named significant objects with narrative importance (legendary weapons, relics, ancient items)
+   - **Rules**: Established world rules, constraints, laws of the universe, mechanics
+   - **Items**: Generic trackable objects that characters interact with
+   - **Timeline/Years**: Text matching year patterns (e.g., "2025", "1999") or temporal markers
+   - **Echoes/Objects**: Short ALL CAPS single-word strings (≤20 chars) - classify as artifact or item based on context
+   - **Uncategorized**: Everything else that might be lore
 4. Track which panels mention each lore item
-5. Provide an overall lore summary if possible
+5. For each lore candidate, provide optional metadata:
+   - Characters: role, appearance
+   - Factions: ideology, leader, influence level
+   - Events: date, participants, consequences
+   - Concepts/Artifacts: origin, properties, significance
+   - Rules: scope, exceptions
+6. Provide an overall lore summary if possible
 
 **Output Format:**
 Return ONLY valid JSON (no markdown fences) in this structure:
@@ -88,16 +103,63 @@ Return ONLY valid JSON (no markdown fences) in this structure:
     { "name": "CHARACTER", "description": "Brief description", "panel_count": 5 }
   ],
   "lore_candidates": [
-    { "text": "LOCATION NAME", "category": "location", "confidence": 0.9, "panels": ["p1-panel1"] }
+    { 
+      "text": "LOCATION NAME", 
+      "category": "location", 
+      "confidence": 0.9, 
+      "panels": ["p1-panel1"],
+      "description": "Brief description",
+      "metadata": { "region": "North District", "timeOfDay": "night" }
+    },
+    {
+      "text": "THE ORDER",
+      "category": "faction",
+      "confidence": 0.85,
+      "panels": ["p1-panel2"],
+      "description": "Secret organization",
+      "metadata": { "ideology": "Preservation of ancient knowledge", "leader": "The Keeper" }
+    },
+    {
+      "text": "The Great Awakening",
+      "category": "event",
+      "confidence": 0.9,
+      "panels": ["p1-panel3"],
+      "description": "When the powers first manifested",
+      "metadata": { "date": "2020", "participants": "All awakened individuals" }
+    },
+    {
+      "text": "Void Walking",
+      "category": "concept",
+      "confidence": 0.8,
+      "panels": ["p1-panel4"],
+      "description": "Ability to traverse the void between dimensions"
+    },
+    {
+      "text": "SWORD OF DAWN",
+      "category": "artifact",
+      "confidence": 0.95,
+      "panels": ["p1-panel5"],
+      "description": "Legendary weapon that can cut through any material",
+      "metadata": { "origin": "Forged by the First Smiths" }
+    }
   ],
   "overall_lore_summary": "Brief summary of the lore"
 }
 
 **Confidence Scoring:**
-- 1.0: Explicit location/year in all caps
-- 0.8-0.9: Strong contextual indicators
-- 0.6-0.7: Moderate confidence
-- 0.4-0.5: Weak indicators
+- 1.0: Explicit entity clearly defined (e.g., organization name in dialogue, artifact with clear importance)
+- 0.8-0.9: Strong contextual indicators (e.g., character acting as faction leader, event described in detail)
+- 0.6-0.7: Moderate confidence (e.g., mentioned power or ability, referenced past event)
+- 0.4-0.5: Weak indicators (e.g., possible concept, unclear reference)
+
+**Category Guidelines:**
+- Use "faction" for any group/organization with members
+- Use "event" for past or present significant happenings
+- Use "concept" for abstract ideas, powers, or phenomena  
+- Use "artifact" for named unique objects of importance
+- Use "rule" for explicit world mechanics or constraints
+- Use "item" for generic objects characters use
+- Use "character" for new characters not in main character list
 
 Parse the following script:`;
 
@@ -329,11 +391,14 @@ export function validateAndClean(data: any): ParsedScript {
   }));
 
   // Validate and clean lore candidates
+  const validCategories = ['location', 'timeline', 'echo', 'uncategorized', 'faction', 'event', 'concept', 'artifact', 'rule', 'item', 'character'];
   validated.lore_candidates = validated.lore_candidates.map((lore) => ({
     text: String(lore.text || ''),
-    category: (['location', 'timeline', 'echo', 'uncategorized'].includes(lore.category) ? lore.category : 'uncategorized') as LoreCandidate['category'],
+    category: (validCategories.includes(lore.category) ? lore.category : 'uncategorized') as LoreCandidate['category'],
     confidence: typeof lore.confidence === 'number' ? Math.max(0, Math.min(1, lore.confidence)) : 0.5,
     panels: Array.isArray(lore.panels) ? lore.panels.map(String) : [],
+    description: lore.description ? String(lore.description) : undefined,
+    metadata: (lore.metadata && typeof lore.metadata === 'object') ? lore.metadata : undefined,
   })).filter((lore) => lore.text.length > 0); // Remove empty entries
 
   return validated;

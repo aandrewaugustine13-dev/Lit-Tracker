@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { X, Upload, Zap, Cpu } from 'lucide-react';
 import { useLitStore } from '../../store';
-import { parseScriptAndProposeUpdates, LLMProvider } from '../../engine/universalScriptParser';
-import { parseScriptWithLLM } from '../../utils/scriptParser';
+import { parseScriptAndProposeUpdates, LLMProvider, reconstructFormattedScript } from '../../engine/universalScriptParser';
+import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scriptParser';
 
 // =============================================================================
 // SCRIPT EXTRACTION TRIGGER — Modal for inputting script text and triggering parser
@@ -56,9 +56,48 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
     setErrorMessage(null);
 
     try {
-      // 1. Parse for lore entities (characters, locations, items, timeline)
+      let formattedScript: string | undefined = undefined;
+      let loreCandidates: LoreCandidate[] | undefined = undefined;
+      let parsedScript: ParsedScript | undefined = undefined;
+
+      // ═══ STEP 1: AI FORMATTING (if LLM mode is enabled) ═══
+      if (enableLLM && apiKey) {
+        try {
+          console.log('[ScriptExtraction] Starting AI formatting and normalization...');
+          parsedScript = await parseScriptWithLLM(
+            scriptText,
+            provider,
+            apiKey
+          );
+          
+          // Reconstruct formatted script from parsed structure
+          formattedScript = reconstructFormattedScript(parsedScript);
+          loreCandidates = parsedScript.lore_candidates;
+          
+          console.log('[ScriptExtraction] AI formatting complete:', {
+            pages: parsedScript.pages.length,
+            characters: parsedScript.characters.length,
+            loreCandidates: loreCandidates.length
+          });
+          
+          // Store the parsed script result for Ink Tracker import
+          setParsedScriptResult(parsedScript, scriptText);
+        } catch (formatError) {
+          console.error('[ScriptExtraction] AI formatting failed, falling back to raw script:', formatError);
+          const errMsg = formatError instanceof Error ? formatError.message : String(formatError);
+          console.warn(`AI formatting warning: ${errMsg}. Proceeding with raw script.`);
+        }
+      } else {
+        console.log('[ScriptExtraction] Skipping AI formatting (LLM disabled or no API key)');
+      }
+
+      // ═══ STEP 2: LORE EXTRACTION ═══
+      // Pass formatted script (if available) and lore candidates to the parser
+      console.log('[ScriptExtraction] Starting lore extraction...');
       const proposal = await parseScriptAndProposeUpdates({
         rawScriptText: scriptText,
+        formattedScriptText: formattedScript,
+        externalLoreCandidates: loreCandidates,
         config: projectConfig,
         characters,
         normalizedLocations,
@@ -69,28 +108,11 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       });
 
       setCurrentProposal(proposal);
-
-      // 2. Also parse for pages/panels/dialogue structure (for Ink Tracker)
-      if (enableLLM && apiKey) {
-        try {
-          console.log('[ScriptExtraction] Starting page/panel structure parse for Ink Tracker...');
-          const parsedScript = await parseScriptWithLLM(
-            scriptText,
-            provider,
-            apiKey
-          );
-          setParsedScriptResult(parsedScript, scriptText);
-          console.log('[ScriptExtraction] Successfully parsed script structure with',
-            parsedScript.pages.length, 'pages and',
-            parsedScript.characters.length, 'characters. Available for Ink Tracker import.');
-        } catch (scriptError) {
-          console.error('[ScriptExtraction] Failed to parse script structure for Ink Tracker:', scriptError);
-          const errMsg = scriptError instanceof Error ? scriptError.message : String(scriptError);
-          console.warn(`[ScriptExtraction] Ink Tracker import will be unavailable. Error: ${errMsg}`);
-        }
-      } else {
-        console.log('[ScriptExtraction] Skipping Ink Tracker parse (LLM disabled or no API key)');
-      }
+      console.log('[ScriptExtraction] Extraction complete:', {
+        newEntities: proposal.newEntities.length,
+        updatedEntities: proposal.updatedEntities.length,
+        timelineEvents: proposal.newTimelineEvents.length,
+      });
 
       onClose();
     } catch (error) {
@@ -169,14 +191,32 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
               <ul className="list-disc list-inside space-y-1 text-stone-600 ml-2">
                 <li>Characters (from dialogue speakers and mentions)</li>
                 <li>Locations (from slug-lines and scene headings)</li>
+                {parseMode === 'llm' && (
+                  <>
+                    <li>Factions and Organizations</li>
+                    <li>Events and significant moments</li>
+                    <li>Concepts, powers, and phenomena</li>
+                    <li>Artifacts and significant objects</li>
+                    <li>World rules and mechanics</li>
+                  </>
+                )}
                 <li>Items (from action descriptions)</li>
                 <li>Timeline events (character movements, item transfers)</li>
               </ul>
               <p className="mt-3 text-stone-600">
                 {parseMode === 'llm'
-                  ? 'AI extraction uses an LLM for advanced entity recognition on top of pattern matching.'
+                  ? 'AI extraction first formats your script, then extracts entities with advanced pattern recognition and LLM-powered analysis.'
                   : 'Pattern-only mode uses deterministic rules — no API key needed.'}
               </p>
+              {parseMode === 'deterministic' && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-amber-800 font-semibold text-xs mb-1">⚠️ Limited Extraction</p>
+                  <p className="text-amber-700 text-xs">
+                    Pattern-only mode can only reliably extract characters and locations. 
+                    For factions, events, concepts, artifacts, and rules, please use AI Extraction mode.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Error Message */}
