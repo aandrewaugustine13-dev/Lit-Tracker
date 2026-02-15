@@ -155,7 +155,7 @@ Return ONLY valid JSON (no markdown fences) in this structure:
   "overall_lore_summary": "Brief summary of the lore"
 }
 
-**Note**: The above example shows one entity per category for brevity. In practice, you should extract ALL entities of ALL types. A typical script page might yield 2-5 locations, 1-3 artifacts, 1-3 events, 1-2 factions, etc. Do not stop at one per category.
+**Note**: The above example shows one entity per category for brevity. In practice, you should extract all significant entities across all applicable categories. A typical script page might yield 2-5 locations, 1-3 artifacts, 1-3 events, 1-2 factions, etc. Do not stop at one per category.
 
 **Confidence Scoring:**
 - 1.0: Explicit entity clearly defined (e.g., organization name in dialogue, artifact with clear importance)
@@ -173,7 +173,7 @@ Return ONLY valid JSON (no markdown fences) in this structure:
 - Use "character" for new characters not in main character list
 
 **Self-Check Before Responding:**
-Before finalizing your JSON, verify that your lore_candidates array includes entities from at least 3 different categories (not just locations). If you only found locations, re-read the script looking specifically for:
+Before finalizing your JSON, verify that your lore_candidates array includes entities from at least 3 different categories where applicable (not just locations). If you only found locations, re-read the script looking specifically for:
 - Named objects or weapons (→ artifact)
 - Referenced battles, deaths, or discoveries (→ event)  
 - Groups or organizations (→ faction)

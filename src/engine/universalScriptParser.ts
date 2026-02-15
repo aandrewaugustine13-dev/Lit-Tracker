@@ -762,7 +762,7 @@ Extract ALL world-building elements from the script. Be thorough. Look for:
 6. Named artifacts and significant objects
 7. World rules and constraints
 
-CRITICAL: Do not bias toward any single category. Ensure you extract entities across ALL applicable types. A well-analyzed script should have entities from at least 3 different categories.
+CRITICAL: Do not bias toward any single category. Ensure you extract entities across ALL applicable types. A well-analyzed script should have entities from multiple different categories where applicable.
 
 RESPONSE FORMAT (strict JSON, no markdown fences):
 {
