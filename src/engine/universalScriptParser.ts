@@ -760,7 +760,9 @@ Extract ALL world-building elements from the script. Be thorough. Look for:
 4. Significant events and turning points
 5. Abstract concepts, powers, mechanics
 6. Named artifacts and significant objects
-7. Established rules or constraints of the world
+7. World rules and constraints
+
+CRITICAL: Do not bias toward any single category. Ensure you extract entities across ALL applicable types. A well-analyzed script should have entities from at least 3 different categories.
 
 RESPONSE FORMAT (strict JSON, no markdown fences):
 {
