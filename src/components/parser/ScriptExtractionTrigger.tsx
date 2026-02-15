@@ -66,6 +66,8 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
     
     // Detect character dialogue (e.g., "CHARACTER" followed by dialogue text)
     // Look for all-caps character names (common in comic scripts)
+    // Regex matches: all-caps names starting with uppercase letter, containing uppercase letters, spaces, apostrophes, periods, and hyphens
+    // Examples: "SPIDER-MAN", "DR. STRANGE", "MARY JANE", "SPIDER-MAN (V.O.)" - the optional parenthetical is captured but not included in character name
     const dialogueMatch = line.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*$/);
     if (dialogueMatch && i + 1 < lines.length) {
       const characterName = dialogueMatch[1].trim();
@@ -259,11 +261,10 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       if (!llmFormatFailed) {
         onClose();
       } else {
-        // Give user time to see the warning, but still allow them to proceed
+        // Give user time to see the warning (3 seconds), then auto-close
+        // Note: We always close after the timeout regardless of loading state since extraction has completed
         setTimeout(() => {
-          if (isLoading === false) {
-            onClose();
-          }
+          onClose();
         }, 3000);
       }
     } catch (error) {
