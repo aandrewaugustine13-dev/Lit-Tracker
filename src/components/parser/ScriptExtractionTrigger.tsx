@@ -21,6 +21,9 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
   const panelHeaderPattern = /^Panel\s+\d+/i;
   const pageHeaderPattern = /^PAGE\s+\d+/i;
   
+  // Default description for panels with no description text
+  const DEFAULT_PANEL_DESCRIPTION = 'Panel description';
+  
   let currentPage: ParsedScript['pages'][0] | null = null;
   let currentPanel: ParsedScript['pages'][0]['panels'][0] | null = null;
   let pageNumber = 1;
@@ -61,7 +64,7 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
       
       currentPanel = {
         panel_number: panelNumber,
-        description: inlineDescription || 'Panel description',
+        description: inlineDescription || DEFAULT_PANEL_DESCRIPTION,
         dialogue: [],
         panel_id: `p${pageNumber}-panel${panelNumber}`,
       };
@@ -110,7 +113,7 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
     // If we have a current panel, append this line to its description.
     // This catches multi-line panel descriptions that follow the "Panel N:" header.
     if (currentPanel) {
-      if (currentPanel.description && currentPanel.description !== 'Panel description') {
+      if (currentPanel.description && currentPanel.description !== DEFAULT_PANEL_DESCRIPTION) {
         currentPanel.description += ' ' + line;
       } else {
         currentPanel.description = line;
