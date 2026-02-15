@@ -45,6 +45,8 @@ export const useLitStore = create<LitStore>()(
         parserStatus: state.parserStatus,
         currentProposal: state.currentProposal,
         projectConfig: state.projectConfig,
+        parsedScriptResult: state.parsedScriptResult,
+        rawScriptText: state.rawScriptText,
       }),
     }
   )

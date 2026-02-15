@@ -386,9 +386,9 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                 <button
                     onClick={onOpenScriptImport}
                     className="w-full mt-2 py-2 text-[10px] font-body text-ink border border-stone-200 rounded-lg hover:bg-stone-100 uppercase tracking-widest transition-colors"
-                    title="Import parsed script from Lore Tracker"
+                    title="Import a script into the storyboard"
                 >
-                    📜 Import from Lore Tracker
+                    📜 Import Script
                 </button>
 
                 <div className="flex flex-col gap-2 mt-3">

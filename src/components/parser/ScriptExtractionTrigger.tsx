@@ -3,146 +3,11 @@ import { X, Upload, Zap, Cpu } from 'lucide-react';
 import { useLitStore } from '../../store';
 import { parseScriptAndProposeUpdates, LLMProvider, reconstructFormattedScript } from '../../engine/universalScriptParser';
 import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scriptParser';
+import { smartFallbackParse } from '../../utils/smartFallbackParser';
 
 // =============================================================================
 // SCRIPT EXTRACTION TRIGGER — Modal for inputting script text and triggering parser
 // =============================================================================
-
-/**
- * Creates a basic ParsedScript structure from raw script text for deterministic/fallback parsing.
- * This enables the "Import from Lore Tracker" feature to work even without LLM formatting.
- */
-function createFallbackParsedScript(scriptText: string): ParsedScript {
-  const lines = scriptText.split('\n');
-  const pages: ParsedScript['pages'] = [];
-  const characters = new Map<string, { name: string; panel_count: number }>();
-  
-  // Pre-compile regex patterns for better performance
-  const panelHeaderPattern = /^Panel\s+\d+/i;
-  const pageHeaderPattern = /^PAGE\s+\d+/i;
-  
-  // Default description for panels with no description text
-  const DEFAULT_PANEL_DESCRIPTION = 'Panel description';
-  
-  let currentPage: ParsedScript['pages'][0] | null = null;
-  let currentPanel: ParsedScript['pages'][0]['panels'][0] | null = null;
-  let pageNumber = 1;
-  let panelNumber = 1;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    
-    // Detect page headers (e.g., "PAGE 1" or "Page 1")
-    const pageMatch = line.match(pageHeaderPattern);
-    if (pageMatch) {
-      pageNumber = parseInt(line.match(/\d+/)![0], 10);
-      currentPage = {
-        page_number: pageNumber,
-        panels: [],
-      };
-      pages.push(currentPage);
-      panelNumber = 1;
-      currentPanel = null;
-      continue;
-    }
-    
-    // Detect panel headers (e.g., "Panel 1:" or "Panel 1 -")
-    const panelMatch = line.match(/^Panel\s+(\d+)\s*[:\-]?\s*(.*)/i);
-    if (panelMatch) {
-      panelNumber = parseInt(panelMatch[1], 10);
-      const inlineDescription = panelMatch[2].trim();
-      
-      // Ensure we have a page to add the panel to
-      if (!currentPage) {
-        currentPage = {
-          page_number: pageNumber,
-          panels: [],
-        };
-        pages.push(currentPage);
-      }
-      
-      currentPanel = {
-        panel_number: panelNumber,
-        description: inlineDescription || DEFAULT_PANEL_DESCRIPTION,
-        dialogue: [],
-        panel_id: `p${pageNumber}-panel${panelNumber}`,
-      };
-      currentPage.panels.push(currentPanel);
-      continue;
-    }
-    
-    // Detect character dialogue (e.g., "CHARACTER" followed by dialogue text)
-    // Look for all-caps character names (common in comic scripts)
-    // Regex matches: all-caps names starting with uppercase letter, containing uppercase letters, spaces, apostrophes, periods, and hyphens
-    // Examples: "SPIDER-MAN", "DR. STRANGE", "MARY JANE", "SPIDER-MAN (V.O.)" - the optional parenthetical is captured but not included in character name
-    // Note: This pattern matches character names on their own line. Inline dialogue (e.g., "SPIDER-MAN: Hey!") is not matched to avoid false positives.
-    const dialogueMatch = line.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*$/);
-    if (dialogueMatch && i + 1 < lines.length) {
-      const characterName = dialogueMatch[1].trim();
-      const nextLine = lines[i + 1].trim();
-      
-      // Check if next line looks like dialogue (quoted or not)
-      // Skip if it's a panel or page header
-      if (nextLine && !panelHeaderPattern.test(nextLine) && !pageHeaderPattern.test(nextLine)) {
-        // Track character
-        if (!characters.has(characterName)) {
-          characters.set(characterName, { name: characterName, panel_count: 0 });
-        }
-        
-        if (currentPanel) {
-          const dialogueText = nextLine.replace(/^["']|["']$/g, ''); // Remove surrounding quotes
-          currentPanel.dialogue.push({
-            character: characterName,
-            text: dialogueText,
-            type: 'spoken',
-          });
-          
-          // Increment panel count for character
-          const charData = characters.get(characterName)!;
-          charData.panel_count++;
-        }
-        
-        // Skip the dialogue line since we've processed it
-        i++;
-        continue;
-      }
-    }
-    
-    // ─── Continuation / description lines ───
-    // If we have a current panel, append this line to its description.
-    // This catches multi-line panel descriptions that follow the "Panel N:" header.
-    if (currentPanel) {
-      if (currentPanel.description && currentPanel.description !== DEFAULT_PANEL_DESCRIPTION) {
-        currentPanel.description += ' ' + line;
-      } else {
-        currentPanel.description = line;
-      }
-    }
-  }
-  
-  // If no pages were detected, create a single page with all content as one panel
-  if (pages.length === 0) {
-    pages.push({
-      page_number: 1,
-      panels: [{
-        panel_number: 1,
-        description: 'Script content',
-        dialogue: [],
-        panel_id: 'p1-panel1',
-      }],
-    });
-  }
-  
-  return {
-    pages,
-    characters: Array.from(characters.values()).map(c => ({
-      name: c.name,
-      panel_count: c.panel_count,
-    })),
-    lore_candidates: [],
-  };
-}
 
 interface ScriptExtractionTriggerProps {
   onClose: () => void;
@@ -154,12 +19,12 @@ type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
 // Duration to display warning message before auto-closing modal (in milliseconds)
 const WARNING_DISPLAY_DURATION_MS = 3000;
 
-const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string }> = {
-  anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys' },
-  gemini:    { label: 'Gemini', placeholder: 'AIza...', helpUrl: 'https://aistudio.google.com/apikey' },
-  openai:    { label: 'OpenAI', placeholder: 'sk-...', helpUrl: 'https://platform.openai.com/api-keys' },
-  grok:      { label: 'Grok', placeholder: 'xai-...', helpUrl: 'https://console.x.ai' },
-  deepseek:  { label: 'DeepSeek', placeholder: 'sk-...', helpUrl: 'https://platform.deepseek.com/api_keys' },
+const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string; browserWorks: boolean }> = {
+  anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys', browserWorks: true },
+  gemini:    { label: 'Gemini', placeholder: 'AIza...', helpUrl: 'https://aistudio.google.com/apikey', browserWorks: true },
+  openai:    { label: 'OpenAI', placeholder: 'sk-...', helpUrl: 'https://platform.openai.com/api-keys', browserWorks: false },
+  grok:      { label: 'Grok', placeholder: 'xai-...', helpUrl: 'https://console.x.ai', browserWorks: false },
+  deepseek:  { label: 'DeepSeek', placeholder: 'sk-...', helpUrl: 'https://platform.deepseek.com/api_keys', browserWorks: false },
 };
 
 const PROVIDERS: ProviderOption[] = ['anthropic', 'gemini', 'openai', 'grok', 'deepseek'];
@@ -202,6 +67,16 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
 
       // ═══ STEP 1: AI FORMATTING (if LLM mode is enabled) ═══
       if (enableLLM && apiKey) {
+        // Check CORS compatibility before attempting fetch
+        if (!meta.browserWorks) {
+          setErrorMessage(
+            `⚠️ ${meta.label} blocks direct browser requests (CORS). ` +
+            `Please switch to Gemini or Claude, or use Pattern Only mode.`
+          );
+          setIsLoading(false);
+          setParserStatus('idle');
+          return;
+        }
         try {
           console.log('[ScriptExtraction] Starting AI formatting and normalization...');
           parsedScript = await parseScriptWithLLM(
@@ -265,7 +140,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       } else {
         // LLM was disabled, failed, or Pattern Only mode - create a fallback ParsedScript
         try {
-          const fallbackScript = createFallbackParsedScript(scriptText);
+          const fallbackScript = smartFallbackParse(scriptText);
           setParsedScriptResult(fallbackScript, scriptText);
           console.log('[ScriptExtraction] Stored fallback parsed script for Ink Tracker import');
         } catch (storeError) {
@@ -475,6 +350,15 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
                     </button>
                   ))}
                 </div>
+
+                {!meta.browserWorks && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <span className="text-amber-600 flex-shrink-0 mt-0.5 text-sm">⚠️</span>
+                    <p className="text-xs text-amber-800">
+                      {meta.label} blocks direct browser requests (CORS). Use <strong>Gemini</strong> or <strong>Claude</strong> instead.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-body font-medium text-ink mb-1">
