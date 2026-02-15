@@ -728,18 +728,29 @@ async function runPass2(
 ): Promise<{ newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[]; warnings: string[] }> {
   const warnings: string[] = [];
 
-  // Build system prompt (same as before)
-  const systemPrompt = `You are Lit-Tracker's narrative extraction engine. Analyze a comic/screenplay script and extract all world-building elements.
+  // Build system prompt for comprehension-first extraction
+  const systemPrompt = `You are an editor and English teacher analyzing a story for Lit-Tracker. Your approach is to READ and COMPREHEND the story first, then extract world-building elements from your understanding.
+
+PHASE 1: COMPREHENSION (Read and Understand First)
+Before extracting any data, read this script naturally as an editor would:
+- **Understand the plot**: What's happening? What's the conflict and stakes?
+- **Understand the characters**: Who are they? What motivates them? How do they relate to each other? (Don't just look for ALL-CAPS names)
+- **Understand the settings**: Where does the story take place? What's the atmosphere and significance of each location? (Don't just look for INT./EXT. markers)
+- **Understand the themes**: What are the underlying themes, subtext, and emotional core?
+- **Understand narrative importance**: Which objects, events, and concepts matter to the story's progression?
+
+PHASE 2: EXTRACTION (Extract from Understanding)
+Based on your comprehension, extract world-building elements with RICH descriptions that reflect your understanding:
 
 ENTITY TYPES YOU CAN EXTRACT:
-- "character": Named people/beings who speak or act
-- "location": Named places, settings (INT./EXT. locations, named regions)
-- "faction": Organizations, groups, teams, agencies, cults, governments
-- "event": Significant narrative moments, turning points, incidents (deaths, battles, discoveries, meetings)
-- "concept": Abstract ideas, powers, mechanics, phenomena, philosophies (e.g. "quantum immortality", "primehood", "echoes")
-- "artifact": Named significant objects, weapons, devices, documents
-- "rule": Established world rules, constraints, laws of the universe
-- "item": Generic trackable objects (use "artifact" instead if the item has narrative significance)
+- "character": Named people/beings - describe their motivations, relationships, and role in the narrative
+- "location": Named places - describe atmosphere, emotional tone, and narrative significance
+- "faction": Organizations/groups - describe ideology, influence, and role in the conflict
+- "event": Significant moments - describe impact, participants, consequences, and thematic weight
+- "concept": Abstract ideas/powers - describe how they work, why they matter, and thematic implications
+- "artifact": Named significant objects - describe origin, properties, symbolic meaning, and importance
+- "rule": World rules/constraints - describe how they shape the story, exceptions, and implications
+- "item": Generic objects - describe usage and narrative relevance
 
 CANON LOCKS (DO NOT modify these):
 ${config.canonLocks.map(name => `- ${name}`).join('\n') || '(none)'}
@@ -752,17 +763,9 @@ Items: ${Array.from(entityIndex.items.keys()).join(', ') || '(none)'}
 ALREADY DISCOVERED IN PASS 1 (DO NOT duplicate):
 ${pass1Result.newEntities.map(e => `- ${e.entityType}: ${e.name}`).join('\n') || '(none)'}
 
-TASK:
-Extract ALL world-building elements from the script. Be thorough. Look for:
-1. Named characters not already found
-2. Locations and settings
-3. Factions, organizations, groups
-4. Significant events and turning points
-5. Abstract concepts, powers, mechanics
-6. Named artifacts and significant objects
-7. World rules and constraints
+FORMAT-AGNOSTIC: This script may be in any format (prose, screenplay, comic script, natural writing). Read it naturally and identify entities based on narrative understanding, not formatting patterns.
 
-CRITICAL: Do not bias toward any single category. Ensure you extract entities across ALL applicable types. A well-analyzed script should have entities from multiple different categories where applicable.
+EXTRACTION QUALITY: Because you understand the story, provide rich descriptions that include context, relationships, motivations, and narrative significance. Go beyond surface-level data extraction.
 
 RESPONSE FORMAT (strict JSON, no markdown fences):
 {
@@ -773,7 +776,7 @@ RESPONSE FORMAT (strict JSON, no markdown fences):
       "confidence": 0.0-1.0,
       "context": "brief quote or context where this appears",
       "lineNumber": 0,
-      "suggestedDescription": "1-2 sentence description of what this is",
+      "suggestedDescription": "Rich 2-3 sentence description including motivations/significance/relationships/atmosphere based on your comprehension",
       "suggestedRole": "Protagonist|Antagonist|Supporting|Minor (characters only)",
       "suggestedRegion": "region (locations only)",
       "suggestedTags": ["tag1", "tag2"]
@@ -1225,6 +1228,11 @@ export async function parseScriptAndProposeUpdates(
   const effectiveApiKey = options.llmApiKey || options.geminiApiKey;
   const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey ? 'gemini' : 'anthropic');
 
+  // When LLM is enabled, make it the PRIMARY parser with deterministic as supplement
+  // Initialize with Pass 1 results (used when LLM is disabled)
+  let finalEntities = pass1Result.newEntities;
+  let finalTimelineEvents = pass1Result.timelineEvents;
+
   if (options.enableLLM && effectiveApiKey) {
     llmWasUsed = true;
     const pass2Result = await runPass2(
@@ -1236,36 +1244,50 @@ export async function parseScriptAndProposeUpdates(
       effectiveProvider
     );
 
-    // Merge Pass 2 results (deduplicate by name)
-    const existingNames = new Set(
-      pass1Result.newEntities.map(e => normalizeName(e.name))
-    );
+    // ═══ AI-PRIMARY MERGE LOGIC ═══
+    // When LLM is enabled, prioritize AI-sourced entities (richer descriptions from comprehension)
+    // Pass 1 acts as supplementary validation to catch anything AI might have missed
+    
+    // Start with Pass 2 (AI) entities - these have richer descriptions
+    finalEntities = [...pass2Result.newEntities];
+    const llmNames = new Set(pass2Result.newEntities.map(e => normalizeName(e.name)));
 
-    for (const entity of pass2Result.newEntities) {
+    // Add Pass 1 entities that AI didn't find (supplementary)
+    let supplementaryCount = 0;
+    for (const entity of pass1Result.newEntities) {
       const normalized = normalizeName(entity.name);
-      if (!existingNames.has(normalized)) {
-        pass1Result.newEntities.push(entity);
-        existingNames.add(normalized);
+      if (!llmNames.has(normalized)) {
+        finalEntities.push(entity);
+        supplementaryCount++;
       }
     }
 
-    pass1Result.timelineEvents.push(...pass2Result.timelineEvents);
+    // Merge timeline events (both sources)
+    finalTimelineEvents = [...pass2Result.timelineEvents, ...pass1Result.timelineEvents];
     allWarnings.push(...pass2Result.warnings);
+
+    console.log(`[universalParser] AI-primary merge: ${pass2Result.newEntities.length} AI entities + ${supplementaryCount} supplementary deterministic entities`);
   }
 
   // ═══ EMPTY RESULTS FEEDBACK ═══
-  const totalResults = pass1Result.newEntities.length + pass1Result.updatedEntities.length + pass1Result.timelineEvents.length;
+  const totalResults = finalEntities.length + pass1Result.updatedEntities.length + finalTimelineEvents.length;
   
   if (totalResults === 0) {
-    allWarnings.push(
-      'No entities or timeline events were detected. Make sure your script uses recognizable formatting: ' +
-      'character names in ALL-CAPS (e.g., ELIAS or ELIAS: "dialogue"), ' +
-      'locations with INT./EXT. prefixes or PANEL format, ' +
-      'and item interactions with action verbs.'
-    );
+    if (llmWasUsed) {
+      allWarnings.push(
+        'No entities or timeline events were detected. The AI may need more context - try providing a longer script excerpt or enabling more detailed world-building in your story.'
+      );
+    } else {
+      allWarnings.push(
+        'No entities or timeline events were detected. Consider enabling AI-assisted extraction for better results with any script format, or ensure your script uses recognizable formatting: ' +
+        'character names in ALL-CAPS (e.g., ELIAS or ELIAS: "dialogue"), ' +
+        'locations with INT./EXT. prefixes or PANEL format, ' +
+        'and item interactions with action verbs.'
+      );
+    }
   } else if (totalResults <= LOW_RESULTS_THRESHOLD && !llmWasUsed) {
     allWarnings.push(
-      `Only ${totalResults} item(s) detected. Consider checking your script formatting or enabling AI-assisted extraction (Pass 2) for better results.`
+      `Only ${totalResults} item(s) detected. Consider enabling AI-assisted extraction (which works with any script format) for better results.`
     );
   }
 
@@ -1281,8 +1303,8 @@ export async function parseScriptAndProposeUpdates(
       llmWasUsed,
       warnings: allWarnings,
     },
-    newEntities: pass1Result.newEntities,
+    newEntities: finalEntities,
     updatedEntities: pass1Result.updatedEntities,
-    newTimelineEvents: pass1Result.timelineEvents,
+    newTimelineEvents: finalTimelineEvents,
   };
 }

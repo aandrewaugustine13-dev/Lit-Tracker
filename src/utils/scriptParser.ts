@@ -55,40 +55,54 @@ export const DEFAULT_MODELS: Record<string, string> = {
   deepseek: 'deepseek-chat',
 };
 
-export const NORMALIZATION_PROMPT = `You are a comic script parser. Parse the provided raw comic script text into structured JSON.
+export const NORMALIZATION_PROMPT = `You are an editor and English teacher analyzing a story. Your task is to read and comprehend the narrative, then extract world-building elements from your understanding.
 
-**Instructions:**
-1. Extract all pages and panels with their descriptions and dialogue
-2. Identify all characters with their descriptions
-3. Extract lore candidates across ALL categories:
-   - **Characters**: Only minor/background characters not worthy of main character list (protagonists go in 'characters' field)
-   - **Locations**: Places, settings, buildings (ALL CAPS multi-word strings or high-confidence location names)
-   - **Factions/Organizations**: Groups, teams, agencies, governments, organizations
-   - **Events**: Significant narrative moments, battles, deaths, discoveries, ceremonies
-   - **Concepts**: Abstract ideas, powers, abilities, magic systems, phenomena, philosophies
-   - **Artifacts**: Named significant objects with narrative importance (legendary weapons, relics, ancient items)
-   - **Rules**: Established world rules, constraints, laws of the universe, mechanics
-   - **Items**: Generic trackable objects that characters interact with
-   - **Timeline/Years**: Text matching year patterns (e.g., "2025", "1999") or temporal markers
-   - **Echoes/Objects**: Short ALL CAPS single-word strings (≤20 chars) - classify as artifact or item based on context
+**PHASE 1: COMPREHENSION (Read and Understand First)**
+Before extracting any data, read the story naturally to understand:
+- **Plot & Narrative Arc**: What's happening? What's the conflict? What are the stakes?
+- **Characters**: Who are they? What are their motivations, relationships, and roles in the story? (Don't rely on ALL-CAPS formatting)
+- **Settings**: Where does the story take place? What's the atmosphere and significance of each location? (Don't rely on INT./EXT. markers)
+- **Themes & Subtext**: What are the underlying themes? What's the emotional core?
+- **Narrative Elements**: What objects, events, and concepts are important to the story's progression?
+
+**PHASE 2: EXTRACTION (Extract from Understanding)**
+Based on your comprehension of the story, now extract:
+
+1. **Pages and panels** with their descriptions and dialogue (adapt to whatever format the text uses - prose, screenplay, comic script, or natural writing)
+2. **Characters** with rich descriptions including their motivations, relationships, and role in the narrative
+3. **Lore candidates** across ALL categories:
+   - **Characters**: Minor/background characters (protagonists go in 'characters' field) - describe their role in the story
+   - **Locations**: Places and settings - describe atmosphere, significance, and narrative importance
+   - **Factions/Organizations**: Groups, teams, agencies - describe ideology, influence, and role in conflict
+   - **Events**: Significant narrative moments - describe impact, participants, and consequences
+   - **Concepts**: Abstract ideas, powers, abilities - describe how they work and their significance
+   - **Artifacts**: Named significant objects - describe origin, properties, and narrative importance
+   - **Rules**: Established world rules - describe scope, implications, and exceptions
+   - **Items**: Generic trackable objects - describe usage and importance
+   - **Timeline/Years**: Temporal markers
    - **Uncategorized**: Everything else that might be lore
 
-**IMPORTANT**: Do NOT focus exclusively on locations. Every script should have entities across multiple categories. 
-Be especially thorough in extracting:
-- Artifacts: Any named object, weapon, device, or item that has narrative significance
-- Events: Any referenced past or future event, battle, incident, discovery, or turning point  
-- Factions: Any named group, organization, team, or collective
-- Concepts: Any named power, ability, phenomenon, or abstract idea
-If in doubt about a category, include the entity with moderate confidence rather than omitting it.
+**FORMAT-AGNOSTIC APPROACH**: 
+This text may be in any format - prose, screenplay, comic script, or natural writing. Don't rely on specific formatting patterns like ALL-CAPS character names, INT./EXT. location markers, or Panel indicators. Read naturally and identify entities based on narrative understanding.
 
-4. Track which panels mention each lore item
-5. For each lore candidate, provide optional metadata:
-   - Characters: role, appearance
-   - Factions: ideology, leader, influence level
-   - Events: date, participants, consequences
-   - Concepts/Artifacts: origin, properties, significance
-   - Rules: scope, exceptions
-6. Provide an overall lore summary if possible
+**EXTRACTION QUALITY GUIDELINES**:
+- **Richer Descriptions**: Since you understand the story, provide detailed descriptions that include:
+  - Characters: Motivations, relationships, character arc, role in narrative
+  - Locations: Atmosphere, emotional tone, significance to plot, narrative function
+  - Factions: Ideology, influence level, role in conflict, relationship to protagonists
+  - Events: Emotional impact, consequences, participants, thematic significance
+  - Concepts: How they work, why they matter to the story, thematic implications
+  - Artifacts: Origin story, powers/properties, symbolic meaning, narrative importance
+  - Rules: How they constrain/enable the story, exceptions, implications
+  
+- **Track panels** where each lore item appears
+- **Provide metadata** for each lore candidate based on your understanding:
+  - Characters: role, appearance, motivations
+  - Factions: ideology, leader, influence level, relationship dynamics
+  - Events: date, participants, consequences, emotional weight
+  - Concepts/Artifacts: origin, properties, significance, thematic meaning
+  - Rules: scope, exceptions, narrative implications
+- **Provide an overall lore summary** that synthesizes your understanding of the world-building
 
 **Output Format:**
 Return ONLY valid JSON (no markdown fences) in this structure:
