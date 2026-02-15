@@ -1252,10 +1252,12 @@ export async function parseScriptAndProposeUpdates(
     const llmNames = new Set(pass2Result.newEntities.map(e => normalizeName(e.name)));
 
     // Add Pass 1 entities that AI didn't find (supplementary)
+    let supplementaryCount = 0;
     for (const entity of pass1Result.newEntities) {
       const normalized = normalizeName(entity.name);
       if (!llmNames.has(normalized)) {
         finalEntities.push(entity);
+        supplementaryCount++;
       }
     }
 
@@ -1263,7 +1265,7 @@ export async function parseScriptAndProposeUpdates(
     finalTimelineEvents = [...pass2Result.timelineEvents, ...pass1Result.timelineEvents];
     allWarnings.push(...pass2Result.warnings);
 
-    console.log(`[universalParser] AI-primary merge: ${pass2Result.newEntities.length} AI entities + ${finalEntities.length - pass2Result.newEntities.length} supplementary deterministic entities`);
+    console.log(`[universalParser] AI-primary merge: ${pass2Result.newEntities.length} AI entities + ${supplementaryCount} supplementary deterministic entities`);
   } else {
     // No LLM: Use Pass 1 as primary
     finalEntities = pass1Result.newEntities;
