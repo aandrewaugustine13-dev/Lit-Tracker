@@ -186,7 +186,9 @@ function isCharacterName(line: string, rawLine: string): boolean {
     'MORNING', 'EVENING', 'AFTERNOON', 'CONTINUOUS', 'LATER', 'SAME',
     'ANGLE', 'CLOSE', 'WIDE', 'INSERT', 'POV', 'BACK', 'SCENE', 'SHOT',
     'TRACKING', 'ESTABLISHING', 'SFX', 'SOUND', 'MUSIC', 'SUPER', 'TITLE',
-    'CONTINUED', 'MORE', 'CONTD', 'OVER', 'FREEZE', 'FRAME'
+    'CONTINUED', 'MORE', 'CONTD', 'OVER', 'FREEZE', 'FRAME',
+    'CAPTION', 'NARRATION', 'NARRATOR', 'DESCRIPTION', 'ACTION', 'NOTE',
+    'TRANSITION', 'INTERCUT', 'FLASHBACK', 'MONTAGE', 'PRELAP'
   ];
   
   if (excludeWords.includes(textOnly)) return false;
@@ -199,7 +201,7 @@ function parseSceneHeading(line: string): { sceneType: string; location: string;
   for (const pattern of SCENE_HEADING_PATTERNS) {
     const match = line.match(pattern);
     if (match) {
-      const sceneType = match[1].toUpperCase().replace('.', '').trim();
+      const sceneType = match[1].toUpperCase().replace(/\./g, '').trim();
       const location = (match[2] || '').trim();
       const timeOfDay = match[3] ? match[3].trim().toUpperCase() : undefined;
       

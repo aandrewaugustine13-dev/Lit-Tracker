@@ -24,7 +24,7 @@ export function stripMarkdown(text: string): string {
   let result = text;
 
   // 1. Strip bold markers: **text** → text
-  result = result.replace(/\*\*([^*]+)\*\*/g, '$1');
+  result = result.replace(/\*\*(.*?)\*\*/g, '$1');
 
   // 2. Strip italic markers: *text* → text (but not * used for bullets)
   // Match *text* only when preceded by space, start of line, or other boundary
