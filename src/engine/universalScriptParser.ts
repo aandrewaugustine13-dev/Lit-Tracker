@@ -19,7 +19,7 @@ import { ParsedScript, LoreCandidate } from '../utils/scriptParser';
 
 // ─── Parser Options ─────────────────────────────────────────────────────────
 
-export type LLMProvider = 'anthropic' | 'gemini';
+export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
 
 export interface ParseScriptOptions {
   rawScriptText: string;
@@ -641,6 +641,24 @@ function runPass1(
 
 // ─── Pass 2: LLM Helpers ────────────────────────────────────────────────────
 
+/**
+ * Strips markdown fences and extracts JSON from LLM responses
+ */
+function stripMarkdownAndExtractJSON(text: string): string {
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
+    cleaned = cleaned.substring(0, lastBrace + 1);
+  }
+  return cleaned;
+}
+
 async function callClaudeAPI(
   systemPrompt: string,
   apiKey: string
@@ -670,19 +688,7 @@ async function callClaudeAPI(
   const text = data.content?.[0]?.text;
   if (!text) throw new Error('Claude returned no content');
 
-  // Strip markdown fences robustly — handle various wrapping formats
-  let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
-  cleaned = cleaned.replace(/\n?```\s*$/, '');
-  const firstBrace = cleaned.indexOf('{');
-  if (firstBrace > 0) {
-    cleaned = cleaned.substring(firstBrace);
-  }
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
-    cleaned = cleaned.substring(0, lastBrace + 1);
-  }
-  return cleaned;
+  return stripMarkdownAndExtractJSON(text);
 }
 
 async function callGeminiAPI(
@@ -716,6 +722,104 @@ async function callGeminiAPI(
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('Gemini returned no content');
   return text;
+}
+
+async function callOpenAIAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are an expert story analyst. Return only valid JSON.' },
+        { role: 'user', content: systemPrompt },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('OpenAI returned no content');
+  
+  // Apply markdown stripping for consistency, even though json_object format should return clean JSON
+  return stripMarkdownAndExtractJSON(text);
+}
+
+async function callGrokAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'grok-beta',
+      messages: [
+        { role: 'system', content: 'You are an expert story analyst. Return only valid JSON.' },
+        { role: 'user', content: systemPrompt },
+      ],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Grok API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Grok returned no content');
+  
+  return stripMarkdownAndExtractJSON(text);
+}
+
+async function callDeepSeekAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: 'You are an expert story analyst. Return only valid JSON.' },
+        { role: 'user', content: systemPrompt },
+      ],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`DeepSeek API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('DeepSeek returned no content');
+  
+  return stripMarkdownAndExtractJSON(text);
 }
 
 async function runPass2(
@@ -831,9 +935,27 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
   }
 
   try {
-    const textContent = provider === 'gemini'
-      ? await callGeminiAPI(systemPrompt, apiKey)
-      : await callClaudeAPI(systemPrompt, apiKey);
+    let textContent: string;
+    
+    switch (provider) {
+      case 'gemini':
+        textContent = await callGeminiAPI(systemPrompt, apiKey);
+        break;
+      case 'anthropic':
+        textContent = await callClaudeAPI(systemPrompt, apiKey);
+        break;
+      case 'openai':
+        textContent = await callOpenAIAPI(systemPrompt, apiKey);
+        break;
+      case 'grok':
+        textContent = await callGrokAPI(systemPrompt, apiKey);
+        break;
+      case 'deepseek':
+        textContent = await callDeepSeekAPI(systemPrompt, apiKey);
+        break;
+      default:
+        throw new Error(`Unsupported LLM provider: ${provider}`);
+    }
 
     // Parse LLM response
     let llmResponse: LLMExtractionResponse;
