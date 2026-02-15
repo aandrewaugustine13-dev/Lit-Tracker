@@ -40,6 +40,7 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
       };
       pages.push(currentPage);
       panelNumber = 1;
+      currentPanel = null;
       continue;
     }
     
@@ -47,7 +48,7 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
     const panelMatch = line.match(/^Panel\s+(\d+)\s*[:\-]?\s*(.*)/i);
     if (panelMatch) {
       panelNumber = parseInt(panelMatch[1], 10);
-      const description = panelMatch[2].trim() || 'Panel description';
+      const inlineDescription = panelMatch[2].trim();
       
       // Ensure we have a page to add the panel to
       if (!currentPage) {
@@ -60,7 +61,7 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
       
       currentPanel = {
         panel_number: panelNumber,
-        description,
+        description: inlineDescription || 'Panel description',
         dialogue: [],
         panel_id: `p${pageNumber}-panel${panelNumber}`,
       };
@@ -102,6 +103,17 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
         // Skip the dialogue line since we've processed it
         i++;
         continue;
+      }
+    }
+    
+    // ─── Continuation / description lines ───
+    // If we have a current panel, append this line to its description.
+    // This catches multi-line panel descriptions that follow the "Panel N:" header.
+    if (currentPanel) {
+      if (currentPanel.description && currentPanel.description !== 'Panel description') {
+        currentPanel.description += ' ' + line;
+      } else {
+        currentPanel.description = line;
       }
     }
   }
