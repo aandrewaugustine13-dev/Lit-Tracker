@@ -753,7 +753,9 @@ async function callOpenAIAPI(
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content;
   if (!text) throw new Error('OpenAI returned no content');
-  return text;
+  
+  // Apply markdown stripping for consistency, even though json_object format should return clean JSON
+  return stripMarkdownAndExtractJSON(text);
 }
 
 async function callGrokAPI(
