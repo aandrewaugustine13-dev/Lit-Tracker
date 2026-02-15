@@ -603,14 +603,13 @@ export function useInkLogic() {
       // Check if rawScriptText exists to provide more specific guidance
       if (rawScriptText) {
         alert(
-          'Script was parsed but the structured result is not available. This typically happens when:\n\n' +
-          '1. The script was parsed in Pattern Only mode without LLM formatting\n' +
-          '2. The LLM formatting failed during AI Extraction\n\n' +
+          'Script was parsed but the structured result could not be stored. This may happen if:\n\n' +
+          '1. There was an error storing the parsed script\n' +
+          '2. The browser storage is full or unavailable\n\n' +
           'To import into the storyboard, please:\n' +
           '• Go to the Lore Tracker\n' +
           '• Parse the script again using "Extract from Script"\n' +
-          '• Enable AI Extraction mode with a valid API key\n\n' +
-          'Note: Pattern Only mode extracts lore but doesn\'t create the structured format needed for storyboard import.'
+          '• Try clearing browser storage if the issue persists'
         );
       } else {
         alert(
