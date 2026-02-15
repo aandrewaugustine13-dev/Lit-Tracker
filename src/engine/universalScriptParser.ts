@@ -1229,8 +1229,9 @@ export async function parseScriptAndProposeUpdates(
   const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey ? 'gemini' : 'anthropic');
 
   // When LLM is enabled, make it the PRIMARY parser with deterministic as supplement
-  let finalEntities: typeof pass1Result.newEntities = [];
-  let finalTimelineEvents: typeof pass1Result.timelineEvents = [];
+  // Initialize with Pass 1 results (used when LLM is disabled)
+  let finalEntities = pass1Result.newEntities;
+  let finalTimelineEvents = pass1Result.timelineEvents;
 
   if (options.enableLLM && effectiveApiKey) {
     llmWasUsed = true;
@@ -1266,10 +1267,6 @@ export async function parseScriptAndProposeUpdates(
     allWarnings.push(...pass2Result.warnings);
 
     console.log(`[universalParser] AI-primary merge: ${pass2Result.newEntities.length} AI entities + ${supplementaryCount} supplementary deterministic entities`);
-  } else {
-    // No LLM: Use Pass 1 as primary
-    finalEntities = pass1Result.newEntities;
-    finalTimelineEvents = pass1Result.timelineEvents;
   }
 
   // ═══ EMPTY RESULTS FEEDBACK ═══
