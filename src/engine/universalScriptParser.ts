@@ -641,6 +641,24 @@ function runPass1(
 
 // ─── Pass 2: LLM Helpers ────────────────────────────────────────────────────
 
+/**
+ * Strips markdown fences and extracts JSON from LLM responses
+ */
+function stripMarkdownAndExtractJSON(text: string): string {
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
+    cleaned = cleaned.substring(0, lastBrace + 1);
+  }
+  return cleaned;
+}
+
 async function callClaudeAPI(
   systemPrompt: string,
   apiKey: string
@@ -670,19 +688,7 @@ async function callClaudeAPI(
   const text = data.content?.[0]?.text;
   if (!text) throw new Error('Claude returned no content');
 
-  // Strip markdown fences robustly — handle various wrapping formats
-  let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
-  cleaned = cleaned.replace(/\n?```\s*$/, '');
-  const firstBrace = cleaned.indexOf('{');
-  if (firstBrace > 0) {
-    cleaned = cleaned.substring(firstBrace);
-  }
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
-    cleaned = cleaned.substring(0, lastBrace + 1);
-  }
-  return cleaned;
+  return stripMarkdownAndExtractJSON(text);
 }
 
 async function callGeminiAPI(
@@ -779,19 +785,7 @@ async function callGrokAPI(
   const text = data.choices?.[0]?.message?.content;
   if (!text) throw new Error('Grok returned no content');
   
-  // Strip markdown fences if present
-  let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
-  cleaned = cleaned.replace(/\n?```\s*$/, '');
-  const firstBrace = cleaned.indexOf('{');
-  if (firstBrace > 0) {
-    cleaned = cleaned.substring(firstBrace);
-  }
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
-    cleaned = cleaned.substring(0, lastBrace + 1);
-  }
-  return cleaned;
+  return stripMarkdownAndExtractJSON(text);
 }
 
 async function callDeepSeekAPI(
@@ -823,19 +817,7 @@ async function callDeepSeekAPI(
   const text = data.choices?.[0]?.message?.content;
   if (!text) throw new Error('DeepSeek returned no content');
   
-  // Strip markdown fences if present
-  let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
-  cleaned = cleaned.replace(/\n?```\s*$/, '');
-  const firstBrace = cleaned.indexOf('{');
-  if (firstBrace > 0) {
-    cleaned = cleaned.substring(firstBrace);
-  }
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
-    cleaned = cleaned.substring(0, lastBrace + 1);
-  }
-  return cleaned;
+  return stripMarkdownAndExtractJSON(text);
 }
 
 async function runPass2(
