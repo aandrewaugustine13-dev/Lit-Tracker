@@ -17,6 +17,10 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
   const pages: ParsedScript['pages'] = [];
   const characters = new Map<string, { name: string; panel_count: number }>();
   
+  // Pre-compile regex patterns for better performance
+  const panelHeaderPattern = /^Panel\s+\d+/i;
+  const pageHeaderPattern = /^PAGE\s+\d+/i;
+  
   let currentPage: ParsedScript['pages'][0] | null = null;
   let currentPanel: ParsedScript['pages'][0]['panels'][0] | null = null;
   let pageNumber = 1;
@@ -27,9 +31,9 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
     if (!line) continue;
     
     // Detect page headers (e.g., "PAGE 1" or "Page 1")
-    const pageMatch = line.match(/^PAGE\s+(\d+)/i);
+    const pageMatch = line.match(pageHeaderPattern);
     if (pageMatch) {
-      pageNumber = parseInt(pageMatch[1], 10);
+      pageNumber = parseInt(line.match(/\d+/)![0], 10);
       currentPage = {
         page_number: pageNumber,
         panels: [],
@@ -68,13 +72,15 @@ function createFallbackParsedScript(scriptText: string): ParsedScript {
     // Look for all-caps character names (common in comic scripts)
     // Regex matches: all-caps names starting with uppercase letter, containing uppercase letters, spaces, apostrophes, periods, and hyphens
     // Examples: "SPIDER-MAN", "DR. STRANGE", "MARY JANE", "SPIDER-MAN (V.O.)" - the optional parenthetical is captured but not included in character name
+    // Note: This pattern matches character names on their own line. Inline dialogue (e.g., "SPIDER-MAN: Hey!") is not matched to avoid false positives.
     const dialogueMatch = line.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*$/);
     if (dialogueMatch && i + 1 < lines.length) {
       const characterName = dialogueMatch[1].trim();
       const nextLine = lines[i + 1].trim();
       
       // Check if next line looks like dialogue (quoted or not)
-      if (nextLine && !nextLine.match(/^Panel\s+\d+/i) && !nextLine.match(/^PAGE\s+\d+/i)) {
+      // Skip if it's a panel or page header
+      if (nextLine && !panelHeaderPattern.test(nextLine) && !pageHeaderPattern.test(nextLine)) {
         // Track character
         if (!characters.has(characterName)) {
           characters.set(characterName, { name: characterName, panel_count: 0 });
@@ -129,6 +135,9 @@ interface ScriptExtractionTriggerProps {
 
 type ParseMode = 'llm' | 'deterministic';
 type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
+
+// Duration to display warning message before auto-closing modal (in milliseconds)
+const WARNING_DISPLAY_DURATION_MS = 3000;
 
 const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string }> = {
   anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys' },
@@ -261,11 +270,11 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       if (!llmFormatFailed) {
         onClose();
       } else {
-        // Give user time to see the warning (3 seconds), then auto-close
+        // Give user time to see the warning, then auto-close
         // Note: We always close after the timeout regardless of loading state since extraction has completed
         setTimeout(() => {
           onClose();
-        }, 3000);
+        }, WARNING_DISPLAY_DURATION_MS);
       }
     } catch (error) {
       console.error('Parsing error:', error);
