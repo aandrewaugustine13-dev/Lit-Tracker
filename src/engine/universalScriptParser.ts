@@ -731,6 +731,18 @@ async function runPass2(
   // Build system prompt for comprehension-first extraction
   const systemPrompt = `You are an editor and English teacher analyzing a story for Lit-Tracker. Your approach is to READ and COMPREHEND the story first, then extract world-building elements from your understanding.
 
+⚠️ **CRITICAL REQUIREMENT**: You MUST extract entities from MULTIPLE types — not just locations. Every script contains characters, factions, events, concepts, artifacts, and more. Returning only locations is unacceptable and indicates incomplete analysis.
+
+📊 **EXPECTED YIELD**: A typical script page will yield:
+- 2-5 locations (settings, places)
+- 1-3 characters (named people/beings)
+- 1-2 factions/organizations (any groups mentioned)
+- 1-3 events (battles, discoveries, deaths, meetings, past events)
+- 1-2 concepts (powers, abilities, magic systems, phenomena)
+- 0-2 artifacts (named weapons, tools, relics, important objects)
+- 0-2 rules (world mechanics, constraints, established laws)
+- 0-2 items (generic objects characters interact with)
+
 PHASE 1: COMPREHENSION (Read and Understand First)
 Before extracting any data, read this script naturally as an editor would:
 - **Understand the plot**: What's happening? What's the conflict and stakes?
@@ -766,6 +778,30 @@ ${pass1Result.newEntities.map(e => `- ${e.entityType}: ${e.name}`).join('\n') ||
 FORMAT-AGNOSTIC: This script may be in any format (prose, screenplay, comic script, natural writing). Read it naturally and identify entities based on narrative understanding, not formatting patterns.
 
 EXTRACTION QUALITY: Because you understand the story, provide rich descriptions that include context, relationships, motivations, and narrative significance. Go beyond surface-level data extraction.
+
+🚫 **COMMON MISTAKES TO AVOID**:
+- ❌ **DO NOT extract only locations** - This is the most common failure. Every script has more than just places.
+- ❌ **DO NOT skip events** just because they're implied - References to past battles, meetings, deaths are events
+- ❌ **DO NOT miss factions** - If a character mentions "the team," "the agency," "the order," "the guild," "the crew," that's a faction
+- ❌ **DO NOT miss concepts** - If a character uses a power, ability, or technique, that's a concept
+- ❌ **DO NOT miss artifacts** - If a character wields a named weapon, tool, or important object, that's an artifact
+- ❌ **DO NOT ignore dialogue** - Organizations, events, and artifacts are often mentioned in conversation
+
+✅ **MANDATORY SELF-CHECK BEFORE RESPONDING**:
+Before finalizing your JSON, you MUST verify this checklist. If you answer "NO" to any, go back and extract more:
+
+□ **Did I extract at least 2 locations?** (settings, places)
+□ **Did I extract characters?** (named people/beings not already in existing entities)
+□ **Did I extract factions/organizations?** (any group, team, agency, order, guild, crew, council, etc.)
+□ **Did I extract events?** (battles, discoveries, deaths, meetings, rituals - anything that happened)
+□ **Did I extract concepts?** (powers, abilities, magic systems, phenomena, philosophies)
+□ **Did I extract artifacts?** (named weapons, tools, relics, documents, significant objects)
+□ **Did I check rules?** (world mechanics, constraints, laws, pacts)
+□ **Did I check items?** (generic objects characters interact with)
+
+If your newEntities array has ONLY locations, you have FAILED. Go back and look for other entity types.
+
+**Critical reminder**: Most scripts contain entities across AT LEAST 4-6 different types. If you're returning fewer than 3 types, you're not analyzing thoroughly enough.
 
 RESPONSE FORMAT (strict JSON, no markdown fences):
 {

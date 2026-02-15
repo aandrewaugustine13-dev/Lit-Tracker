@@ -57,6 +57,18 @@ export const DEFAULT_MODELS: Record<string, string> = {
 
 export const NORMALIZATION_PROMPT = `You are an editor and English teacher analyzing a story. Your task is to read and comprehend the narrative, then extract world-building elements from your understanding.
 
+⚠️ **CRITICAL REQUIREMENT**: You MUST return entities from MULTIPLE categories — not just locations. A typical script will contain characters, factions, events, concepts, artifacts, and more. Returning only locations is unacceptable and indicates you haven't fully analyzed the narrative.
+
+📊 **EXPECTED YIELD**: A typical script page will yield:
+- 2-5 locations (settings, places)
+- 1-3 characters (minor/background characters, not main protagonists)
+- 1-2 factions/organizations (any groups mentioned)
+- 1-3 events (battles, discoveries, deaths, meetings, past events referenced)
+- 1-2 concepts (powers, abilities, magic systems, phenomena)
+- 0-2 artifacts (named weapons, tools, relics, important objects)
+- 0-2 rules (world mechanics, constraints, established laws)
+- 0-2 items (generic objects characters interact with)
+
 **PHASE 1: COMPREHENSION (Read and Understand First)**
 Before extracting any data, read the story naturally to understand:
 - **Plot & Narrative Arc**: What's happening? What's the conflict? What are the stakes?
@@ -126,50 +138,114 @@ Return ONLY valid JSON (no markdown fences) in this structure:
     { "name": "CHARACTER", "description": "Brief description", "panel_count": 5 }
   ],
   "lore_candidates": [
+    // LOCATIONS - Settings and places
     { 
-      "text": "LOCATION NAME", 
+      "text": "The Crimson Tavern", 
       "category": "location", 
       "confidence": 0.9, 
       "panels": ["p1-panel1"],
-      "description": "Brief description",
-      "metadata": { "region": "North District", "timeOfDay": "night" }
+      "description": "A dimly lit underground bar where rebels gather to plan",
+      "metadata": { "region": "Old Quarter", "atmosphere": "tense" }
     },
     {
-      "text": "THE ORDER",
-      "category": "faction",
+      "text": "Shadow District",
+      "category": "location",
       "confidence": 0.85,
       "panels": ["p1-panel2"],
-      "description": "Secret organization",
-      "metadata": { "ideology": "Preservation of ancient knowledge", "leader": "The Keeper" }
+      "description": "The dangerous eastern sector controlled by gangs"
+    },
+    // CHARACTERS - Minor/background characters
+    {
+      "text": "Marcus the Informant",
+      "category": "character",
+      "confidence": 0.8,
+      "panels": ["p1-panel1"],
+      "description": "A nervous information broker who sells secrets to both sides"
+    },
+    // FACTIONS - Any organization, group, team, agency, order, guild, crew
+    {
+      "text": "The Iron Brotherhood",
+      "category": "faction",
+      "confidence": 0.9,
+      "panels": ["p1-panel2", "p1-panel4"],
+      "description": "A militant group seeking to overthrow the Council",
+      "metadata": { "ideology": "Freedom through force", "leader": "General Krane", "size": "200+ members" }
     },
     {
-      "text": "The Great Awakening",
+      "text": "Council of Seven",
+      "category": "faction",
+      "confidence": 0.95,
+      "panels": ["p1-panel3"],
+      "description": "The ruling body that governs the city with an iron fist"
+    },
+    // EVENTS - Battles, discoveries, deaths, meetings, rituals, anything that happened
+    {
+      "text": "The Siege of Irongate",
       "category": "event",
       "confidence": 0.9,
       "panels": ["p1-panel3"],
-      "description": "When the powers first manifested",
-      "metadata": { "date": "2020", "participants": "All awakened individuals" }
+      "description": "Bloody battle where the Brotherhood tried to storm the fortress",
+      "metadata": { "date": "Three years ago", "casualties": "Heavy", "outcome": "Failed assault" }
     },
     {
-      "text": "Void Walking",
+      "text": "Sarah's Betrayal",
+      "category": "event",
+      "confidence": 0.85,
+      "panels": ["p1-panel5"],
+      "description": "When Sarah revealed herself as a Council spy, splitting the group"
+    },
+    // CONCEPTS - Powers, abilities, magic systems, phenomena, philosophies
+    {
+      "text": "Shadow Binding",
+      "category": "concept",
+      "confidence": 0.9,
+      "panels": ["p1-panel4"],
+      "description": "Rare ability to manipulate shadows to restrain enemies"
+    },
+    {
+      "text": "The Voice",
       "category": "concept",
       "confidence": 0.8,
-      "panels": ["p1-panel4"],
-      "description": "Ability to traverse the void between dimensions"
+      "panels": ["p1-panel2"],
+      "description": "Telepathic communication method used by trained operatives"
     },
+    // ARTIFACTS - Named weapons, tools, relics, documents, significant objects
     {
-      "text": "SWORD OF DAWN",
+      "text": "Blade of Echoes",
       "category": "artifact",
       "confidence": 0.95,
       "panels": ["p1-panel5"],
-      "description": "Legendary weapon that can cut through any material",
-      "metadata": { "origin": "Forged by the First Smiths" }
+      "description": "Legendary sword that shows its wielder glimpses of the future",
+      "metadata": { "origin": "Forged by the Ancient Smiths", "current_owner": "Unknown" }
+    },
+    {
+      "text": "The Lost Codex",
+      "category": "artifact",
+      "confidence": 0.9,
+      "panels": ["p1-panel3"],
+      "description": "Ancient book containing forbidden knowledge of reality manipulation"
+    },
+    // RULES - World mechanics, constraints, established laws
+    {
+      "text": "The Pact of Silence",
+      "category": "rule",
+      "confidence": 0.85,
+      "panels": ["p1-panel2"],
+      "description": "Ancient law forbidding anyone from speaking of the Old Gods"
+    },
+    // ITEMS - Generic objects that characters interact with
+    {
+      "text": "Communication Crystal",
+      "category": "item",
+      "confidence": 0.7,
+      "panels": ["p1-panel4"],
+      "description": "Standard issue device for long-range messaging"
     }
   ],
   "overall_lore_summary": "Brief summary of the lore"
 }
 
-**Note**: The above example shows one entity per category for brevity. In practice, you should extract all significant entities across all applicable categories. A typical script page might yield 2-5 locations, 1-3 artifacts, 1-3 events, 1-2 factions, etc. Do not stop at one per category.
+**Note**: The above examples demonstrate the diversity of entities you should extract. This is what a well-analyzed script looks like - it contains multiple categories, not just locations. If you're only finding locations, you're not analyzing deeply enough.
 
 **Confidence Scoring:**
 - 1.0: Explicit entity clearly defined (e.g., organization name in dialogue, artifact with clear importance)
@@ -186,13 +262,30 @@ Return ONLY valid JSON (no markdown fences) in this structure:
 - Use "item" for generic objects characters use
 - Use "character" for new characters not in main character list
 
-**Self-Check Before Responding:**
-Before finalizing your JSON, verify that your lore_candidates array includes entities from at least 3 different categories where applicable (not just locations). If you only found locations, re-read the script looking specifically for:
-- Named objects or weapons (→ artifact)
-- Referenced battles, deaths, or discoveries (→ event)  
-- Groups or organizations (→ faction)
-- Powers, magic systems, or phenomena (→ concept)
-- World rules or constraints (→ rule)
+🚫 **COMMON MISTAKES TO AVOID**:
+- ❌ **DO NOT return only locations** - This is the most common failure. Every script has more than just places.
+- ❌ **DO NOT skip characters** just because they appear in the main characters array - Minor/background characters still go in lore_candidates
+- ❌ **DO NOT skip events** just because they're implied rather than explicitly stated - References to past battles, meetings, deaths, or discoveries are events
+- ❌ **DO NOT miss factions** - If a character mentions "the team," "the agency," "the order," "the guild," "the crew," or any group, that's a faction
+- ❌ **DO NOT miss concepts** - If a character uses a power, ability, or technique (even once), that's a concept
+- ❌ **DO NOT miss artifacts** - If a character wields a named weapon, tool, or important object, that's an artifact
+- ❌ **DO NOT ignore dialogue** - Organizations, events, and artifacts are often mentioned in conversation, not just descriptions
+
+✅ **MANDATORY SELF-CHECK BEFORE RESPONDING**:
+Before you finalize your JSON response, you MUST verify the following checklist. If you answer "NO" to any of these, go back and extract more entities:
+
+□ **Did I extract at least 2 locations?** (settings, places)
+□ **Did I extract characters?** (people mentioned by name who aren't main protagonists)
+□ **Did I extract factions/organizations?** (any group, team, agency, order, guild, crew, council, brotherhood, etc.)
+□ **Did I extract events?** (battles, discoveries, deaths, meetings, rituals, betrayals - anything that happened)
+□ **Did I extract concepts?** (powers, abilities, magic systems, phenomena, philosophies, techniques)
+□ **Did I extract artifacts?** (named weapons, tools, relics, documents, significant objects)
+□ **Did I check rules?** (world mechanics, constraints, laws, pacts, established limitations)
+□ **Did I check items?** (generic objects characters interact with)
+
+If your lore_candidates array has ONLY locations, you have FAILED this task. Go back and re-read the script specifically looking for the other categories listed above.
+
+**Critical reminder**: Most scripts contain entities across AT LEAST 4-6 different categories. If you're returning fewer than 3 categories, you're not analyzing thoroughly enough.
 
 Parse the following script:`;
 
