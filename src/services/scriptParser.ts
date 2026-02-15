@@ -111,7 +111,7 @@ const PANEL_PATTERNS = [
 ];
 
 // Fallback: just a number at the start of a line (1. description)
-const NUMERIC_PANEL_START = /^(\d+)\.\s*(.*)/;
+const NUMERIC_PANEL_START = /^(\d{1,2})\.\s+(.*)/;
 
 // Dialogue patterns
 const BLOCKQUOTE_DIALOGUE = /^>\s*(?:\*\*)?([A-Z][A-Z0-9\s\-'.]{0,30})(?:\s*[\(\[<]([^\)\]>]+)[\)\]>])?\s*(?:\*\*)?\s*[:\-]\s*(.+)$/;
@@ -519,7 +519,8 @@ export function parseScript(scriptText: string): ParseResult {
             }
             
             // Fallback to numeric panel start (1. description)
-            if (!panelMatch) {
+            // Only use this fallback when we are already inside a page context
+            if (!panelMatch && currentPageNumber > 0) {
                 panelMatch = line.match(NUMERIC_PANEL_START);
             }
 

@@ -21,8 +21,9 @@ import { ParsedScript, LoreCandidate } from '../utils/scriptParser';
 
 export type LLMProvider = 'anthropic' | 'gemini';
 
-export interface ParseOptions {
+export interface ParseScriptOptions {
   rawScriptText: string;
+  formattedScriptText?: string;
   config: ProjectConfig;
   characters: Character[];
   normalizedLocations: EntityState<LocationEntry>;
@@ -32,6 +33,7 @@ export interface ParseOptions {
   /** @deprecated Use llmApiKey instead */
   geminiApiKey?: string;
   enableLLM?: boolean;
+  externalLoreCandidates?: LoreCandidate[];
 }
 
 // ─── UUID Helper ────────────────────────────────────────────────────────────

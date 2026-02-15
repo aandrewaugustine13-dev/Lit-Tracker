@@ -61,6 +61,7 @@ const NOISE_WORDS = new Set([
   'RESUME', 'BACK', 'SAME', 'TIME', 'CAPTION', 'SETTING', 'SHOT',
   'ESTABLISHING', 'EXTERIOR', 'INTERIOR', 'TO', 'IN', 'ON', 'AT',
   'OF', 'A', 'AN', 'IS', 'ARE', 'WAS', 'WERE', 'BE', 'BEEN',
+  'NARRATION', 'NARRATOR', 'DESCRIPTION', 'NOTE', 'ACTION',
 ]);
 
 // Location indicator keywords
