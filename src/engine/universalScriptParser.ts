@@ -19,7 +19,7 @@ import { ParsedScript, LoreCandidate } from '../utils/scriptParser';
 
 // ─── Parser Options ─────────────────────────────────────────────────────────
 
-export type LLMProvider = 'anthropic' | 'gemini';
+export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
 
 export interface ParseScriptOptions {
   rawScriptText: string;
@@ -718,6 +718,126 @@ async function callGeminiAPI(
   return text;
 }
 
+async function callOpenAIAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are an expert story analyst. Return only valid JSON.' },
+        { role: 'user', content: systemPrompt },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('OpenAI returned no content');
+  return text;
+}
+
+async function callGrokAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'grok-beta',
+      messages: [
+        { role: 'system', content: 'You are an expert story analyst. Return only valid JSON.' },
+        { role: 'user', content: systemPrompt },
+      ],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Grok API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Grok returned no content');
+  
+  // Strip markdown fences if present
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
+    cleaned = cleaned.substring(0, lastBrace + 1);
+  }
+  return cleaned;
+}
+
+async function callDeepSeekAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: 'You are an expert story analyst. Return only valid JSON.' },
+        { role: 'user', content: systemPrompt },
+      ],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`DeepSeek API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('DeepSeek returned no content');
+  
+  // Strip markdown fences if present
+  let cleaned = text.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+  cleaned = cleaned.replace(/\n?```\s*$/, '');
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
+    cleaned = cleaned.substring(0, lastBrace + 1);
+  }
+  return cleaned;
+}
+
 async function runPass2(
   rawScriptText: string,
   pass1Result: Pass1Result,
@@ -831,9 +951,27 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
   }
 
   try {
-    const textContent = provider === 'gemini'
-      ? await callGeminiAPI(systemPrompt, apiKey)
-      : await callClaudeAPI(systemPrompt, apiKey);
+    let textContent: string;
+    
+    switch (provider) {
+      case 'gemini':
+        textContent = await callGeminiAPI(systemPrompt, apiKey);
+        break;
+      case 'anthropic':
+        textContent = await callClaudeAPI(systemPrompt, apiKey);
+        break;
+      case 'openai':
+        textContent = await callOpenAIAPI(systemPrompt, apiKey);
+        break;
+      case 'grok':
+        textContent = await callGrokAPI(systemPrompt, apiKey);
+        break;
+      case 'deepseek':
+        textContent = await callDeepSeekAPI(systemPrompt, apiKey);
+        break;
+      default:
+        throw new Error(`Unsupported LLM provider: ${provider}`);
+    }
 
     // Parse LLM response
     let llmResponse: LLMExtractionResponse;
