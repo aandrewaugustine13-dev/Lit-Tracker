@@ -600,7 +600,23 @@ export function useInkLogic() {
     const rawScriptText = useLitStore.getState().rawScriptText;
     
     if (!parsedScriptResult) {
-      alert('No parsed script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".');
+      // Check if rawScriptText exists to provide more specific guidance
+      if (rawScriptText) {
+        alert(
+          'Script was parsed but the structured result is not available. This typically happens when:\n\n' +
+          '1. The script was parsed in Pattern Only mode without LLM formatting\n' +
+          '2. The LLM formatting failed during AI Extraction\n\n' +
+          'To import into the storyboard, please:\n' +
+          '• Go to the Lore Tracker\n' +
+          '• Parse the script again using "Extract from Script"\n' +
+          '• Enable AI Extraction mode with a valid API key\n\n' +
+          'Note: Pattern Only mode extracts lore but doesn\'t create the structured format needed for storyboard import.'
+        );
+      } else {
+        alert(
+          'No parsed script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".'
+        );
+      }
       return;
     }
     
