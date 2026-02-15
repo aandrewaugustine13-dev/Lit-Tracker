@@ -8,12 +8,136 @@ import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scr
 // SCRIPT EXTRACTION TRIGGER — Modal for inputting script text and triggering parser
 // =============================================================================
 
+/**
+ * Creates a basic ParsedScript structure from raw script text for deterministic/fallback parsing.
+ * This enables the "Import from Lore Tracker" feature to work even without LLM formatting.
+ */
+function createFallbackParsedScript(scriptText: string): ParsedScript {
+  const lines = scriptText.split('\n');
+  const pages: ParsedScript['pages'] = [];
+  const characters = new Map<string, { name: string; panel_count: number }>();
+  
+  // Pre-compile regex patterns for better performance
+  const panelHeaderPattern = /^Panel\s+\d+/i;
+  const pageHeaderPattern = /^PAGE\s+\d+/i;
+  
+  let currentPage: ParsedScript['pages'][0] | null = null;
+  let currentPanel: ParsedScript['pages'][0]['panels'][0] | null = null;
+  let pageNumber = 1;
+  let panelNumber = 1;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    // Detect page headers (e.g., "PAGE 1" or "Page 1")
+    const pageMatch = line.match(pageHeaderPattern);
+    if (pageMatch) {
+      pageNumber = parseInt(line.match(/\d+/)![0], 10);
+      currentPage = {
+        page_number: pageNumber,
+        panels: [],
+      };
+      pages.push(currentPage);
+      panelNumber = 1;
+      continue;
+    }
+    
+    // Detect panel headers (e.g., "Panel 1:" or "Panel 1 -")
+    const panelMatch = line.match(/^Panel\s+(\d+)\s*[:\-]?\s*(.*)/i);
+    if (panelMatch) {
+      panelNumber = parseInt(panelMatch[1], 10);
+      const description = panelMatch[2].trim() || 'Panel description';
+      
+      // Ensure we have a page to add the panel to
+      if (!currentPage) {
+        currentPage = {
+          page_number: pageNumber,
+          panels: [],
+        };
+        pages.push(currentPage);
+      }
+      
+      currentPanel = {
+        panel_number: panelNumber,
+        description,
+        dialogue: [],
+        panel_id: `p${pageNumber}-panel${panelNumber}`,
+      };
+      currentPage.panels.push(currentPanel);
+      continue;
+    }
+    
+    // Detect character dialogue (e.g., "CHARACTER" followed by dialogue text)
+    // Look for all-caps character names (common in comic scripts)
+    // Regex matches: all-caps names starting with uppercase letter, containing uppercase letters, spaces, apostrophes, periods, and hyphens
+    // Examples: "SPIDER-MAN", "DR. STRANGE", "MARY JANE", "SPIDER-MAN (V.O.)" - the optional parenthetical is captured but not included in character name
+    // Note: This pattern matches character names on their own line. Inline dialogue (e.g., "SPIDER-MAN: Hey!") is not matched to avoid false positives.
+    const dialogueMatch = line.match(/^([A-Z][A-Z\s'.-]+?)(?:\s*\([^)]*\))?\s*$/);
+    if (dialogueMatch && i + 1 < lines.length) {
+      const characterName = dialogueMatch[1].trim();
+      const nextLine = lines[i + 1].trim();
+      
+      // Check if next line looks like dialogue (quoted or not)
+      // Skip if it's a panel or page header
+      if (nextLine && !panelHeaderPattern.test(nextLine) && !pageHeaderPattern.test(nextLine)) {
+        // Track character
+        if (!characters.has(characterName)) {
+          characters.set(characterName, { name: characterName, panel_count: 0 });
+        }
+        
+        if (currentPanel) {
+          const dialogueText = nextLine.replace(/^["']|["']$/g, ''); // Remove surrounding quotes
+          currentPanel.dialogue.push({
+            character: characterName,
+            text: dialogueText,
+            type: 'spoken',
+          });
+          
+          // Increment panel count for character
+          const charData = characters.get(characterName)!;
+          charData.panel_count++;
+        }
+        
+        // Skip the dialogue line since we've processed it
+        i++;
+        continue;
+      }
+    }
+  }
+  
+  // If no pages were detected, create a single page with all content as one panel
+  if (pages.length === 0) {
+    pages.push({
+      page_number: 1,
+      panels: [{
+        panel_number: 1,
+        description: 'Script content',
+        dialogue: [],
+        panel_id: 'p1-panel1',
+      }],
+    });
+  }
+  
+  return {
+    pages,
+    characters: Array.from(characters.values()).map(c => ({
+      name: c.name,
+      panel_count: c.panel_count,
+    })),
+    lore_candidates: [],
+  };
+}
+
 interface ScriptExtractionTriggerProps {
   onClose: () => void;
 }
 
 type ParseMode = 'llm' | 'deterministic';
 type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
+
+// Duration to display warning message before auto-closing modal (in milliseconds)
+const WARNING_DISPLAY_DURATION_MS = 3000;
 
 const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string }> = {
   anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys' },
@@ -59,6 +183,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       let formattedScript: string | undefined = undefined;
       let loreCandidates: LoreCandidate[] | undefined = undefined;
       let parsedScript: ParsedScript | undefined = undefined;
+      let llmFormatFailed = false;
 
       // ═══ STEP 1: AI FORMATTING (if LLM mode is enabled) ═══
       if (enableLLM && apiKey) {
@@ -80,18 +205,16 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
             loreCandidates: loreCandidates.length
           });
         } catch (formatError) {
-          console.warn('[ScriptExtraction] AI formatting failed, falling back to raw script:', formatError);
+          llmFormatFailed = true;
+          const errorMsg = formatError instanceof Error ? formatError.message : 'Unknown error';
+          console.warn('[ScriptExtraction] AI formatting failed:', formatError);
+          
+          // Surface the error to the user as a warning
+          setErrorMessage(
+            `⚠️ AI formatting failed: ${errorMsg}. Lore extraction will continue with pattern matching only. Storyboard import may be limited.`
+          );
+          
           // Continue without formatted script - the parser will work with raw text
-        }
-        
-        // Store the parsed script result for Ink Tracker import (if formatting succeeded)
-        if (parsedScript) {
-          try {
-            setParsedScriptResult(parsedScript, scriptText);
-          } catch (storeError) {
-            console.warn('[ScriptExtraction] Failed to store parsed script for Ink Tracker:', storeError);
-            // Non-fatal - continue with lore extraction
-          }
         }
       } else {
         console.log('[ScriptExtraction] Skipping AI formatting (LLM disabled or no API key)');
@@ -113,6 +236,29 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         enableLLM,
       });
 
+      // ═══ STEP 3: STORE PARSED SCRIPT FOR INK TRACKER ═══
+      // Store the parsed script result for Ink Tracker import, even in Pattern Only mode
+      if (parsedScript) {
+        // LLM succeeded - store the full structured result
+        try {
+          setParsedScriptResult(parsedScript, scriptText);
+          console.log('[ScriptExtraction] Stored LLM-parsed script for Ink Tracker import');
+        } catch (storeError) {
+          console.warn('[ScriptExtraction] Failed to store parsed script for Ink Tracker:', storeError);
+          // Non-fatal - continue
+        }
+      } else {
+        // LLM was disabled, failed, or Pattern Only mode - create a fallback ParsedScript
+        try {
+          const fallbackScript = createFallbackParsedScript(scriptText);
+          setParsedScriptResult(fallbackScript, scriptText);
+          console.log('[ScriptExtraction] Stored fallback parsed script for Ink Tracker import');
+        } catch (storeError) {
+          console.warn('[ScriptExtraction] Failed to store fallback parsed script for Ink Tracker:', storeError);
+          // Non-fatal - continue
+        }
+      }
+
       setCurrentProposal(proposal);
       console.log('[ScriptExtraction] Extraction complete:', {
         newEntities: proposal.newEntities.length,
@@ -120,7 +266,16 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         timelineEvents: proposal.newTimelineEvents.length,
       });
 
-      onClose();
+      // Don't close the modal immediately if there was an LLM error (so user can see the warning)
+      if (!llmFormatFailed) {
+        onClose();
+      } else {
+        // Give user time to see the warning, then auto-close
+        // Note: We always close after the timeout regardless of loading state since extraction has completed
+        setTimeout(() => {
+          onClose();
+        }, WARNING_DISPLAY_DURATION_MS);
+      }
     } catch (error) {
       console.error('Parsing error:', error);
       const errorMsg = error instanceof Error ? error.message : 'Unknown parsing error';

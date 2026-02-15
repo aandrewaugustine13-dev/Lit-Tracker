@@ -600,7 +600,22 @@ export function useInkLogic() {
     const rawScriptText = useLitStore.getState().rawScriptText;
     
     if (!parsedScriptResult) {
-      alert('No parsed script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".');
+      // Check if rawScriptText exists to provide more specific guidance
+      if (rawScriptText) {
+        alert(
+          'Script was parsed but the structured result could not be stored. This may happen if:\n\n' +
+          '1. There was an error storing the parsed script\n' +
+          '2. The browser storage is full or unavailable\n\n' +
+          'To import into the storyboard, please:\n' +
+          '• Go to the Lore Tracker\n' +
+          '• Parse the script again using "Extract from Script"\n' +
+          '• Try clearing browser storage if the issue persists'
+        );
+      } else {
+        alert(
+          'No parsed script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".'
+        );
+      }
       return;
     }
     
