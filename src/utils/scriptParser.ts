@@ -72,6 +72,15 @@ export const NORMALIZATION_PROMPT = `You are a comic script parser. Parse the pr
    - **Timeline/Years**: Text matching year patterns (e.g., "2025", "1999") or temporal markers
    - **Echoes/Objects**: Short ALL CAPS single-word strings (≤20 chars) - classify as artifact or item based on context
    - **Uncategorized**: Everything else that might be lore
+
+**IMPORTANT**: Do NOT focus exclusively on locations. Every script should have entities across multiple categories. 
+Be especially thorough in extracting:
+- Artifacts: Any named object, weapon, device, or item that has narrative significance
+- Events: Any referenced past or future event, battle, incident, discovery, or turning point  
+- Factions: Any named group, organization, team, or collective
+- Concepts: Any named power, ability, phenomenon, or abstract idea
+If in doubt about a category, include the entity with moderate confidence rather than omitting it.
+
 4. Track which panels mention each lore item
 5. For each lore candidate, provide optional metadata:
    - Characters: role, appearance
@@ -146,6 +155,8 @@ Return ONLY valid JSON (no markdown fences) in this structure:
   "overall_lore_summary": "Brief summary of the lore"
 }
 
+**Note**: The above example shows one entity per category for brevity. In practice, you should extract all significant entities across all applicable categories. A typical script page might yield 2-5 locations, 1-3 artifacts, 1-3 events, 1-2 factions, etc. Do not stop at one per category.
+
 **Confidence Scoring:**
 - 1.0: Explicit entity clearly defined (e.g., organization name in dialogue, artifact with clear importance)
 - 0.8-0.9: Strong contextual indicators (e.g., character acting as faction leader, event described in detail)
@@ -160,6 +171,14 @@ Return ONLY valid JSON (no markdown fences) in this structure:
 - Use "rule" for explicit world mechanics or constraints
 - Use "item" for generic objects characters use
 - Use "character" for new characters not in main character list
+
+**Self-Check Before Responding:**
+Before finalizing your JSON, verify that your lore_candidates array includes entities from at least 3 different categories where applicable (not just locations). If you only found locations, re-read the script looking specifically for:
+- Named objects or weapons (→ artifact)
+- Referenced battles, deaths, or discoveries (→ event)  
+- Groups or organizations (→ faction)
+- Powers, magic systems, or phenomena (→ concept)
+- World rules or constraints (→ rule)
 
 Parse the following script:`;
 
