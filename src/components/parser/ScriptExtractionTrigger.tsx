@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { X, Upload, Zap, Cpu } from 'lucide-react';
+import { X, Upload, Zap, Cpu, HardDrive } from 'lucide-react';
 import { useLitStore } from '../../store';
 import { parseScriptAndProposeUpdates, LLMProvider, reconstructFormattedScript } from '../../engine/universalScriptParser';
 import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scriptParser';
 import { smartFallbackParse } from '../../utils/smartFallbackParser';
+import { isGoogleDriveConfigured } from '../../services/googleDrive';
+import { DriveFilePicker } from '../shared/DriveFilePicker';
 
 // =============================================================================
 // SCRIPT EXTRACTION TRIGGER — Modal for inputting script text and triggering parser
@@ -37,6 +39,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   const [provider, setProvider] = useState<ProviderOption>('anthropic');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showDrivePicker, setShowDrivePicker] = useState(false);
 
   const projectConfig = useLitStore((s) => s.projectConfig);
   const characters = useLitStore((s) => s.characters);
@@ -180,6 +183,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="bg-card border-stone-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
         {/* Header */}
@@ -317,6 +321,15 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
                     className="hidden"
                   />
                 </label>
+                {isGoogleDriveConfigured() && (
+                  <button
+                    onClick={() => setShowDrivePicker(true)}
+                    className="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-sm font-body font-medium text-stone-700 transition-colors flex items-center gap-2"
+                  >
+                    <HardDrive className="w-4 h-4" />
+                    Google Drive
+                  </button>
+                )}
                 <span className="text-xs text-stone-500">
                   {scriptText ? `${scriptText.length} characters` : 'No text entered'}
                 </span>
@@ -408,5 +421,17 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
         </div>
       </div>
     </div>
+
+    {/* Google Drive File Picker */}
+    {showDrivePicker && (
+      <DriveFilePicker
+        onSelect={(content, filename) => {
+          setScriptText(content);
+          setShowDrivePicker(false);
+        }}
+        onClose={() => setShowDrivePicker(false)}
+      />
+    )}
+    </>
   );
 };
