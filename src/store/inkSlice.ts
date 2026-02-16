@@ -443,7 +443,19 @@ function inkAppReducer(state: InkAppState, action: InkAction): InkAppState {
     case 'IMPORT_ISSUE':
       newState.projects = state.projects.map(proj => {
         if (proj.id !== action.projectId) return proj;
-        return { ...proj, issues: [...proj.issues, action.issue] };
+        
+        // Merge characters into project's character list, deduplicating by name
+        const existingCharacters = proj.characters || [];
+        const existingNames = new Set(existingCharacters.map(c => c.name.toLowerCase().trim()));
+        const newCharacters = action.characters.filter(
+          c => !existingNames.has(c.name.toLowerCase().trim())
+        );
+        
+        return { 
+          ...proj, 
+          issues: [...proj.issues, action.issue],
+          characters: [...existingCharacters, ...newCharacters],
+        };
       });
       newState.activeIssueId = action.issue.id;
       newState.activePageId = action.issue.pages[0]?.id || null;

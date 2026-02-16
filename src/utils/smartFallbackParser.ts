@@ -30,7 +30,7 @@ function isSkipWord(name: string): boolean {
 
 export function smartFallbackParse(scriptText: string): ParsedScript {
   const lines = scriptText.split('\n');
-  const pages: ParsedScript['pages'] = [];
+  let pages: ParsedScript['pages'] = [];
   const characters = new Map<string, number>();
 
   let currentPage: ParsedScript['pages'][0] | null = null;
@@ -194,9 +194,34 @@ export function smartFallbackParse(scriptText: string): ParsedScript {
     }
   }
 
-  // If nothing was parsed, create a single panel
-  if (pages.length === 0) {
-    pages.push({
+  // Auto-paginate panels if we have panels but no explicit PAGE markers
+  if (pages.length === 1 && currentPage && currentPage.panels.length > 6) {
+    // We have panels but they're all in one page - split them up
+    const allPanels = currentPage.panels;
+    const PANELS_PER_PAGE = 6;
+    pages = [];
+    
+    for (let i = 0; i < allPanels.length; i += PANELS_PER_PAGE) {
+      const pagePanels = allPanels.slice(i, i + PANELS_PER_PAGE);
+      const pageNumber = Math.floor(i / PANELS_PER_PAGE) + 1;
+      
+      // Re-number panels within each page and update panel_ids
+      const renumberedPanels = pagePanels.map((panel, idx) => ({
+        ...panel,
+        panel_number: idx + 1,
+        panel_id: `p${pageNumber}-panel${idx + 1}`,
+      }));
+      
+      pages.push({
+        page_number: pageNumber,
+        panels: renumberedPanels,
+      });
+    }
+  }
+  
+  // If truly nothing was parsed (no panels at all), create a single panel fallback
+  if (pages.length === 0 || (pages.length === 1 && pages[0].panels.length === 0)) {
+    pages = [{
       page_number: 1,
       panels: [{
         panel_number: 1,
@@ -204,7 +229,7 @@ export function smartFallbackParse(scriptText: string): ParsedScript {
         dialogue: [],
         panel_id: 'p1-panel1',
       }],
-    });
+    }];
   }
 
   return {
