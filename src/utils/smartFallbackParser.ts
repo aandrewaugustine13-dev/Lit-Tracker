@@ -25,11 +25,36 @@ const SKIP_WORDS = new Set([
   'COLD', 'OPEN', 'PROLOGUE', 'EPILOGUE', 'INTERLUDE', 'NEXT', 'ISSUE', 'PREVIOUSLY',
 ]);
 
+// Word to number mapping (for page numbers like "PAGE ONE", "PAGE TWENTY-TWO")
+const WORD_TO_NUM: Record<string, number> = {
+  'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+  'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+  'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
+  'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
+  'twentyone': 21, 'twentytwo': 22, 'twentythree': 23, 'twentyfour': 24,
+  'twentyfive': 25, 'twentysix': 26, 'twentyseven': 27, 'twentyeight': 28,
+  'twentynine': 29, 'thirty': 30,
+};
+
+function parsePageNumber(str: string): number {
+  // Clean the string: lowercase, remove hyphens and spaces
+  const cleaned = str.toLowerCase().trim().replace(/[-\s]+/g, '');
+  
+  // Check word mapping first
+  if (WORD_TO_NUM[cleaned]) {
+    return WORD_TO_NUM[cleaned];
+  }
+  
+  // Try parsing as integer
+  const num = parseInt(str, 10);
+  return isNaN(num) ? 0 : num;
+}
+
 function isSkipWord(name: string): boolean {
   const upper = name.toUpperCase();
   // Check for structural section headers like "ACT ONE", "ACT TWO", etc.
-  if (/^ACT\s+/i.test(upper)) return true;
-  if (/^(COLD\s+OPEN|PROLOGUE|EPILOGUE|INTERLUDE|NEXT\s+ISSUE|PREVIOUSLY)$/i.test(upper)) return true;
+  if (/^ACT\s+/.test(upper)) return true;
+  if (/^(COLD\s+OPEN|PROLOGUE|EPILOGUE|INTERLUDE|NEXT\s+ISSUE|PREVIOUSLY)$/.test(upper)) return true;
   // Check if all words are in SKIP_WORDS
   return name.split(/\s+/).every(w => SKIP_WORDS.has(w.toUpperCase()));
 }
@@ -43,31 +68,6 @@ export function smartFallbackParse(scriptText: string): ParsedScript {
   let currentPanel: ParsedScript['pages'][0]['panels'][0] | null = null;
   let pageNum = 0;
   let panelNum = 0;
-
-  // Word to number mapping (for page numbers like "PAGE ONE", "PAGE TWENTY-TWO")
-  const WORD_TO_NUM: Record<string, number> = {
-    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-    'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
-    'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
-    'twentyone': 21, 'twentytwo': 22, 'twentythree': 23, 'twentyfour': 24,
-    'twentyfive': 25, 'twentysix': 26, 'twentyseven': 27, 'twentyeight': 28,
-    'twentynine': 29, 'thirty': 30,
-  };
-
-  function parsePageNumber(str: string): number {
-    // Clean the string: lowercase, remove hyphens and spaces
-    const cleaned = str.toLowerCase().trim().replace(/[-\s]+/g, '');
-    
-    // Check word mapping first
-    if (WORD_TO_NUM[cleaned]) {
-      return WORD_TO_NUM[cleaned];
-    }
-    
-    // Try parsing as integer
-    const num = parseInt(str, 10);
-    return isNaN(num) ? 0 : num;
-  }
 
   // Patterns
   // Updated to match both numeric (PAGE 1) and word-form (PAGE ONE, PAGE TWENTY-TWO) page numbers

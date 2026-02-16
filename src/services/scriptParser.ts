@@ -135,6 +135,14 @@ const SCREEN_TEXT = /^>\s*(?:\*\*)?(?:ON\s+SCREEN|ON\s+WALL|ON\s+BOARD|LABEL|ON\
 // Thought modifiers
 const THOUGHT_MODIFIERS = ['thought', 'thought caption', 'thinking', 'inner', 'v.o.', 'vo', 'internal'];
 
+// Excluded keywords for character detection (system keywords and structural section headers)
+const EXCLUDED_CHARACTER_KEYWORDS = new Set([
+    'CAPTION', 'SFX', 'ON SCREEN', 'ON WALL', 'LABEL', 'NOTE', 'ARTIST',
+    'COLD OPEN', 'ACT ONE', 'ACT TWO', 'ACT THREE', 'ACT FOUR', 'ACT FIVE',
+    'CLOSE', 'PROLOGUE', 'EPILOGUE', 'INTERLUDE', 'OPEN', 'END',
+    'NEXT ISSUE', 'PREVIOUSLY'
+]);
+
 // Artist note patterns
 const ARTIST_NOTE_PATTERNS = [
     /^\*\(([^)]+)\)\*$/,
@@ -219,16 +227,9 @@ function extractCharacterFromLine(line: string): { character: string; modifier: 
     match = line.match(STANDARD_DIALOGUE);
     if (match) {
         const [, char, mod, txt] = match;
-        // Exclude system keywords and structural section headers
-        const excludedKeywords = [
-            'CAPTION', 'SFX', 'ON SCREEN', 'ON WALL', 'LABEL', 'NOTE', 'ARTIST',
-            'COLD OPEN', 'ACT ONE', 'ACT TWO', 'ACT THREE', 'ACT FOUR', 'ACT FIVE',
-            'CLOSE', 'PROLOGUE', 'EPILOGUE', 'INTERLUDE', 'OPEN', 'END',
-            'NEXT ISSUE', 'PREVIOUSLY'
-        ];
         const charUpper = char.toUpperCase();
         // Check if character name matches any excluded keyword or starts with "ACT "
-        if (excludedKeywords.some(k => charUpper.includes(k)) || /^ACT\s+/i.test(charUpper)) {
+        if (Array.from(EXCLUDED_CHARACTER_KEYWORDS).some(k => charUpper.includes(k)) || /^ACT\s+/.test(charUpper)) {
             return null;
         }
         const type = isThoughtModifier(mod || '') ? 'thought' : isPhoneModifier(mod || '') ? 'phone' : 'dialogue';
