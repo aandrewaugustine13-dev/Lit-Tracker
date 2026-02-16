@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useLitStore } from '../../store';
 import { Issue, Page, Panel, TextElement } from '../../types';
-import { ScrollText, Edit2, Eye, Search } from 'lucide-react';
+import { ScrollText, Eye, Search } from 'lucide-react';
 
 /**
  * Proof Module — Live manuscript view
@@ -12,7 +12,6 @@ import { ScrollText, Edit2, Eye, Search } from 'lucide-react';
 const ProofModule: React.FC = () => {
   const { inkState } = useLitStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [editMode, setEditMode] = useState(false);
 
   // Get active project and issue
   const activeProject = inkState.projects.find(p => p.id === inkState.activeProjectId);
@@ -120,26 +119,14 @@ const ProofModule: React.FC = () => {
             />
           </div>
 
-          {/* Edit Mode Toggle */}
+          {/* Edit Mode Toggle - Placeholder for future bidirectional editing */}
           <button
-            onClick={() => setEditMode(!editMode)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              editMode
-                ? 'bg-proof-500 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
+            disabled={true}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-stone-100 text-stone-400 cursor-not-allowed"
+            title="Edit mode coming soon"
           >
-            {editMode ? (
-              <>
-                <Edit2 size={14} className="inline mr-1.5" />
-                Editing
-              </>
-            ) : (
-              <>
-                <Eye size={14} className="inline mr-1.5" />
-                Reading
-              </>
-            )}
+            <Eye size={14} className="inline mr-1.5" />
+            Reading
           </button>
         </div>
       </header>
@@ -155,7 +142,7 @@ const ProofModule: React.FC = () => {
             <div className="space-y-4">
               {filteredScript.map((line, index) => (
                 <div
-                  key={index}
+                  key={`${line.panelId}-${line.elementId || 'panel'}-${index}`}
                   className={`group ${
                     line.type === 'panel'
                       ? 'bg-card border border-stone-200 rounded-lg p-4'
