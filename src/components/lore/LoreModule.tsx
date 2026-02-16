@@ -27,6 +27,7 @@ const LoreModule: React.FC = () => {
   const [showScriptExtraction, setShowScriptExtraction] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   const activeProject = inkState.projects.find(p => p.id === inkState.activeProjectId);
@@ -62,18 +63,13 @@ const LoreModule: React.FC = () => {
 
   const handleDeleteProject = () => {
     if (!activeProject) return;
-    if (confirm(`Delete project "${activeProject.title}"? This will remove all associated data.`)) {
-      deleteProjectCascade(activeProject.id);
-    }
+    deleteProjectCascade(activeProject.id);
+    setShowDeleteProjectConfirm(false);
   };
 
   const handleDeleteAllProjects = () => {
-    if (confirm('⚠️ Delete ALL projects? This action cannot be undone and will wipe all data including characters, lore, and images.')) {
-      if (confirm('Are you absolutely sure? This will permanently delete everything!')) {
-        deleteAllProjects();
-        setShowDeleteAllConfirm(false);
-      }
-    }
+    deleteAllProjects();
+    setShowDeleteAllConfirm(false);
   };
 
   return (
@@ -107,7 +103,7 @@ const LoreModule: React.FC = () => {
                 New Project
               </button>
               <button
-                onClick={handleDeleteProject}
+                onClick={() => setShowDeleteProjectConfirm(!showDeleteProjectConfirm)}
                 className="text-xs bg-white hover:bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
               >
                 <Trash2 size={12} />
@@ -146,6 +142,37 @@ const LoreModule: React.FC = () => {
                     </div>
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Delete Project Confirmation */}
+          {showDeleteProjectConfirm && activeProject && (
+            <div className="px-6 pb-4">
+              <div className="bg-red-50 rounded-lg border-2 border-red-200 p-4">
+                <div className="flex items-start gap-3">
+                  <Trash2 size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-display text-sm font-bold text-red-900 mb-1">Delete Project</h3>
+                    <p className="text-xs text-red-800 mb-3">
+                      Are you sure you want to delete "{activeProject.title}"? This will remove all associated data including issues, pages, and linked characters. This action cannot be undone.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDeleteProject}
+                        className="text-xs bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider transition-all"
+                      >
+                        Delete Project
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteProjectConfirm(false)}
+                        className="text-xs bg-white hover:bg-stone-100 text-stone-700 px-4 py-2 rounded-lg border border-stone-200 font-bold uppercase tracking-wider transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
