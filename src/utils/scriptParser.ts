@@ -56,6 +56,9 @@ export const DEFAULT_MODELS: Record<string, string> = {
   groq: 'llama-3.3-70b-versatile',
 };
 
+// Providers that work directly from browser (no CORS issues)
+export const BROWSER_COMPATIBLE_PROVIDERS = ['gemini', 'anthropic'] as const;
+
 export const NORMALIZATION_PROMPT = `You are an editor and English teacher analyzing a story. Your task is to read and comprehend the narrative, then extract world-building elements from your understanding.
 
 ⚠️ **CRITICAL REQUIREMENT**: You MUST return entities from MULTIPLE categories — not just locations. A typical script will contain characters, factions, events, concepts, artifacts, and more. Returning only locations is unacceptable and indicates you haven't fully analyzed the narrative.
@@ -598,12 +601,9 @@ export async function parseScriptWithLLM(
     // Use the signal from either the provided controller or our timeout controller
     const effectiveSignal = signal || abortController.signal;
     let responseText: string;
-
-    // Providers that work directly from browser (no CORS issues)
-    const browserCompatibleProviders: string[] = ['gemini', 'anthropic'];
     
     // Route CORS-blocked providers through proxy
-    if (!browserCompatibleProviders.includes(provider)) {
+    if (!BROWSER_COMPATIBLE_PROVIDERS.includes(provider as any)) {
       // TypeScript knows these are the proxy-compatible providers
       responseText = await callViaProxy(
         NORMALIZATION_PROMPT, 
