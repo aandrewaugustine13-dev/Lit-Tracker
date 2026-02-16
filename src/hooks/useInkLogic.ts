@@ -244,6 +244,35 @@ export function useInkLogic() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [inkCanUndo, inkCanRedo, activePage, selectedPanelId, showReadThrough, dispatch]);
 
+  // Auto-import from Lore Tracker when storyboard is empty and parsed script exists
+  const hasAutoImportedRef = useRef(false);
+  useEffect(() => {
+    // Only auto-import once per session
+    if (hasAutoImportedRef.current) return;
+    
+    // Only auto-import if we have an active project
+    if (!activeProject) return;
+    
+    // Check if storyboard is empty (no issues or all issues have no pages)
+    const storyboardIsEmpty = !activeProject.issues.length || 
+      activeProject.issues.every(issue => issue.pages.length === 0);
+    
+    if (!storyboardIsEmpty) return;
+    
+    // Check if we have parsed script data in the store
+    const parsedScriptResult = useLitStore.getState().parsedScriptResult;
+    if (!parsedScriptResult) return;
+    
+    // Auto-import the script
+    console.log('[Auto-Import] Automatically importing script from Lore Tracker to storyboard');
+    hasAutoImportedRef.current = true;
+    
+    // Small delay to ensure the UI is ready
+    setTimeout(() => {
+      handleImportFromStore();
+    }, 100);
+  }, [activeProject]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );

@@ -14,7 +14,6 @@ interface ScriptPanelProps {
     state: AppState;
     dispatch: React.Dispatch<Action>;
     onOpenProjects: () => void;
-    onImportFromStore: () => void;
     activeProject: Project | undefined;
 }
 
@@ -31,8 +30,7 @@ export const STYLE_GROUPS: Record<string, string[]> = {
 export const ScriptPanel: React.FC<ScriptPanelProps> = ({ 
     state, 
     dispatch, 
-    onOpenProjects, 
-    onImportFromStore,
+    onOpenProjects,
     activeProject 
 }) => {
     const activePage = activeProject?.issues
@@ -383,15 +381,8 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
 
             <div className="p-3 bg-card rounded border border-stone-200 shadow-sm flex flex-col gap-2">
                 <p className="font-display text-lg text-ink tracking-wide truncate">{activeProject?.title}</p>
-                <button
-                    onClick={onImportFromStore}
-                    className="w-full mt-2 py-2 text-[10px] font-body text-ink border border-stone-200 rounded-lg hover:bg-stone-100 uppercase tracking-widest transition-colors"
-                    title="Import script from Lore Tracker (parses script in Lore Tracker first)"
-                >
-                    📜 Import from Lore Tracker
-                </button>
 
-                <div className="flex flex-col gap-2 mt-3">
+                <div className="flex flex-col gap-2 mt-2">
                     <p className="text-[9px] font-body text-stone-600 uppercase tracking-widest">Image Provider</p>
                     <div className="grid grid-cols-2 gap-1.5">
                         <button

@@ -30,7 +30,6 @@ const InkModule: React.FC = () => {
         state={logic.state as any}
         dispatch={logic.dispatch as any}
         onOpenProjects={() => logic.setProjectsOpen(true)}
-        onImportFromStore={logic.handleImportFromStore}
       />
 
       <TransformWrapper
