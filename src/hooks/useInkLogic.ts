@@ -640,9 +640,11 @@ export function useInkLogic() {
     // Only auto-import if we have an active project
     if (!activeProject) return;
     
-    // Check if storyboard is empty (no issues or all issues have no pages)
+    // Check if storyboard is empty (no issues OR all issues have only empty pages with no panels)
     const storyboardIsEmpty = !activeProject.issues.length || 
-      activeProject.issues.every(issue => issue.pages.length === 0);
+      activeProject.issues.every(issue => 
+        !issue.pages.length || issue.pages.every(page => page.panels.length === 0)
+      );
     
     if (!storyboardIsEmpty) return;
     
