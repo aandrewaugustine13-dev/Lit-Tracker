@@ -20,7 +20,7 @@ import { useLitStore } from '../store';
 import { genId } from '../utils/helpers';
 import { getImage, saveImage } from '../services/imageStorage';
 import { ART_STYLES, ASPECT_CONFIGS, GENERATION_DELAY_MS } from '../constants';
-import { ParseResult } from '../services/scriptParser';
+import { ParseResult, parseScript } from '../services/scriptParser';
 import { ParsedScript } from '../utils/scriptParser';
 import { useAuth } from '../context/AuthContext';
 import { useCloudSync } from './useCloudSync';
@@ -597,26 +597,12 @@ export function useInkLogic() {
 
   // Import script from store (parsed via Lore Tracker)
   const handleImportFromStore = () => {
-    const parsedScriptResult = useLitStore.getState().parsedScriptResult;
     const rawScriptText = useLitStore.getState().rawScriptText;
     
-    if (!parsedScriptResult) {
-      // Check if rawScriptText exists to provide more specific guidance
-      if (rawScriptText) {
-        alert(
-          'Script was parsed but the structured result could not be stored. This may happen if:\n\n' +
-          '1. There was an error storing the parsed script\n' +
-          '2. The browser storage is full or unavailable\n\n' +
-          'To import into the storyboard, please:\n' +
-          '• Go to the Lore Tracker\n' +
-          '• Parse the script again using "Extract from Script"\n' +
-          '• Try clearing browser storage if the issue persists'
-        );
-      } else {
-        alert(
-          'No parsed script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".'
-        );
-      }
+    if (!rawScriptText) {
+      alert(
+        'No script found. Please go to the Lore Tracker and parse a script first using "Extract from Script".'
+      );
       return;
     }
     
@@ -625,11 +611,11 @@ export function useInkLogic() {
       return;
     }
     
-    // Convert ParsedScript to ParseResult format
-    const parseResult = convertParsedScriptToParseResult(parsedScriptResult);
+    // Use rules-based parser directly for reliable storyboard structure
+    const parseResult = parseScript(rawScriptText);
     
     // Use existing handleScriptImport logic
-    handleScriptImport(parseResult, rawScriptText || '');
+    handleScriptImport(parseResult, rawScriptText);
   };
 
   // Auto-import from Lore Tracker when storyboard is empty and parsed script exists
