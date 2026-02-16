@@ -635,9 +635,9 @@ export function useInkLogic() {
     
     if (!storyboardIsEmpty) return;
     
-    // Check if we have parsed script data in the store
-    const parsedScriptResult = useLitStore.getState().parsedScriptResult;
-    if (!parsedScriptResult) return;
+    // Check if we have raw script text in the store
+    const rawScriptText = useLitStore.getState().rawScriptText;
+    if (!rawScriptText) return;
     
     // Auto-import the script
     console.log('[Auto-Import] Automatically importing script from Lore Tracker to storyboard');
