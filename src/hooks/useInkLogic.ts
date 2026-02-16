@@ -164,6 +164,7 @@ export function useInkLogic() {
   const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
   const [copiedPanelSettings, setCopiedPanelSettings] = useState<{ aspectRatio: AspectRatio; characterIds: string[] } | null>(null);
   const [showCharacterBank, setShowCharacterBank] = useState(false);
+  const [showScriptImport, setShowScriptImport] = useState(false);
   const [activeTab, setActiveTab] = useState<'canvas' | 'guide'>('canvas');
   const [showSplitView, setShowSplitView] = useState(false);
   
@@ -833,6 +834,8 @@ export function useInkLogic() {
     setCopiedPanelSettings,
     showCharacterBank,
     setShowCharacterBank,
+    showScriptImport,
+    setShowScriptImport,
     activeTab,
     setActiveTab,
     showSplitView,
