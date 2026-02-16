@@ -104,7 +104,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                                                 <span className={`w-3 h-3 rounded border flex-shrink-0 ${
                                                     isSelected ? 'bg-ink border-stone-400' : 'border-stone-300'
                                                 }`} />
-                                                <span className={`font-bold ${isSelected ? 'text-ink' : 'text-ink'}`}>
+                                                <span className="text-ink font-bold">
                                                     {char.name}
                                                 </span>
                                             </div>
