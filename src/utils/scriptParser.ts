@@ -53,7 +53,11 @@ export const DEFAULT_MODELS: Record<string, string> = {
   openai: 'gpt-4o',
   grok: 'grok-2-latest',
   deepseek: 'deepseek-chat',
+  groq: 'llama-3.3-70b-versatile',
 };
+
+// Providers that work directly from browser (no CORS issues)
+export const BROWSER_COMPATIBLE_PROVIDERS = ['gemini', 'anthropic'] as const;
 
 export const NORMALIZATION_PROMPT = `You are an editor and English teacher analyzing a story. Your task is to read and comprehend the narrative, then extract world-building elements from your understanding.
 
@@ -530,11 +534,49 @@ export function validateAndClean(data: any): ParsedScript {
   return validated;
 }
 
+// ============= PROXY FUNCTION =============
+
+async function callViaProxy(
+  prompt: string,
+  script: string,
+  provider: 'openai' | 'grok' | 'deepseek' | 'groq',
+  apiKey: string,
+  model: string,
+  signal?: AbortSignal
+): Promise<string> {
+  const response = await fetch('/api/llm-proxy', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      provider,
+      apiKey,
+      model,
+      prompt,
+      script,
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(errorData.error || `Proxy error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  
+  return data.text;
+}
+
 // ============= MAIN ENTRY POINT =============
 
 export async function parseScriptWithLLM(
   rawScript: string,
-  provider: 'openai' | 'anthropic' | 'gemini' | 'grok' | 'deepseek',
+  provider: 'openai' | 'anthropic' | 'gemini' | 'grok' | 'deepseek' | 'groq',
   apiKey: string,
   model?: string,
   signal?: AbortSignal
@@ -559,25 +601,30 @@ export async function parseScriptWithLLM(
     // Use the signal from either the provided controller or our timeout controller
     const effectiveSignal = signal || abortController.signal;
     let responseText: string;
-
-    switch (provider) {
-      case 'openai':
-        responseText = await callOpenAI(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
-        break;
-      case 'anthropic':
-        responseText = await callAnthropic(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
-        break;
-      case 'gemini':
-        responseText = await callGemini(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
-        break;
-      case 'grok':
-        responseText = await callGrok(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
-        break;
-      case 'deepseek':
-        responseText = await callDeepSeek(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
-        break;
-      default:
-        throw new Error(`Unsupported provider: ${provider}`);
+    
+    // Route CORS-blocked providers through proxy
+    if (!BROWSER_COMPATIBLE_PROVIDERS.includes(provider as any)) {
+      // TypeScript knows these are the proxy-compatible providers
+      responseText = await callViaProxy(
+        NORMALIZATION_PROMPT, 
+        rawScript, 
+        provider as 'openai' | 'grok' | 'deepseek' | 'groq', 
+        apiKey, 
+        selectedModel, 
+        effectiveSignal
+      );
+    } else {
+      // Direct calls for browser-compatible providers
+      switch (provider) {
+        case 'anthropic':
+          responseText = await callAnthropic(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
+          break;
+        case 'gemini':
+          responseText = await callGemini(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
+          break;
+        default:
+          throw new Error(`Unsupported provider: ${provider}`);
+      }
     }
 
     clearTimeout(timeoutId);

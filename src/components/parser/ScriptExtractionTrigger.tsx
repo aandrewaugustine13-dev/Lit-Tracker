@@ -14,7 +14,7 @@ interface ScriptExtractionTriggerProps {
 }
 
 type ParseMode = 'llm' | 'deterministic';
-type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
+type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek' | 'groq';
 
 // Duration to display warning message before auto-closing modal (in milliseconds)
 const WARNING_DISPLAY_DURATION_MS = 3000;
@@ -22,12 +22,13 @@ const WARNING_DISPLAY_DURATION_MS = 3000;
 const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string; browserWorks: boolean }> = {
   anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys', browserWorks: true },
   gemini:    { label: 'Gemini', placeholder: 'AIza...', helpUrl: 'https://aistudio.google.com/apikey', browserWorks: true },
+  groq:      { label: 'Groq', placeholder: 'gsk_...', helpUrl: 'https://console.groq.com/keys', browserWorks: false },
   openai:    { label: 'OpenAI', placeholder: 'sk-...', helpUrl: 'https://platform.openai.com/api-keys', browserWorks: false },
   grok:      { label: 'Grok', placeholder: 'xai-...', helpUrl: 'https://console.x.ai', browserWorks: false },
   deepseek:  { label: 'DeepSeek', placeholder: 'sk-...', helpUrl: 'https://platform.deepseek.com/api_keys', browserWorks: false },
 };
 
-const PROVIDERS: ProviderOption[] = ['anthropic', 'gemini', 'openai', 'grok', 'deepseek'];
+const PROVIDERS: ProviderOption[] = ['anthropic', 'gemini', 'groq', 'openai', 'grok', 'deepseek'];
 
 export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = ({ onClose }) => {
   const [scriptText, setScriptText] = useState('');
@@ -67,16 +68,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
 
       // ═══ STEP 1: AI FORMATTING (if LLM mode is enabled) ═══
       if (enableLLM && apiKey) {
-        // Check CORS compatibility before attempting fetch
-        if (!meta.browserWorks) {
-          setErrorMessage(
-            `⚠️ ${meta.label} blocks direct browser requests (CORS). ` +
-            `Please switch to Gemini or Claude, or use Pattern Only mode.`
-          );
-          setIsLoading(false);
-          setParserStatus('idle');
-          return;
-        }
+        // All providers now work - browser-compatible ones go direct, others via proxy
         try {
           console.log('[ScriptExtraction] Starting AI formatting and normalization...');
           parsedScript = await parseScriptWithLLM(
@@ -355,7 +347,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
                   <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <span className="text-amber-600 flex-shrink-0 mt-0.5 text-sm">⚠️</span>
                     <p className="text-xs text-amber-800">
-                      {meta.label} blocks direct browser requests (CORS). Use <strong>Gemini</strong> or <strong>Claude</strong> instead.
+                      {meta.label} routes through a server proxy to avoid CORS restrictions.
                     </p>
                   </div>
                 )}
