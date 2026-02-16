@@ -6,7 +6,7 @@
 
 // ─── Navigation ─────────────────────────────────────────────────────────────
 
-export type ModuleId = 'ink' | 'characters' | 'lore';
+export type ModuleId = 'ink' | 'characters' | 'lore' | 'proof';
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 
