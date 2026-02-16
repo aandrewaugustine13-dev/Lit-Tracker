@@ -5,11 +5,13 @@ import NewProjectModal from '../ink/NewProjectModal';
 import { InkProject } from '../../types';
 
 const Gatekeeper: React.FC = () => {
-  const { inkState, inkDispatch } = useLitStore();
+  const { inkState, inkDispatch, setActiveModule } = useLitStore();
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
 
   const handleSelectProject = (projectId: string) => {
     inkDispatch({ type: 'SET_ACTIVE_PROJECT', id: projectId });
+    // Set active module to Lore Tracker after selecting a project
+    setActiveModule('lore');
   };
 
   const getProjectStats = (project: InkProject) => {

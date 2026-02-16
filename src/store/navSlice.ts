@@ -14,7 +14,7 @@ export interface NavSlice {
 }
 
 export const createNavSlice: StateCreator<NavSlice, [], [], NavSlice> = (set) => ({
-  activeModule: 'characters',
+  activeModule: 'lore',
   isCommandPaletteOpen: false,
   syncStatus: 'idle',
   projectName: 'Untitled Project',

@@ -32,9 +32,9 @@ function AppContent() {
     if (!inkState.activeProjectId) return;
 
     const handler = (e: KeyboardEvent) => {
-      if (e.altKey && e.key === '1') useLitStore.getState().setActiveModule('ink');
-      if (e.altKey && e.key === '2') useLitStore.getState().setActiveModule('characters');
-      if (e.altKey && e.key === '3') useLitStore.getState().setActiveModule('lore');
+      if (e.altKey && e.key === '1') useLitStore.getState().setActiveModule('lore');
+      if (e.altKey && e.key === '2') useLitStore.getState().setActiveModule('ink');
+      if (e.altKey && e.key === '3') useLitStore.getState().setActiveModule('characters');
       // Escape closes detail panel
       if (e.key === 'Escape' && useLitStore.getState().detailTarget) {
         useLitStore.getState().closeDetail();
@@ -58,7 +58,7 @@ function AppContent() {
       case 'ink': return <InkModule />;
       case 'characters': return <CharactersModule />;
       case 'lore': return <LoreModule />;
-      default: return <CharactersModule />;
+      default: return <LoreModule />;
     }
   };
 
