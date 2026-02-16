@@ -155,7 +155,6 @@ export function useInkLogic() {
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [showScriptImport, setShowScriptImport] = useState(false);
   const [zoomEnabled, setZoomEnabled] = useState(false);
   const [showGutters, setShowGutters] = useState(false);
   const [showSpreadView, setShowSpreadView] = useState(false);
@@ -816,8 +815,6 @@ export function useInkLogic() {
     showExportMenu,
     setShowExportMenu,
     activeId,
-    showScriptImport,
-    setShowScriptImport,
     zoomEnabled,
     setZoomEnabled,
     showGutters,

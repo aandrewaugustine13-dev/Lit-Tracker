@@ -14,7 +14,7 @@ interface ScriptPanelProps {
     state: AppState;
     dispatch: React.Dispatch<Action>;
     onOpenProjects: () => void;
-    onOpenScriptImport: () => void;
+    onImportFromStore: () => void;
     activeProject: Project | undefined;
 }
 
@@ -32,7 +32,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
     state, 
     dispatch, 
     onOpenProjects, 
-    onOpenScriptImport,
+    onImportFromStore,
     activeProject 
 }) => {
     const activePage = activeProject?.issues
@@ -384,11 +384,11 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
             <div className="p-3 bg-card rounded border border-stone-200 shadow-sm flex flex-col gap-2">
                 <p className="font-display text-lg text-ink tracking-wide truncate">{activeProject?.title}</p>
                 <button
-                    onClick={onOpenScriptImport}
+                    onClick={onImportFromStore}
                     className="w-full mt-2 py-2 text-[10px] font-body text-ink border border-stone-200 rounded-lg hover:bg-stone-100 uppercase tracking-widest transition-colors"
-                    title="Import a script into the storyboard"
+                    title="Import script from Lore Tracker (parses script in Lore Tracker first)"
                 >
-                    📜 Import Script
+                    📜 Import from Lore Tracker
                 </button>
 
                 <div className="flex flex-col gap-2 mt-3">
