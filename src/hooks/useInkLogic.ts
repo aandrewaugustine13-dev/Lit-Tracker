@@ -60,9 +60,9 @@ function convertParsedScriptToParseResult(parsedScript: ParsedScript): ParseResu
     })),
     characters: parsedScript.characters.map(char => ({
       name: char.name,
-      description: char.description || `Character with ${char.panel_count} panel appearances`,
+      description: char.description || `Character appearing in ${char.panel_count} panel${char.panel_count !== 1 ? 's' : ''}`,
       lineCount: char.panel_count,
-      firstAppearance: char.description || `Character with ${char.panel_count} panel appearances`,
+      firstAppearance: char.description || undefined,
     })),
     errors: [],
     warnings: [],
