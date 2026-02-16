@@ -286,7 +286,7 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
               </button>
               <button
                 onClick={handleCommit}
-                className="px-5 py-2.5 text-sm font-medium text-white bg-ember-500 rounded-lg hover:bg-ember-600 transition-colors flex items-center gap-2"
+                className="px-5 py-2.5 text-sm font-medium text-white bg-ink rounded-lg hover:bg-ember-600 transition-colors flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
                 Commit to Lore Tracker

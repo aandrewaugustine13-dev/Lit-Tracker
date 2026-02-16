@@ -149,7 +149,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                                 newEdited.delete(section.panelId);
                                 setEditedSections(newEdited);
                             }}
-                            className="mt-2 px-3 py-1 bg-ember-500 hover:bg-ember-600 text-white text-xs font-bold rounded transition-all"
+                            className="mt-2 px-3 py-1 bg-ink hover:bg-stone-800 text-white text-xs font-bold rounded transition-all"
                         >
                             Sync →
                         </button>
@@ -192,7 +192,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                         </div>
                         <button
                             onClick={() => setShowReparseModal(true)}
-                            className="px-3 py-2 border border-stone-200 hover:border-ember-500 hover:bg-ember-50 text-stone-700 hover:text-ember-600 rounded-lg transition-all flex items-center gap-2 text-xs font-bold uppercase"
+                            className="px-3 py-2 border border-stone-200 hover:border-stone-400 hover:bg-stone-50 text-stone-700 hover:text-ink rounded transition-all flex items-center gap-2 text-xs font-bold uppercase"
                             title="Re-parse script"
                         >
                             <RefreshCw size={14} />
@@ -208,7 +208,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                 </div>
             </Panel>
             
-            <Separator className="w-1 bg-stone-200 hover:bg-ember-500 transition-colors cursor-col-resize" />
+            <Separator className="w-1 bg-stone-200 hover:bg-ink transition-colors cursor-col-resize" />
             
             <Panel defaultSize={60} minSize={20}>
                 <div className="h-full bg-card">

@@ -122,7 +122,7 @@ const LoreModule: React.FC = () => {
           {/* Project Selector Dropdown */}
           {showProjectSelector && inkState.projects.length > 1 && (
             <div className="px-6 pb-4">
-              <div className="bg-white rounded-lg border border-lore-200 shadow-lg p-2 max-h-64 overflow-y-auto">
+              <div className="bg-white rounded-lg border border-lore-200 p-2 max-h-64 overflow-y-auto">
                 {inkState.projects.map(proj => (
                   <button
                     key={proj.id}
@@ -311,7 +311,7 @@ const LoreModule: React.FC = () => {
             </p>
             <button
               onClick={handleCreate}
-              className="bg-lore-500 hover:bg-lore-400 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm shadow-lg shadow-lore-500/20 active:scale-95"
+              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm "
             >
               Create First Entry
             </button>

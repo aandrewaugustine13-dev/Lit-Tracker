@@ -179,7 +179,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                     <ul className="space-y-1 mb-3">
                         {config.tips.map((tip, i) => (
                             <li key={i} className="text-[9px] flex items-start gap-1.5 text-left text-stone-600">
-                                <span className="mt-0.5 w-1 h-1 rounded-full flex-shrink-0 bg-ember-500/50" />
+                                <span className="mt-0.5 w-1 h-1 rounded-full flex-shrink-0 bg-ink/50" />
                                 {tip}
                             </li>
                         ))}
@@ -188,7 +188,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                 {onAction && (
                     <button
                         onClick={onAction}
-                        className="mt-1 px-4 py-1.5 text-[9px] font-body uppercase tracking-widest rounded-lg border transition-all hover:scale-105 active:scale-95 bg-ember-500/10 text-ember-500 border-ember-500/30 hover:bg-ember-500/20"
+                        className="mt-1 px-4 py-1.5 text-[9px] font-body uppercase tracking-widest rounded border transition-all hover:scale-105 bg-ink/10 text-ember-500 border-ember-500/30 hover:bg-ink/20"
                     >
                         {actionLabel || config.actionDefault || 'Get Started'}
                     </button>
@@ -220,7 +220,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                     <ul className="space-y-2 text-left">
                         {config.tips.map((tip, i) => (
                             <li key={i} className="text-xs flex items-start gap-2 text-stone-600">
-                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-ember-500/60" />
+                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-ink/60" />
                                 {tip}
                             </li>
                         ))}
@@ -231,7 +231,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             {onAction && (
                 <button
                     onClick={onAction}
-                    className="px-8 py-3 font-display text-lg tracking-widest uppercase rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 bg-ink text-paper hover:bg-stone-800"
+                    className="px-8 py-3 font-display text-lg tracking-widest uppercase rounded-full transition-all hover:scale-105 bg-ink text-paper hover:bg-stone-800"
                 >
                     {actionLabel || config.actionDefault || 'Get Started'}
                 </button>

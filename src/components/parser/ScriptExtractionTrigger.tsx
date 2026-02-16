@@ -210,7 +210,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
                 onClick={() => setParseMode('llm')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body font-semibold text-sm transition-colors ${
                   parseMode === 'llm'
-                    ? 'bg-ember-500 text-white'
+                    ? 'bg-ink text-white'
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                 }`}
               >
@@ -221,7 +221,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
                 onClick={() => setParseMode('deterministic')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body font-semibold text-sm transition-colors ${
                   parseMode === 'deterministic'
-                    ? 'bg-ember-500 text-white'
+                    ? 'bg-ink text-white'
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                 }`}
               >
@@ -308,7 +308,7 @@ ELI
   I've been searching for years.
 
 Panel 2 Close-up of the ANCIENT SWORD on the table."
-                className="w-full h-64 px-4 py-3 border border-stone-200 rounded-lg font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20 resize-none"
+                className="w-full h-64 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20 resize-none"
               />
               <div className="mt-2 flex items-center gap-2">
                 <label className="cursor-pointer px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-sm font-body font-medium text-stone-700 transition-colors flex items-center gap-2">
@@ -347,7 +347,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
                       onClick={() => setProvider(p)}
                       className={`px-3 py-1.5 rounded-full text-xs font-body font-semibold transition-colors ${
                         provider === p
-                          ? 'bg-ember-500 text-white'
+                          ? 'bg-ink text-white'
                           : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                       }`}
                     >
@@ -374,7 +374,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder={meta.placeholder}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20"
+                    className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20"
                   />
                   <p className="text-xs text-stone-500 mt-1">
                     Get your API key at{' '}
@@ -404,7 +404,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
           <button
             onClick={handleParse}
             disabled={isLoading || !scriptText.trim()}
-            className="px-6 py-2 font-body font-semibold text-white bg-ember-500 hover:bg-ember-600 disabled:bg-stone-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
+            className="px-6 py-2 font-body font-semibold text-white bg-ink hover:bg-stone-800 disabled:bg-stone-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
           >
             {isLoading ? (
               <>

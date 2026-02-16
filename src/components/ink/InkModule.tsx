@@ -244,7 +244,7 @@ const InkModule: React.FC = () => {
         <div className="fixed right-0 top-0 h-full w-[400px] bg-card border-l border-stone-200 shadow-2xl z-[500] flex flex-col animate-slide-in">
           <div className="flex items-center justify-between p-4 border-b border-stone-200">
             <h3 className="font-body text-xs uppercase tracking-widest text-stone-600">Script Reference</h3>
-            <button onClick={() => logic.setShowScriptPanel(false)} className="p-2 hover:bg-stone-100 rounded-lg text-stone-500 hover:text-ink transition-colors">
+            <button onClick={() => logic.setShowScriptPanel(false)} className="p-2 hover:bg-stone-100 rounded text-stone-500 hover:text-ink transition-colors">
               <X size={18} />
             </button>
           </div>

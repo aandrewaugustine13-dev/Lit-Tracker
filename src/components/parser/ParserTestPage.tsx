@@ -133,7 +133,7 @@ export function ParserTestPage() {
             <button
               onClick={handleParse}
               disabled={isParsing}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-ember-500 rounded-lg hover:bg-ember-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-medium text-white bg-ink rounded-lg hover:bg-ember-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isParsing ? (
                 <>

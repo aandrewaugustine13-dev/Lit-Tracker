@@ -307,14 +307,14 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
       {/* Progress bar */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-stone-200 z-[10000]">
         <div
-          className="h-full bg-ember-500 transition-all duration-500 ease-out"
+          className="h-full bg-ink transition-all duration-500 ease-out"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
       {/* Control bar (auto-hide) */}
       <div
-        className={`absolute bottom-8 left-1/2 -translate-x-1/2 bg-card rounded-2xl px-6 py-4 flex items-center gap-5 shadow-2xl border border-stone-200 z-[10001] transition-opacity duration-300 ${
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 bg-card rounded-lg px-6 py-4 flex items-center gap-5 shadow-2xl border border-stone-200 z-[10001] transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -326,7 +326,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
             navigatePrev();
           }}
           disabled={currentIndex === 0}
-          className="p-2 hover:bg-ember-500 hover:text-paper rounded-lg text-ink transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
+          className="p-2 hover:bg-ink hover:text-paper rounded-lg text-ink transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
           title="Previous panel (←)"
         >
           <ChevronLeft size={22} />
@@ -350,7 +350,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
             navigateNext();
           }}
           disabled={currentIndex >= totalPanelCount - 1}
-          className="p-2 hover:bg-ember-500 hover:text-paper rounded-lg text-ink transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
+          className="p-2 hover:bg-ink hover:text-paper rounded-lg text-ink transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
           title="Next panel (→)"
         >
           <ChevronRight size={22} />
@@ -367,7 +367,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
           }}
           className={`p-2 rounded-lg transition-colors ${
             autoAdvance
-              ? 'bg-ember-500 text-paper hover:bg-ember-400'
+              ? 'bg-ink text-paper hover:bg-ember-400'
               : 'text-ink hover:bg-stone-100 hover:text-ink'
           }`}
           title={autoAdvance ? 'Pause auto-advance (Space)' : 'Play auto-advance (Space)'}
@@ -404,7 +404,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
           }}
           className={`px-3 py-1.5 rounded-lg font-body text-xs transition-colors ${
             showTextOverlay
-              ? 'bg-ember-500 text-paper hover:bg-ember-400'
+              ? 'bg-ink text-paper hover:bg-ember-400'
               : 'text-stone-600 hover:bg-stone-100 hover:text-ink'
           }`}
           title="Toggle script text overlay (T)"
@@ -465,7 +465,7 @@ function PresentPanel({
 
   if (loading) {
     return (
-      <div className="w-[800px] h-[500px] bg-card rounded-2xl flex items-center justify-center border border-stone-200">
+      <div className="w-[800px] h-[500px] bg-card rounded-lg flex items-center justify-center border border-stone-200">
         <div className="w-8 h-8 border-2 border-ember-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -473,7 +473,7 @@ function PresentPanel({
 
   if (!image) {
     return (
-      <div className="w-[800px] h-[500px] bg-card rounded-2xl flex items-center justify-center p-8 border border-stone-200">
+      <div className="w-[800px] h-[500px] bg-card rounded-lg flex items-center justify-center p-8 border border-stone-200">
         <p className="text-stone-600 font-body text-sm text-center max-w-[600px]">
           {prompt || 'No image generated'}
         </p>
@@ -485,7 +485,7 @@ function PresentPanel({
     <img
       src={image}
       alt=""
-      className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl"
+      className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
       draggable={false}
     />
   );

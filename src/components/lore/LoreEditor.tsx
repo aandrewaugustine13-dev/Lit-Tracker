@@ -79,7 +79,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
   };
 
   const config = LORE_TYPE_CONFIG[formData.type as LoreType];
-  const InputCls = "w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-sm text-ink focus:outline-none focus:border-stone-400 transition-colors";
+  const InputCls = "w-full bg-white border border-stone-200 rounded px-3.5 py-2 text-sm text-ink focus:outline-none focus:border-stone-400 transition-colors";
   const LabelCls = "text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-1.5 block";
 
   return (
@@ -256,7 +256,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
         {/* Footer */}
         <div className="px-6 py-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3 flex-shrink-0">
           <button onClick={onClose} className="px-5 py-2 text-stone-500 hover:text-ink transition-colors text-sm font-medium">Cancel</button>
-          <button onClick={handleSave} className="px-6 py-2 bg-lore-500 hover:bg-lore-400 text-white rounded-lg flex items-center gap-2 font-bold transition-all shadow-lg shadow-lore-500/10 text-sm">
+          <button onClick={handleSave} className="px-6 py-2 bg-lore-500 hover:bg-lore-400 text-white rounded-lg flex items-center gap-2 font-bold transition-all shadow-lore-500/10 text-sm">
             <Save size={15} /> Save Entry
           </button>
         </div>
