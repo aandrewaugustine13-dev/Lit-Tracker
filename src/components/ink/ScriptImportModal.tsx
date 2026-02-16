@@ -156,7 +156,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-stone-200">
+      <div className="bg-card rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-stone-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
           <h2 className="font-display text-xl text-ink">Import Script to Storyboard</h2>

@@ -189,7 +189,7 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ element, panelId, dispatch, t
         </div>
 
         {isFocused && (
-            <div className="text-control-panel absolute -top-16 left-1/2 -translate-x-1/2 bg-card border-2 border-stone-200 rounded-2xl p-2 flex items-center gap-2 shadow-2xl z-[300]">
+            <div className="text-control-panel absolute -top-16 left-1/2 -translate-x-1/2 bg-card border-2 border-stone-200 rounded-lg p-2 flex items-center gap-2 shadow-2xl z-[300]">
             <div className="flex flex-col gap-1">
             <div className="flex items-center bg-paper px-2 py-1 rounded border border-stone-200 gap-2">
             <button

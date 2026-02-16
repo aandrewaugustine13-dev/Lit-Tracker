@@ -105,21 +105,21 @@ export const DriveFilePicker: React.FC<DriveFilePickerProps> = ({ onSelect, onCl
   if (!drive.configured) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-        <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md border border-stone-200 p-8">
+        <div className="bg-card rounded-lg shadow-2xl w-full max-w-md border border-stone-200 p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-xl text-ink">Google Drive</h2>
-            <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-lg transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded transition-colors">
               <X className="w-5 h-5 text-stone-500" />
             </button>
           </div>
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-lg bg-stone-100 flex items-center justify-center mx-auto">
               <HardDrive className="w-8 h-8 text-stone-400" />
             </div>
             <p className="text-sm text-stone-600 leading-relaxed">
               Google Drive integration needs a Client ID to work. Add this to your <code className="text-xs bg-stone-100 px-1.5 py-0.5 rounded">.env</code> file:
             </p>
-            <pre className="text-xs bg-stone-50 border border-stone-200 rounded-lg p-3 text-left text-stone-700 overflow-x-auto">
+            <pre className="text-xs bg-stone-50 border border-stone-200 rounded p-3 text-left text-stone-700 overflow-x-auto">
               VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
             </pre>
             <p className="text-xs text-stone-500">
@@ -135,10 +135,10 @@ export const DriveFilePicker: React.FC<DriveFilePickerProps> = ({ onSelect, onCl
   if (!drive.authenticated && !drive.loading && drive.error) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-        <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md border border-stone-200 p-8">
+        <div className="bg-card rounded-lg shadow-2xl w-full max-w-md border border-stone-200 p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-xl text-ink">Google Drive</h2>
-            <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-lg transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded transition-colors">
               <X className="w-5 h-5 text-stone-500" />
             </button>
           </div>
@@ -146,7 +146,7 @@ export const DriveFilePicker: React.FC<DriveFilePickerProps> = ({ onSelect, onCl
             <p className="text-sm text-red-600">{drive.error}</p>
             <button
               onClick={drive.connect}
-              className="px-6 py-2.5 bg-ember-500 hover:bg-ember-600 text-white rounded-lg font-body font-semibold text-sm transition-colors"
+              className="px-6 py-2.5 bg-ink text-white hover:bg-stone-800 rounded font-body font-semibold text-sm transition-colors"
             >
               Try Again
             </button>
@@ -159,14 +159,14 @@ export const DriveFilePicker: React.FC<DriveFilePickerProps> = ({ onSelect, onCl
   // ─── File picker ───────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col border border-stone-200">
+      <div className="bg-card rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col border border-stone-200">
         {/* Header */}
         <div className="px-5 py-4 border-b border-stone-200 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <HardDrive className="w-5 h-5 text-ember-500" />
             <h2 className="font-display text-lg text-ink">Google Drive</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded transition-colors">
             <X className="w-5 h-5 text-stone-500" />
           </button>
         </div>

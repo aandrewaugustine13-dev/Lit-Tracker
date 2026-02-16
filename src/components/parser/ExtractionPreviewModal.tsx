@@ -89,7 +89,7 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-card border border-stone-200 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-card border border-stone-200 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="border-b border-stone-200 p-6">
           <div className="flex items-start justify-between">

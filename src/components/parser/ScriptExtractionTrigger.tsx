@@ -185,7 +185,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   return (
     <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-card border-stone-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+      <div className="bg-card border-stone-200 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
