@@ -36,10 +36,9 @@ const CharactersModule: React.FC = () => {
             {/* Module identity */}
             <div className="hidden md:flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-char-500" />
-                <h1 className="text-lg font-display font-bold text-ink tracking-tight">Character Tracker</h1>
+                <h1 className="text-lg font-display font-medium text-ink tracking-tight">Character Tracker</h1>
               </div>
-              <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] pl-4">
+              <p className="text-[11px] font-display font-semibold text-stone-500 uppercase tracking-[0.14em]">
                 {characters.length} dossier{characters.length !== 1 ? 's' : ''} on file
               </p>
             </div>
@@ -52,12 +51,12 @@ const CharactersModule: React.FC = () => {
                 placeholder="Search characters, archetypes, tags..."
                 value={characterSearchTerm}
                 onChange={(e) => setCharacterSearchTerm(e.target.value)}
-                className="w-full bg-white border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-char-500/50 focus:ring-1 focus:ring-char-500/20 transition-all"
+                className="w-full bg-white border border-stone-200 rounded pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-char-500/50 focus:ring-1 focus:ring-char-500/20 transition-all"
               />
             </div>
 
             {/* View toggles */}
-            <div className="hidden md:flex items-center bg-stone-50 border border-stone-200 rounded-lg p-0.5">
+            <div className="hidden md:flex border border-stone-200 rounded overflow-hidden">
               {([
                 { id: 'grid' as const, icon: <Users size={14} />, label: 'Grid' },
                 { id: 'graph' as const, icon: <Network size={14} />, label: 'Graph' },
@@ -66,10 +65,10 @@ const CharactersModule: React.FC = () => {
                 <button
                   key={v.id}
                   onClick={() => setCharacterView(v.id)}
-                  className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 text-xs font-body font-medium border-r border-stone-200 last:border-r-0 transition-all flex items-center gap-1.5 ${
                     characterView === v.id
-                      ? 'bg-char-500/15 text-char-400'
-                      : 'text-stone-500 hover:text-ink'
+                      ? 'bg-stone-100 text-ink font-semibold'
+                      : 'bg-white text-stone-500 hover:text-ink'
                   }`}
                 >
                   {v.icon}
@@ -81,21 +80,19 @@ const CharactersModule: React.FC = () => {
 
           <button
             onClick={handleNew}
-            className="ml-4 bg-char-500 hover:bg-char-400 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-char-500/20 transition-all active:scale-95 text-sm"
+            className="ml-4 bg-ink text-white hover:bg-stone-800 rounded font-body font-semibold text-sm px-5 py-2 flex items-center gap-2 transition-all"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">New Dossier</span>
           </button>
         </div>
-        {/* Accent underline */}
-        <div className="h-[1px] header-gradient-char" />
       </header>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-5 lg:p-8">
         {characters.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-20 animate-fade-in">
-            <div className="w-20 h-20 bg-char-500/10 border border-char-500/20 rounded-3xl flex items-center justify-center mb-6 text-char-400">
+            <div className="w-20 h-20 bg-char-500/10 border border-char-500/20 rounded-lg flex items-center justify-center mb-6 text-char-400">
               <UserPlus size={32} />
             </div>
             <h2 className="text-2xl font-display font-bold text-ink mb-3">Character Tracker is Empty</h2>
@@ -104,7 +101,7 @@ const CharactersModule: React.FC = () => {
             </p>
             <button
               onClick={handleNew}
-              className="bg-char-500 hover:bg-char-400 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm shadow-lg shadow-char-500/20 active:scale-95"
+              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded font-bold transition-all text-sm "
             >
               Create First Character
             </button>

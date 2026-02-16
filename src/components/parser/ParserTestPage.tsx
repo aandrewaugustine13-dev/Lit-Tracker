@@ -72,7 +72,7 @@ export function ParserTestPage() {
         </div>
 
         {/* Config Section */}
-        <div className="bg-card border border-stone-200 rounded-2xl p-6 mb-6">
+        <div className="bg-card border border-stone-200 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-display font-semibold text-ink mb-4">Configuration</h2>
           
           <div className="space-y-4">
@@ -108,12 +108,12 @@ export function ParserTestPage() {
         </div>
 
         {/* Script Input */}
-        <div className="bg-card border border-stone-200 rounded-2xl p-6 mb-6">
+        <div className="bg-card border border-stone-200 rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-display font-semibold text-ink">Script Input</h2>
             <button
               onClick={() => setScriptText(SAMPLE_SCRIPT)}
-              className="text-sm text-ember-600 hover:text-ember-700"
+              className="text-sm text-ink hover:text-stone-800"
             >
               Load Sample Script
             </button>
@@ -133,7 +133,7 @@ export function ParserTestPage() {
             <button
               onClick={handleParse}
               disabled={isParsing}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-ember-500 rounded-lg hover:bg-ember-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-medium text-white bg-ink rounded-lg hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isParsing ? (
                 <>
@@ -151,7 +151,7 @@ export function ParserTestPage() {
         </div>
 
         {/* Existing Data Summary */}
-        <div className="bg-card border border-stone-200 rounded-2xl p-6">
+        <div className="bg-card border border-stone-200 rounded-lg p-6">
           <h2 className="text-xl font-display font-semibold text-ink mb-4">
             Existing Database
           </h2>

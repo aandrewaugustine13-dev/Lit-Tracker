@@ -5,11 +5,9 @@ import {
   PenTool,
   Users,
   BookOpen,
-  Flame,
   CloudOff,
   RefreshCcw,
   Cloud,
-  ChevronRight,
   Layers,
   FileText,
   ScrollText,
@@ -118,23 +116,24 @@ const GlobalSidebar: React.FC = () => {
     <aside className="w-16 lg:w-60 bg-card border-r border-stone-200 h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
       {/* Brand */}
       <div className="h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-stone-200 flex-shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ember-500 to-ember-600 flex items-center justify-center flex-shrink-0">
-          <Flame size={16} className="text-white" />
-        </div>
-        <div className="hidden lg:block min-w-0">
-          <h1 className="text-sm font-display font-bold text-ink tracking-tight leading-tight truncate">
-            Lit Tracker
+        <div className="hidden lg:flex flex-col min-w-0 flex-1">
+          <h1 className="text-xl font-display font-semibold text-ink tracking-tight leading-tight">
+            Lit<span className="font-normal text-stone-400">Tracker</span>
           </h1>
-          <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] truncate mt-0.5">
+          <p className="text-[11px] font-display font-semibold text-stone-500 uppercase tracking-[0.14em] truncate mt-0.5">
             {projectName}
           </p>
+        </div>
+        {/* Collapsed sidebar - show just "L" */}
+        <div className="lg:hidden flex items-center justify-center w-full">
+          <span className="text-xl font-display font-semibold text-ink">L</span>
         </div>
       </div>
 
       {/* Module Navigation */}
       <nav className="flex-1 py-3 overflow-y-auto custom-scrollbar">
         <div className="hidden lg:block px-4 mb-2">
-          <p className="text-[8px] font-body text-stone-500 uppercase tracking-[0.25em]">
+          <p className="text-[11px] font-display font-semibold text-stone-500 uppercase tracking-[0.14em]">
             Modules
           </p>
         </div>
@@ -150,61 +149,32 @@ const GlobalSidebar: React.FC = () => {
                 key={mod.id}
                 onClick={() => setActiveModule(mod.id)}
                 className={`
-                  w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 transition-all duration-200 group relative rounded-lg
+                  w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 transition-all duration-200 group relative rounded
                   ${isActive
-                    ? `${colors.active} font-bold`
+                    ? `${colors.active} font-semibold bg-stone-50`
                     : `text-stone-500 hover:bg-stone-50 hover:text-ink`
                   }
                 `}
               >
-                {isActive && (
-                  <div className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-full ${colors.indicator}`} />
-                )}
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                  isActive ? colors.iconBg : 'bg-stone-100 text-stone-500 group-hover:bg-stone-200 group-hover:text-ink'
-                }`}>
+                {/* Icon - no box wrapper */}
+                <div className="flex-shrink-0">
                   {mod.icon}
                 </div>
                 <div className="hidden lg:flex flex-col items-start min-w-0 flex-1">
                   <span className="text-[13px] truncate leading-tight">{mod.label}</span>
-                  <span className={`text-[9px] font-body tracking-wider mt-0.5 ${
-                    isActive ? 'opacity-60' : 'text-stone-400'
-                  }`}>
-                    {stat || mod.description}
-                  </span>
+                  {stat && (
+                    <span className="text-[9px] font-body text-stone-400 tracking-wider mt-0.5">
+                      {stat}
+                    </span>
+                  )}
                 </div>
+                {/* Active indicator on right */}
                 {isActive && (
-                  <ChevronRight size={14} className="ml-auto hidden lg:block opacity-40" />
+                  <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] rounded-sm ${colors.indicator}`} />
                 )}
               </button>
             );
           })}
-        </div>
-
-        {/* Divider */}
-        <div className="sidebar-divider my-4" />
-
-        {/* Project stats — desktop */}
-        <div className="hidden lg:block px-4 pb-2">
-          <p className="text-[8px] font-body text-stone-500 uppercase tracking-[0.25em] mb-3">
-            Project
-          </p>
-          <div className="space-y-2">
-            {[
-              { icon: <Layers size={12} />, label: 'Issues', value: stats.totalIssues, color: 'text-ember-500' },
-              { icon: <FileText size={12} />, label: 'Pages', value: stats.totalPages, color: 'text-ember-500' },
-              { icon: <Users size={12} />, label: 'Cast', value: characters.length, color: 'text-char-500' },
-              { icon: <BookOpen size={12} />, label: 'Lore', value: loreEntries.length, color: 'text-lore-500' },
-            ].map((s, i) => (
-              <div key={i} className="flex items-center gap-2.5">
-                <span className="text-stone-400">{s.icon}</span>
-                <span className="text-[10px] text-stone-500 flex-1">{s.label}</span>
-                <span className={`text-[11px] font-body font-bold ${s.value > 0 ? s.color : 'text-stone-400'}`}>
-                  {s.value}
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
       </nav>
 

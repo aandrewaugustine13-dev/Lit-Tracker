@@ -76,12 +76,12 @@ const LoreModule: React.FC = () => {
     <div className="flex-1 flex flex-col min-w-0 bg-paper">
       {/* Project Management Bar */}
       {activeProject && (
-        <div className="flex-shrink-0 bg-gradient-to-r from-lore-500/10 to-lore-600/10 border-b border-lore-200">
+        <div className="flex-shrink-0 bg-gradient-to-r from-stone-50 to-stone-50 border-b border-stone-200">
           <div className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-lore-500/20 flex items-center justify-center">
-                  <FolderOpen size={16} className="text-lore-600" />
+                  <FolderOpen size={16} className="text-ink" />
                 </div>
                 <div>
                   <p className="text-xs font-body text-stone-500 uppercase tracking-wider">Active Project</p>
@@ -90,7 +90,7 @@ const LoreModule: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowProjectSelector(!showProjectSelector)}
-                className="text-xs text-lore-600 hover:text-lore-700 font-bold uppercase tracking-wider hover:underline transition-colors"
+                className="text-xs text-ink hover:text-stone-800 font-bold uppercase tracking-wider hover:underline transition-colors"
               >
                 Switch Project
               </button>
@@ -98,7 +98,7 @@ const LoreModule: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="text-xs bg-white hover:bg-stone-50 text-lore-600 px-3 py-1.5 rounded-lg border border-lore-200 font-bold uppercase tracking-wider transition-all"
+                className="text-xs bg-white hover:bg-stone-50 text-ink px-3 py-1.5 rounded-lg border border-stone-200 font-bold uppercase tracking-wider transition-all"
               >
                 New Project
               </button>
@@ -122,7 +122,7 @@ const LoreModule: React.FC = () => {
           {/* Project Selector Dropdown */}
           {showProjectSelector && inkState.projects.length > 1 && (
             <div className="px-6 pb-4">
-              <div className="bg-white rounded-lg border border-lore-200 shadow-lg p-2 max-h-64 overflow-y-auto">
+              <div className="bg-white rounded-lg border border-stone-200 p-2 max-h-64 overflow-y-auto">
                 {inkState.projects.map(proj => (
                   <button
                     key={proj.id}
@@ -217,10 +217,9 @@ const LoreModule: React.FC = () => {
             {/* Module identity */}
             <div className="hidden md:flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-lore-500" />
-                <h1 className="text-lg font-display font-bold text-ink tracking-tight">Lore Tracker</h1>
+                <h1 className="text-lg font-display font-medium text-ink tracking-tight">Lore Tracker</h1>
               </div>
-              <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] pl-4">
+              <p className="text-[11px] font-display font-semibold text-stone-500 uppercase tracking-[0.14em]">
                 {loreEntries.length} entr{loreEntries.length !== 1 ? 'ies' : 'y'} cataloged
               </p>
             </div>
@@ -233,16 +232,16 @@ const LoreModule: React.FC = () => {
                 placeholder="Search lore entries, tags..."
                 value={loreSearchTerm}
                 onChange={(e) => setLoreSearchTerm(e.target.value)}
-                className="w-full bg-white border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-lore-500/20 transition-all"
+                className="w-full bg-white border border-stone-200 rounded pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-lore-500/20 transition-all"
               />
             </div>
 
             {/* Type filter pills */}
-            <div className="hidden md:flex items-center gap-1 bg-stone-50 border border-stone-200 rounded-lg p-0.5">
+            <div className="hidden md:flex border border-stone-200 rounded overflow-hidden">
               <button
                 onClick={() => setLoreFilterType('all')}
-                className={`px-2.5 py-1.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all ${
-                  loreFilterType === 'all' ? 'bg-lore-500/15 text-lore-400' : 'text-stone-600 hover:text-ink'
+                className={`px-3 py-1.5 text-xs font-body font-medium border-r border-stone-200 transition-all ${
+                  loreFilterType === 'all' ? 'bg-stone-100 text-ink font-semibold' : 'bg-white text-stone-500 hover:text-ink'
                 }`}
               >
                 All
@@ -254,12 +253,12 @@ const LoreModule: React.FC = () => {
                   <button
                     key={t}
                     onClick={() => setLoreFilterType(t)}
-                    className={`px-2 py-1.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 ${
-                      loreFilterType === t ? `${cfg.bgColor} ${cfg.color}` : 'text-stone-600 hover:text-ink'
+                    className={`px-3 py-1.5 text-xs font-body font-medium border-r border-stone-200 last:border-r-0 transition-all ${
+                      loreFilterType === t ? 'bg-stone-100 text-ink font-semibold' : 'bg-white text-stone-500 hover:text-ink'
                     }`}
                   >
-                    {cfg.icon}
-                    {count > 0 && <span className="hidden lg:inline">{count}</span>}
+                    {cfg.label}
+                    {count > 0 && <span className="hidden lg:inline ml-1">({count})</span>}
                   </button>
                 );
               })}
@@ -269,22 +268,20 @@ const LoreModule: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowScriptExtraction(true)}
-              className="ml-2 bg-ember-500 hover:bg-ember-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-ember-500/20 transition-all active:scale-95 text-sm"
+              className="bg-transparent text-ink border border-stone-200 hover:border-stone-400 hover:bg-stone-50 rounded font-body font-semibold text-sm px-4 py-2 flex items-center gap-2 transition-all"
             >
               <Sparkles size={16} />
               <span className="hidden sm:inline">Extract from Script</span>
             </button>
             <button
               onClick={handleCreate}
-              className="ml-2 bg-lore-500 hover:bg-lore-400 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-lore-500/20 transition-all active:scale-95 text-sm"
+              className="bg-ink text-white hover:bg-stone-800 rounded font-body font-semibold text-sm px-5 py-2 flex items-center gap-2 transition-all"
             >
               <Plus size={16} />
               <span className="hidden sm:inline">New Entry</span>
             </button>
           </div>
         </div>
-        {/* Accent underline */}
-        <div className="h-[1px] header-gradient-lore" />
       </header>
 
       {/* Mobile filter */}
@@ -292,7 +289,7 @@ const LoreModule: React.FC = () => {
         <select
           value={loreFilterType}
           onChange={(e) => setLoreFilterType(e.target.value as LoreType | 'all')}
-          className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm text-ink cursor-pointer"
+          className="w-full bg-white border border-stone-200 rounded px-3 py-2 text-sm text-ink cursor-pointer"
         >
           <option value="all">All Types</option>
           {Object.values(LoreType).map(t => (
@@ -305,7 +302,7 @@ const LoreModule: React.FC = () => {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-5 lg:p-8">
         {loreEntries.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-20 animate-fade-in">
-            <div className="w-20 h-20 bg-lore-900/30 border border-lore-500/20 rounded-3xl flex items-center justify-center mb-6 text-lore-400">
+            <div className="w-20 h-20 bg-lore-900/30 border border-lore-500/20 rounded-lg flex items-center justify-center mb-6 text-lore-400">
               <BookOpen size={32} />
             </div>
             <h2 className="text-2xl font-display font-bold text-ink mb-3">Lore Tracker is Empty</h2>
@@ -314,7 +311,7 @@ const LoreModule: React.FC = () => {
             </p>
             <button
               onClick={handleCreate}
-              className="bg-lore-500 hover:bg-lore-400 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm shadow-lg shadow-lore-500/20 active:scale-95"
+              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded font-bold transition-all text-sm "
             >
               Create First Entry
             </button>
