@@ -76,12 +76,12 @@ const LoreModule: React.FC = () => {
     <div className="flex-1 flex flex-col min-w-0 bg-paper">
       {/* Project Management Bar */}
       {activeProject && (
-        <div className="flex-shrink-0 bg-gradient-to-r from-lore-500/10 to-lore-600/10 border-b border-lore-200">
+        <div className="flex-shrink-0 bg-gradient-to-r from-stone-50 to-stone-50 border-b border-stone-200">
           <div className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-lore-500/20 flex items-center justify-center">
-                  <FolderOpen size={16} className="text-lore-600" />
+                  <FolderOpen size={16} className="text-ink" />
                 </div>
                 <div>
                   <p className="text-xs font-body text-stone-500 uppercase tracking-wider">Active Project</p>
@@ -90,7 +90,7 @@ const LoreModule: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowProjectSelector(!showProjectSelector)}
-                className="text-xs text-lore-600 hover:text-lore-700 font-bold uppercase tracking-wider hover:underline transition-colors"
+                className="text-xs text-ink hover:text-stone-800 font-bold uppercase tracking-wider hover:underline transition-colors"
               >
                 Switch Project
               </button>
@@ -98,7 +98,7 @@ const LoreModule: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="text-xs bg-white hover:bg-stone-50 text-lore-600 px-3 py-1.5 rounded-lg border border-lore-200 font-bold uppercase tracking-wider transition-all"
+                className="text-xs bg-white hover:bg-stone-50 text-ink px-3 py-1.5 rounded-lg border border-stone-200 font-bold uppercase tracking-wider transition-all"
               >
                 New Project
               </button>
@@ -122,7 +122,7 @@ const LoreModule: React.FC = () => {
           {/* Project Selector Dropdown */}
           {showProjectSelector && inkState.projects.length > 1 && (
             <div className="px-6 pb-4">
-              <div className="bg-white rounded-lg border border-lore-200 p-2 max-h-64 overflow-y-auto">
+              <div className="bg-white rounded-lg border border-stone-200 p-2 max-h-64 overflow-y-auto">
                 {inkState.projects.map(proj => (
                   <button
                     key={proj.id}
@@ -311,7 +311,7 @@ const LoreModule: React.FC = () => {
             </p>
             <button
               onClick={handleCreate}
-              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm "
+              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded font-bold transition-all text-sm "
             >
               Create First Entry
             </button>

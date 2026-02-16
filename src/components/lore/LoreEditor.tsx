@@ -84,7 +84,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/10 animate-fade-in">
-      <div className="bg-card border border-stone-200 w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-card border border-stone-200 w-full max-w-2xl max-h-[90vh] rounded-lg overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="px-6 py-4 border-b border-stone-200 flex justify-between items-center bg-stone-50 flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
           </div>
 
           {/* Type-specific fields */}
-          <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 space-y-3">
+          <div className="bg-stone-50 border border-stone-200 rounded p-4 space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-1 h-4 rounded-full" style={{ background: config.accentHex }} />
               <h3 className="text-xs font-bold text-stone-700 capitalize">{LORE_TYPE_CONFIG[formData.type as LoreType].label} Details</h3>
@@ -256,7 +256,7 @@ const LoreEditor: React.FC<Props> = ({ entry, onClose }) => {
         {/* Footer */}
         <div className="px-6 py-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3 flex-shrink-0">
           <button onClick={onClose} className="px-5 py-2 text-stone-500 hover:text-ink transition-colors text-sm font-medium">Cancel</button>
-          <button onClick={handleSave} className="px-6 py-2 bg-lore-500 hover:bg-lore-400 text-white rounded-lg flex items-center gap-2 font-bold transition-all shadow-lore-500/10 text-sm">
+          <button onClick={handleSave} className="px-6 py-2 bg-ink text-white hover:bg-stone-800 rounded flex items-center gap-2 font-bold transition-all text-sm">
             <Save size={15} /> Save Entry
           </button>
         </div>

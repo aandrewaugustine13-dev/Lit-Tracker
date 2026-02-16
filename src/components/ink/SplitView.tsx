@@ -128,7 +128,7 @@ export function SplitView({ issue, activePanelId, onPanelClick, onScriptSectionC
                                  section.start >= highlightedScriptSection.start && 
                                  section.end <= highlightedScriptSection.end;
             
-            const highlightClass = isHighlighted ? 'bg-ember-50 border-l-4 border-ember-500' : '';
+            const highlightClass = isHighlighted ? 'bg-stone-50 border-l-4 border-stone-400' : '';
             const markerClass = MARKER_COLORS[section.visualMarker] || '';
 
             elements.push(

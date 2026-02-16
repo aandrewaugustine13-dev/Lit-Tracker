@@ -41,7 +41,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
         <button
         onClick={handleToggleNavMode}
         type="button"
-        className={`p-1.5 rounded-full transition-all flex items-center gap-2 px-3 ${zoomEnabled ? 'text-ember-500 bg-ink/10 scale-105' : 'text-stone-500 hover:text-ink'}`}
+        className={`p-1.5 rounded-full transition-all flex items-center gap-2 px-3 ${zoomEnabled ? 'text-ink bg-ink/10 scale-105' : 'text-stone-500 hover:text-ink'}`}
         title={zoomEnabled ? "Exit Canvas Navigation" : "Enter Canvas Navigation (Pan/Zoom)"}
         >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +54,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
 
         <button
         onClick={() => setShowGutters(!showGutters)}
-        className={`p-1.5 rounded-full transition-colors ${showGutters ? 'text-ember-500 bg-ink/10' : 'text-stone-500 hover:text-ink'}`}
+        className={`p-1.5 rounded-full transition-colors ${showGutters ? 'text-ink bg-ink/10' : 'text-stone-500 hover:text-ink'}`}
         title="Toggle Comic Gutter Layout"
         >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

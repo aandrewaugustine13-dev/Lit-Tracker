@@ -199,7 +199,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
               value={scriptText}
               onChange={(e) => setScriptText(e.target.value)}
               placeholder={`Paste your script here...\n\nSupported formats:\n  PAGE 1\n  Panel 1: Close-up of Elias at his desk.\n  ELIAS: I've been searching for years.\n\nOr screenplay format:\n  INT. APARTMENT - NIGHT\n  ELIAS\n  I've been searching for years.`}
-              className="w-full h-56 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20 resize-none"
+              className="w-full h-56 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 resize-none"
             />
             <div className="mt-2 flex items-center justify-between">
               <label className="cursor-pointer px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-lg text-xs font-body font-medium text-stone-600 transition-colors flex items-center gap-1.5">
@@ -261,7 +261,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={meta.placeholder}
-                  className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20"
+                  className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20"
                 />
                 <p className="text-[10px] text-stone-500 mt-1">
                   Get your key at{' '}

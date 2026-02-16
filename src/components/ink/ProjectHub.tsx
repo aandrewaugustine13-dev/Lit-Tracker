@@ -69,7 +69,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
             onClick={() => { dispatch({ type: 'SET_ACTIVE_PROJECT', id: proj.id }); onClose(); }}
             className={`p-8 rounded-sm border-2 cursor-pointer transition-all group relative overflow-hidden flex flex-col ${
                 state.activeProjectId === proj.id
-                ? 'border-ember-500 bg-ember-500/5 ring-4 ring-ember-500/10'
+                ? 'border-stone-400 bg-stone-50 ring-4 ring-ink/10'
                 : 'border-stone-200 hover:border-stone-300 bg-card'
             }`}
             >
@@ -81,7 +81,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
             <button
             onClick={(e) => { e.stopPropagation(); setEditingId(proj.id === editingId ? null : proj.id); }}
             className={`p-2 rounded-full border transition-all flex-shrink-0 ${
-                editingId === proj.id ? 'bg-ember-500 text-white border-ember-500' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'
+                editingId === proj.id ? 'bg-ink text-white border-ink' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'
             }`}
             >
             <Icons.Edit />
@@ -99,7 +99,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
                 proj.imageProvider === 'gemini' ? 'bg-blue-600/20 text-blue-400 border-blue-600/50' :
                 proj.imageProvider === 'leonardo' ? 'bg-orange-600/20 text-orange-400 border-orange-600/50' :
                 proj.imageProvider === 'grok' ? 'bg-gray-600/20 text-gray-400 border-gray-600/50' :
-                proj.imageProvider === 'fal' ? 'bg-ember-500/20 text-ember-400 border-ember-500/50' :
+                proj.imageProvider === 'fal' ? 'bg-ink/10 text-ink border-stone-300' :
                 proj.imageProvider === 'seaart' ? 'bg-pink-600/20 text-pink-400 border-pink-600/50' :
                 proj.imageProvider === 'openai' ? 'bg-green-600/20 text-green-400 border-green-600/50' :
                 'bg-stone-100 text-stone-600 border-stone-200'

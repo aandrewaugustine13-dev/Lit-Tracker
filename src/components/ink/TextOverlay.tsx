@@ -198,7 +198,7 @@ const TextOverlay: React.FC<TextOverlayProps> = ({ element, panelId, dispatch, t
             >
             A-
             </button>
-            <span className="text-[10px] font-body text-center w-6 text-ember-500 font-bold">{element.fontSize}</span>
+            <span className="text-[10px] font-body text-center w-6 text-ink font-bold">{element.fontSize}</span>
             <button
             onMouseDown={(e) => { e.preventDefault(); dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId, elementId: element.id, updates: { fontSize: Math.min(80, element.fontSize + 2) } }); }}
             className="w-7 h-7 flex items-center justify-center text-xs hover:bg-ink hover:text-white rounded-lg text-stone-600 transition-colors"

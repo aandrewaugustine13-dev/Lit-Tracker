@@ -142,7 +142,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                     {/* Add/Edit Form */}
                     {(isAdding || editingId) && (
                         <div className="bg-paper border border-stone-200 rounded-sm p-4 space-y-4">
-                            <h3 className="font-body text-xs uppercase tracking-widest text-ember-500 mb-3">
+                            <h3 className="font-body text-xs uppercase tracking-widest text-ink mb-3">
                                 {isAdding ? 'New Character' : 'Edit Character'}
                             </h3>
 
@@ -323,7 +323,7 @@ function AppearanceField({ label, value, onChange, placeholder }: {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded text-ink text-xs placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
+                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded text-ink text-xs placeholder:text-stone-400 focus:outline-none focus:border-ink"
             />
         </div>
     );

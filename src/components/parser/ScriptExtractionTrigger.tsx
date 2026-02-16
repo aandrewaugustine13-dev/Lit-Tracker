@@ -308,7 +308,7 @@ ELI
   I've been searching for years.
 
 Panel 2 Close-up of the ANCIENT SWORD on the table."
-                className="w-full h-64 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20 resize-none"
+                className="w-full h-64 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 resize-none"
               />
               <div className="mt-2 flex items-center gap-2">
                 <label className="cursor-pointer px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-lg text-sm font-body font-medium text-stone-700 transition-colors flex items-center gap-2">
@@ -374,7 +374,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder={meta.placeholder}
-                    className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20"
+                    className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20"
                   />
                   <p className="text-xs text-stone-500 mt-1">
                     Get your API key at{' '}

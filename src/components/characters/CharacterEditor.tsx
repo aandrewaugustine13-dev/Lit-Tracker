@@ -202,7 +202,7 @@ const CharacterEditor: React.FC = () => {
                     placeholder="Add tag key..."
                     className="flex-1 bg-white border border-stone-200 rounded px-2.5 py-1 text-xs text-ink"
                   />
-                  <button onClick={addSmartTag} className="text-ink hover:text-char-500 p-1"><Plus size={14} /></button>
+                  <button onClick={addSmartTag} className="text-ink hover:text-ink p-1"><Plus size={14} /></button>
                 </div>
               </div>
             </section>
@@ -330,7 +330,7 @@ const CharacterEditor: React.FC = () => {
                     </div>
 
                     {/* Prompt preview */}
-                    <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <div className="bg-stone-50 border border-stone-200 p-4 rounded">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em]">Master Prompt Preview</p>
                         <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-1 bg-white border border-stone-200 rounded-lg text-[10px] font-bold text-stone-600 hover:text-ink transition-all">
@@ -357,7 +357,7 @@ const CharacterEditor: React.FC = () => {
         {/* Footer */}
         <div className="p-5 border-t border-stone-200 bg-card flex items-center justify-between flex-shrink-0">
           <button onClick={() => setCharacterEditorOpen(false)} className="px-5 py-2 text-stone-600 hover:text-ink font-medium transition-colors text-sm">Cancel</button>
-          <button onClick={handleSave} className="flex items-center gap-2 bg-ink hover:bg-char-400 text-white px-7 py-2 rounded-lg font-bold  transition-all text-sm">
+          <button onClick={handleSave} className="flex items-center gap-2 bg-ink text-white hover:bg-stone-800 px-7 py-2 rounded font-bold transition-all text-sm">
             <Save size={16} /> Save Dossier
           </button>
         </div>

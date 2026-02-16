@@ -367,7 +367,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
           }}
           className={`p-2 rounded-lg transition-colors ${
             autoAdvance
-              ? 'bg-ink text-paper hover:bg-ember-400'
+              ? 'bg-ink text-paper hover:bg-stone-800'
               : 'text-ink hover:bg-stone-100 hover:text-ink'
           }`}
           title={autoAdvance ? 'Pause auto-advance (Space)' : 'Play auto-advance (Space)'}
@@ -388,7 +388,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
               )
             }
             onClick={(e) => e.stopPropagation()}
-            className="w-12 px-2 py-1 bg-paper border border-stone-200 rounded text-ink text-xs font-body text-center focus:outline-none focus:border-ember-500"
+            className="w-12 px-2 py-1 bg-paper border border-stone-200 rounded text-ink text-xs font-body text-center focus:outline-none focus:border-ink"
           />
           <span className="font-body text-xs text-stone-500">s</span>
         </div>
@@ -404,7 +404,7 @@ const PresentMode: React.FC<PresentModeProps> = ({ issue, onClose, textOverlaySt
           }}
           className={`px-3 py-1.5 rounded-lg font-body text-xs transition-colors ${
             showTextOverlay
-              ? 'bg-ink text-paper hover:bg-ember-400'
+              ? 'bg-ink text-paper hover:bg-stone-800'
               : 'text-stone-600 hover:bg-stone-100 hover:text-ink'
           }`}
           title="Toggle script text overlay (T)"
@@ -466,7 +466,7 @@ function PresentPanel({
   if (loading) {
     return (
       <div className="w-[800px] h-[500px] bg-card rounded-lg flex items-center justify-center border border-stone-200">
-        <div className="w-8 h-8 border-2 border-ember-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-ink border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

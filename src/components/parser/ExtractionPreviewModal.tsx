@@ -136,7 +136,7 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
                   <h3 className="text-lg font-display font-semibold text-ink">
                     New Entities
                   </h3>
-                  <span className="px-2.5 py-0.5 bg-ember-900 text-ember-600 rounded-full text-sm font-medium">
+                  <span className="px-2.5 py-0.5 bg-stone-100 text-ink rounded-full text-sm font-medium">
                     {counts.newEntities}
                   </span>
                 </div>
@@ -175,7 +175,7 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
                   <h3 className="text-lg font-display font-semibold text-ink">
                     Entity Updates
                   </h3>
-                  <span className="px-2.5 py-0.5 bg-ember-900 text-ember-600 rounded-full text-sm font-medium">
+                  <span className="px-2.5 py-0.5 bg-stone-100 text-ink rounded-full text-sm font-medium">
                     {counts.updates}
                   </span>
                 </div>
@@ -215,7 +215,7 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
                   <h3 className="text-lg font-display font-semibold text-ink">
                     Timeline Events
                   </h3>
-                  <span className="px-2.5 py-0.5 bg-ember-900 text-ember-600 rounded-full text-sm font-medium">
+                  <span className="px-2.5 py-0.5 bg-stone-100 text-ink rounded-full text-sm font-medium">
                     {counts.events}
                   </span>
                 </div>
@@ -286,7 +286,7 @@ export function ExtractionPreviewModal({ onClose }: ExtractionPreviewModalProps)
               </button>
               <button
                 onClick={handleCommit}
-                className="px-5 py-2.5 text-sm font-medium text-white bg-ink rounded-lg hover:bg-ember-600 transition-colors flex items-center gap-2"
+                className="px-5 py-2.5 text-sm font-medium text-white bg-ink rounded-lg hover:bg-stone-800 transition-colors flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
                 Commit to Lore Tracker
@@ -330,7 +330,7 @@ function EntityCard({ entity, isSelected, onToggle, getConfidenceColor, getEntit
   };
 
   return (
-    <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-ember-500 transition-colors">
+    <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-stone-400 transition-colors">
       <div className="flex items-start gap-3">
         <input
           type="checkbox"
@@ -403,7 +403,7 @@ interface UpdateCardProps {
 
 function UpdateCard({ update, isSelected, onToggle, getConfidenceColor, getEntityIcon }: UpdateCardProps) {
   return (
-    <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-ember-500 transition-colors">
+    <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-stone-400 transition-colors">
       <div className="flex items-start gap-3">
         <input
           type="checkbox"
@@ -473,7 +473,7 @@ interface TimelineEventCardProps {
 
 function TimelineEventCard({ event, isSelected, onToggle, getConfidenceColor }: TimelineEventCardProps) {
   return (
-    <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-ember-500 transition-colors">
+    <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 hover:border-stone-400 transition-colors">
       <div className="flex items-start gap-3">
         <input
           type="checkbox"

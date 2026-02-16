@@ -25,7 +25,7 @@ const InkModule: React.FC = () => {
   const totalIssuePanels = logic.activeIssue?.pages.reduce((sum: number, p: any) => sum + p.panels.length, 0) || 0;
 
   return (
-    <div className={`flex-1 flex overflow-hidden font-sans selection:bg-ember-500/30 ${logic.showGutters ? 'bg-paper' : 'bg-paper'}`}>
+    <div className={`flex-1 flex overflow-hidden font-sans selection:bg-ink/30 ${logic.showGutters ? 'bg-paper' : 'bg-paper'}`}>
       <Sidebar
         state={logic.state as any}
         dispatch={logic.dispatch as any}

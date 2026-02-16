@@ -80,7 +80,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                             onClick={() => setShowCharMenu(!showCharMenu)}
                             className={`w-full text-left px-3 py-2 rounded-lg text-xs font-body flex items-center justify-between transition-colors ${
                                 selectedChars.length > 0 
-                                    ? 'bg-ink/10 border border-ember-500/30 text-ember-500' 
+                                    ? 'bg-ink/10 border border-stone-400/30 text-ink' 
                                     : 'bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100'
                             }`}
                         >
@@ -102,9 +102,9 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                                         >
                                             <div className="flex items-center gap-2">
                                                 <span className={`w-3 h-3 rounded border flex-shrink-0 ${
-                                                    isSelected ? 'bg-ink border-ember-500' : 'border-stone-300'
+                                                    isSelected ? 'bg-ink border-stone-400' : 'border-stone-300'
                                                 }`} />
-                                                <span className={`font-bold ${isSelected ? 'text-ember-500' : 'text-ink'}`}>
+                                                <span className={`font-bold ${isSelected ? 'text-ink' : 'text-ink'}`}>
                                                     {char.name}
                                                 </span>
                                             </div>
@@ -165,7 +165,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                                     setShowRefMenu(false);
                                 }}
                                 className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${
-                                    !panel.referencePanelId ? 'bg-ink/20 text-ember-500' : 'text-stone-600 hover:bg-stone-100'
+                                    !panel.referencePanelId ? 'bg-ink/20 text-ink' : 'text-stone-600 hover:bg-stone-100'
                                 }`}
                             >
                                 <Unlink size={12} />

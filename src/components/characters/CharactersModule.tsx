@@ -101,7 +101,7 @@ const CharactersModule: React.FC = () => {
             </p>
             <button
               onClick={handleNew}
-              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded-xl font-bold transition-all text-sm "
+              className="bg-ink hover:bg-stone-800 text-white px-8 py-3 rounded font-bold transition-all text-sm "
             >
               Create First Character
             </button>
