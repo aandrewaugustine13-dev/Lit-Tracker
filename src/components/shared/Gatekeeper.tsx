@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLitStore } from '../../store';
-import { Flame, Plus, FileText, Layers } from 'lucide-react';
+import { Plus, FileText, Layers } from 'lucide-react';
 import NewProjectModal from '../ink/NewProjectModal';
 import { InkProject } from '../../types';
 
@@ -50,22 +50,14 @@ const Gatekeeper: React.FC = () => {
         
         {/* Logo & Wordmark */}
         <div className="flex flex-col items-center space-y-6">
-          <div className="flex items-center justify-center">
-            <div className="relative">
-              <Flame 
-                className="w-12 h-12 text-ink" 
-                strokeWidth={1.5}
-              />
-            </div>
-          </div>
-          <h1 className="text-2xl font-display text-ink">
-            Lit Tracker
+          <h1 className="text-xl font-display font-semibold text-ink tracking-tight leading-tight">
+            Lit<span className="font-normal text-stone-400">Tracker</span>
           </h1>
         </div>
 
         {/* Headline */}
         <div className="text-center">
-          <h2 className="text-6xl font-display text-ink leading-tight">
+          <h2 className="text-5xl font-display font-normal text-ink leading-tight">
             What are you working on?
           </h2>
         </div>
@@ -85,26 +77,17 @@ const Gatekeeper: React.FC = () => {
                     key={project.id}
                     onClick={() => handleSelectProject(project.id)}
                     className={`
-                      group relative p-6 rounded-xl transition-all duration-300 text-left
-                      ${isMostRecent 
-                        ? 'bg-card border-2 border-amber-600 shadow-lg hover:shadow-xl col-span-full lg:col-span-2' 
-                        : 'bg-card border border-stone-200 hover:border-stone-300 hover:shadow-md'
-                      }
+                      group relative p-6 rounded-sm transition-all duration-300 text-left bg-card border border-stone-200 hover:border-stone-400
+                      ${isMostRecent ? 'col-span-full lg:col-span-2 border-l-[3px] border-l-ember-500' : ''}
                     `}
                   >
-                    {isMostRecent && (
-                      <div className="absolute -top-3 -right-3 bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        Recent
-                      </div>
-                    )}
-
                     {/* Project Type Icon */}
                     <div className="mb-4">
-                      <ProjectTypeIcon className={`w-8 h-8 ${isMostRecent ? 'text-amber-600' : 'text-stone-500'}`} />
+                      <ProjectTypeIcon className="w-8 h-8 text-stone-500" />
                     </div>
 
                     {/* Project Title */}
-                    <h3 className={`text-2xl font-display mb-3 group-hover:text-amber-700 transition-colors ${isMostRecent ? 'text-ink' : 'text-ink'}`}>
+                    <h3 className="text-2xl font-display font-medium mb-3 text-ink transition-colors">
                       {project.title}
                     </h3>
 
@@ -140,10 +123,10 @@ const Gatekeeper: React.FC = () => {
             <div className="flex justify-center pt-4">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="group flex items-center gap-3 px-6 py-3 bg-card hover:bg-stone-50 border border-stone-300 hover:border-amber-500 rounded-xl transition-all duration-300"
+                className="group flex items-center gap-3 px-6 py-3 bg-transparent text-ink border border-stone-200 hover:border-stone-400 hover:bg-stone-50 rounded font-body font-semibold text-sm transition-all duration-300"
               >
-                <Plus className="w-5 h-5 text-stone-600 group-hover:text-amber-600 transition-colors" />
-                <span className="text-ink group-hover:text-amber-700 transition-colors font-medium font-body">
+                <Plus className="w-5 h-5" />
+                <span>
                   Create New Universe
                 </span>
               </button>
@@ -154,10 +137,10 @@ const Gatekeeper: React.FC = () => {
           <div className="flex justify-center">
             <button
               onClick={() => setShowNewProjectModal(true)}
-              className="group flex items-center gap-4 px-8 py-4 bg-card hover:bg-stone-50 border-2 border-stone-300 hover:border-amber-500 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+              className="group flex items-center gap-4 px-8 py-4 bg-transparent text-ink border border-stone-200 hover:border-stone-400 hover:bg-stone-50 rounded font-body font-semibold text-sm transition-all duration-300"
             >
-              <Plus className="w-6 h-6 text-ink" />
-              <span className="text-ink font-bold text-lg font-body">
+              <Plus className="w-6 h-6" />
+              <span>
                 Create New Universe
               </span>
             </button>

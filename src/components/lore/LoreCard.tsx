@@ -27,12 +27,12 @@ const LoreCard: React.FC<Props> = ({ entry, onEdit }) => {
   return (
     <div
       onClick={handleClick}
-      className={`group relative flex flex-col h-full card rounded-xl overflow-hidden hover:-translate-y-1 cursor-pointer`}
+      className={`group relative flex flex-col h-full card rounded-sm overflow-hidden cursor-pointer`}
     >
-      {/* Top accent bar */}
-      <div className="h-1 w-full" style={{ background: config.accentHex }} />
+      {/* Left accent bar */}
+      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: config.accentHex }} />
 
-      <div className="p-4 flex-1 flex flex-col">
+      <div className="p-4 pl-5 flex-1 flex flex-col">{/* pl-5 to account for left bar */}
         {/* Header */}
         <div className="flex justify-between items-start mb-3">
           <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${config.bgColor} ${config.color}`}>
@@ -56,7 +56,7 @@ const LoreCard: React.FC<Props> = ({ entry, onEdit }) => {
         </div>
 
         {/* Name */}
-        <h3 className="text-base font-display font-bold text-ink mb-1.5 group-hover:text-ember-400 transition-colors leading-tight">
+        <h3 className="text-base font-display font-medium text-ink mb-1.5 leading-tight">
           {entry.name}
         </h3>
 
