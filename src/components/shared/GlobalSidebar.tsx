@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Layers,
   FileText,
+  ScrollText,
 } from 'lucide-react';
 
 const MODULE_CONFIG: {
@@ -46,6 +47,14 @@ const MODULE_CONFIG: {
     icon: <Users size={18} />,
     accent: 'char',
   },
+  {
+    id: 'proof',
+    label: 'Proof',
+    shortLabel: 'PROOF',
+    description: 'Read & revise',
+    icon: <ScrollText size={18} />,
+    accent: 'proof',
+  },
 ];
 
 const accentMap: Record<string, {
@@ -76,6 +85,13 @@ const accentMap: Record<string, {
     iconBg: 'bg-lore-500/15 text-lore-400',
     hoverBg: 'hover:bg-ink-800/80',
   },
+  proof: {
+    active: 'text-proof-400',
+    activeBg: 'bg-proof-900/40',
+    indicator: 'bg-proof-500',
+    iconBg: 'bg-proof-500/15 text-proof-400',
+    hoverBg: 'hover:bg-ink-800/80',
+  },
 };
 
 const GlobalSidebar: React.FC = () => {
@@ -95,6 +111,7 @@ const GlobalSidebar: React.FC = () => {
     ink: stats.totalPanels > 0 ? `${stats.totalPanels} panels` : '',
     characters: characters.length > 0 ? `${characters.length} cast` : '',
     lore: loreEntries.length > 0 ? `${loreEntries.length} entries` : '',
+    proof: stats.totalPages > 0 ? `${stats.totalPages} pages` : '',
   };
 
   return (

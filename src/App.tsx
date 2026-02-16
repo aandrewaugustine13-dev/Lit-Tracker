@@ -9,6 +9,7 @@ const DetailPanel = lazy(() => import('./components/shared/DetailPanel'));
 const InkModule = lazy(() => import('./components/ink/InkModule'));
 const CharactersModule = lazy(() => import('./components/characters/CharactersModule'));
 const LoreModule = lazy(() => import('./components/lore/LoreModule'));
+const ProofModule = lazy(() => import('./components/proof/ProofModule'));
 const ParserTestPage = lazy(() => import('./components/parser/ParserTestPage').then(m => ({ default: m.ParserTestPage })));
 
 // Loading fallback component with branded workspace theme
@@ -35,6 +36,7 @@ function AppContent() {
       if (e.altKey && e.key === '1') useLitStore.getState().setActiveModule('lore');
       if (e.altKey && e.key === '2') useLitStore.getState().setActiveModule('ink');
       if (e.altKey && e.key === '3') useLitStore.getState().setActiveModule('characters');
+      if (e.altKey && e.key === '4') useLitStore.getState().setActiveModule('proof');
       // Escape closes detail panel
       if (e.key === 'Escape' && useLitStore.getState().detailTarget) {
         useLitStore.getState().closeDetail();
@@ -58,6 +60,7 @@ function AppContent() {
       case 'ink': return <InkModule />;
       case 'characters': return <CharactersModule />;
       case 'lore': return <LoreModule />;
+      case 'proof': return <ProofModule />;
       default: return <LoreModule />;
     }
   };
