@@ -11,10 +11,9 @@ interface SidebarProps {
     state: AppState;
     dispatch: React.Dispatch<Action>;
     onOpenProjects: () => void;
-    onImportFromStore: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ state, dispatch, onOpenProjects, onImportFromStore }) => {
+const Sidebar: React.FC<SidebarProps> = ({ state, dispatch, onOpenProjects }) => {
     const { user, signInWithGoogle } = useAuth();
     const activeProject = state.projects.find(p => p.id === state.activeProjectId);
     const activeIssue = activeProject?.issues.find(i => i.id === state.activeIssueId);
@@ -49,7 +48,6 @@ const Sidebar: React.FC<SidebarProps> = ({ state, dispatch, onOpenProjects, onIm
                     state={state}
                     dispatch={dispatch}
                     onOpenProjects={onOpenProjects}
-                    onImportFromStore={onImportFromStore}
                     activeProject={activeProject}
                 />
 

@@ -23,6 +23,14 @@ const MODULE_CONFIG: {
   accent: string;
 }[] = [
   {
+    id: 'lore',
+    label: 'Lore Tracker',
+    shortLabel: 'LORE',
+    description: '🏠 Home & Hub',
+    icon: <BookOpen size={18} />,
+    accent: 'lore',
+  },
+  {
     id: 'ink',
     label: 'Storyboard',
     shortLabel: 'INK',
@@ -37,14 +45,6 @@ const MODULE_CONFIG: {
     description: 'Cast & voices',
     icon: <Users size={18} />,
     accent: 'char',
-  },
-  {
-    id: 'lore',
-    label: 'Lore Tracker',
-    shortLabel: 'LORE',
-    description: 'Rules & canon',
-    icon: <BookOpen size={18} />,
-    accent: 'lore',
   },
 ];
 
