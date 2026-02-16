@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/llm-proxy.ts": {
+      "maxDuration": 120
+    }
+  }
+}

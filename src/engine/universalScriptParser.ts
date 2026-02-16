@@ -19,7 +19,7 @@ import { ParsedScript, LoreCandidate } from '../utils/scriptParser';
 
 // ─── Parser Options ─────────────────────────────────────────────────────────
 
-export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek';
+export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek' | 'groq';
 
 export interface ParseScriptOptions {
   rawScriptText: string;

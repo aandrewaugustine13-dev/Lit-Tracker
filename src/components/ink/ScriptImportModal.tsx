@@ -12,7 +12,7 @@ import { useLitStore } from '../../store';
 // Also stores parsedScriptResult so Lore Tracker can use it later if wanted.
 
 type ParseMode = 'llm' | 'deterministic';
-type ProviderOption = 'gemini' | 'anthropic' | 'openai' | 'grok' | 'deepseek';
+type ProviderOption = 'gemini' | 'anthropic' | 'openai' | 'grok' | 'deepseek' | 'groq';
 
 interface ProviderMeta {
   label: string;
@@ -24,13 +24,14 @@ interface ProviderMeta {
 const PROVIDER_META: Record<ProviderOption, ProviderMeta> = {
   gemini:    { label: 'Gemini',   placeholder: 'AIza...',    helpUrl: 'https://aistudio.google.com/apikey',          browserWorks: true },
   anthropic: { label: 'Claude',   placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys', browserWorks: true },
+  groq:      { label: 'Groq',     placeholder: 'gsk_...',    helpUrl: 'https://console.groq.com/keys',               browserWorks: false },
   openai:    { label: 'OpenAI',   placeholder: 'sk-...',     helpUrl: 'https://platform.openai.com/api-keys',        browserWorks: false },
   grok:      { label: 'Grok',     placeholder: 'xai-...',    helpUrl: 'https://console.x.ai',                        browserWorks: false },
   deepseek:  { label: 'DeepSeek', placeholder: 'sk-...',     helpUrl: 'https://platform.deepseek.com/api_keys',      browserWorks: false },
 };
 
-// Show browser-compatible providers first
-const PROVIDERS: ProviderOption[] = ['gemini', 'anthropic', 'openai', 'grok', 'deepseek'];
+// Show browser-compatible providers first, then Groq (recommended free option), then others
+const PROVIDERS: ProviderOption[] = ['gemini', 'anthropic', 'groq', 'openai', 'grok', 'deepseek'];
 
 // ─── Convert ParsedScript → ParseResult (Ink Tracker format) ──────────────
 
@@ -97,13 +98,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
       let parsed: ParsedScript;
 
       if (parseMode === 'llm' && apiKey.trim()) {
-        if (!meta.browserWorks) {
-          setError(
-            `${meta.label} blocks direct browser requests (CORS). Use Gemini or Claude instead, or run the app through a proxy server.`
-          );
-          setIsLoading(false);
-          return;
-        }
+        // All providers now work - browser-compatible ones go direct, others via proxy
         parsed = await parseScriptWithLLM(scriptText, provider, apiKey);
       } else {
         parsed = smartFallbackParse(scriptText);
@@ -247,7 +242,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
                 <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                   <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-800">
-                    {meta.label} blocks direct browser requests (CORS). Use <strong>Gemini</strong> or <strong>Claude</strong> for browser-based parsing.
+                    {meta.label} routes through a server proxy to avoid CORS restrictions.
                   </p>
                 </div>
               )}
