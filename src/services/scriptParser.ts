@@ -219,7 +219,16 @@ function extractCharacterFromLine(line: string): { character: string; modifier: 
     match = line.match(STANDARD_DIALOGUE);
     if (match) {
         const [, char, mod, txt] = match;
-        if (['CAPTION', 'SFX', 'ON SCREEN', 'ON WALL', 'LABEL', 'NOTE', 'ARTIST'].some(k => char.toUpperCase().includes(k))) {
+        // Exclude system keywords and structural section headers
+        const excludedKeywords = [
+            'CAPTION', 'SFX', 'ON SCREEN', 'ON WALL', 'LABEL', 'NOTE', 'ARTIST',
+            'COLD OPEN', 'ACT ONE', 'ACT TWO', 'ACT THREE', 'ACT FOUR', 'ACT FIVE',
+            'CLOSE', 'PROLOGUE', 'EPILOGUE', 'INTERLUDE', 'OPEN', 'END',
+            'NEXT ISSUE', 'PREVIOUSLY'
+        ];
+        const charUpper = char.toUpperCase();
+        // Check if character name matches any excluded keyword or starts with "ACT "
+        if (excludedKeywords.some(k => charUpper.includes(k)) || /^ACT\s+/i.test(charUpper)) {
             return null;
         }
         const type = isThoughtModifier(mod || '') ? 'thought' : isPhoneModifier(mod || '') ? 'phone' : 'dialogue';
