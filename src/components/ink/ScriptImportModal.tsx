@@ -3,6 +3,7 @@ import { X, Upload, Zap, Cpu, AlertTriangle, Globe } from 'lucide-react';
 import { parseScriptWithLLM, ParsedScript } from '../../utils/scriptParser';
 import { smartFallbackParse } from '../../utils/smartFallbackParser';
 import { ParseResult } from '../../services/scriptParser';
+import { parsedScriptToParseResult } from '../../utils/canonicalScriptExtraction';
 import { useLitStore } from '../../store';
 
 // =============================================================================
@@ -31,40 +32,6 @@ const PROVIDER_META: Record<ProviderOption, ProviderMeta> = {
 
 // Show browser-compatible providers first
 const PROVIDERS: ProviderOption[] = ['gemini', 'anthropic', 'openai', 'grok', 'deepseek'];
-
-// ─── Convert ParsedScript → ParseResult (Ink Tracker format) ──────────────
-
-function toParseResult(parsed: ParsedScript): ParseResult {
-  return {
-    success: true,
-    pages: parsed.pages.map(page => ({
-      pageNumber: page.page_number,
-      panels: page.panels.map(panel => ({
-        panelNumber: panel.panel_number,
-        description: panel.description,
-        bubbles: panel.dialogue.map(d => ({
-          type: d.type === 'spoken' ? 'dialogue' as const :
-                d.type === 'thought' ? 'thought' as const :
-                d.type === 'caption' ? 'caption' as const :
-                d.type === 'sfx' ? 'sfx' as const :
-                'dialogue' as const,
-          text: d.text,
-          character: d.character,
-        })),
-        artistNotes: [],
-        visualMarker: 'standard' as const,
-        aspectRatio: 'wide' as any,
-      })),
-    })),
-    characters: parsed.characters.map(char => ({
-      name: char.name,
-      description: char.description,
-      lineCount: char.panel_count,
-    })),
-    errors: [],
-    warnings: [],
-  };
-}
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
@@ -117,7 +84,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
         console.warn('Could not store parsed result for Lore Tracker:', e);
       }
 
-      const result = toParseResult(parsed);
+      const result = parsedScriptToParseResult(parsed);
 
       if (result.pages.length === 0 || result.pages.every(p => p.panels.length === 0)) {
         setError(

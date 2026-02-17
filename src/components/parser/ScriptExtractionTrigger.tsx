@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { X, Upload, Zap, Cpu, HardDrive } from 'lucide-react';
 import { useLitStore } from '../../store';
-import { parseScriptAndProposeUpdates, LLMProvider, reconstructFormattedScript } from '../../engine/universalScriptParser';
+import { parseScriptAndProposeUpdates, LLMProvider } from '../../engine/universalScriptParser';
 import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scriptParser';
 import { smartFallbackParse } from '../../utils/smartFallbackParser';
+import { buildCanonicalScriptExtraction } from '../../utils/canonicalScriptExtraction';
 import { isGoogleDriveConfigured } from '../../services/googleDrive';
 import { DriveFilePicker } from '../shared/DriveFilePicker';
 
@@ -80,9 +81,10 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
             apiKey
           );
           
-          // Reconstruct formatted script from parsed structure
-          formattedScript = reconstructFormattedScript(parsedScript);
-          loreCandidates = parsedScript.lore_candidates;
+          // Build canonical artifacts from the single AI read
+          const canonicalExtraction = buildCanonicalScriptExtraction(parsedScript);
+          formattedScript = canonicalExtraction.formattedScriptText;
+          loreCandidates = canonicalExtraction.loreCandidates;
           
           console.log('[ScriptExtraction] AI formatting complete:', {
             pages: parsedScript.pages.length,
