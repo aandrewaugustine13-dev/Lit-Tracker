@@ -569,19 +569,15 @@ export function useInkLogic() {
       return;
     }
 
-    // Prefer the AI-structured parse when it contains usable storyboard content.
-    // Some providers can occasionally return metadata/lore without panelized pages.
-    const hasStructuredPanels = !!parsedScriptResult?.pages?.some(
-      page => Array.isArray(page.panels) && page.panels.length > 0
-    );
-
-    if (hasStructuredPanels && parsedScriptResult) {
-      const parseResult = parsedScriptToParseResult(parsedScriptResult);
+    // Prefer the AI-structured parse when available so Ink Tracker gets richer paneling,
+    // dialogue typing, and character context from the same extraction run.
+    if (parsedScriptResult?.pages?.length) {
+      const parseResult = convertParsedScriptToParseResult(parsedScriptResult);
       handleScriptImport(parseResult, rawScriptText);
       return;
     }
     
-    // Fallback to rules-based parser if no structured panel data is available
+    // Fallback to rules-based parser if no structured parse is available in store
     const parseResult = parseScript(rawScriptText);
     
     // Use existing handleScriptImport logic
