@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { X, Upload, Zap, Cpu, HardDrive } from 'lucide-react';
 import { useLitStore } from '../../store';
-import { parseScriptAndProposeUpdates, LLMProvider, reconstructFormattedScript } from '../../engine/universalScriptParser';
+import { parseScriptAndProposeUpdates, LLMProvider } from '../../engine/universalScriptParser';
 import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scriptParser';
 import { smartFallbackParse } from '../../utils/smartFallbackParser';
+import { buildCanonicalScriptExtraction } from '../../utils/canonicalScriptExtraction';
 import { isGoogleDriveConfigured } from '../../services/googleDrive';
 import { DriveFilePicker } from '../shared/DriveFilePicker';
 
@@ -80,9 +81,10 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
             apiKey
           );
           
-          // Reconstruct formatted script from parsed structure
-          formattedScript = reconstructFormattedScript(parsedScript);
-          loreCandidates = parsedScript.lore_candidates;
+          // Build canonical artifacts from the single AI read
+          const canonicalExtraction = buildCanonicalScriptExtraction(parsedScript);
+          formattedScript = canonicalExtraction.formattedScriptText;
+          loreCandidates = canonicalExtraction.loreCandidates;
           
           console.log('[ScriptExtraction] AI formatting complete:', {
             pages: parsedScript.pages.length,
@@ -122,26 +124,27 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       });
 
       // ═══ STEP 3: STORE PARSED SCRIPT FOR INK TRACKER ═══
-      // Store the parsed script result for Ink Tracker import, even in Pattern Only mode
-      if (parsedScript) {
-        // LLM succeeded - store the full structured result
-        try {
+      // Keep Ink fed with a panelized script whenever possible.
+      try {
+        const llmHasPanels = !!parsedScript?.pages?.some(
+          page => Array.isArray(page.panels) && page.panels.length > 0
+        );
+
+        if (llmHasPanels && parsedScript) {
           setParsedScriptResult(parsedScript, scriptText);
           console.log('[ScriptExtraction] Stored LLM-parsed script for Ink Tracker import');
-        } catch (storeError) {
-          console.warn('[ScriptExtraction] Failed to store parsed script for Ink Tracker:', storeError);
-          // Non-fatal - continue
-        }
-      } else {
-        // LLM was disabled, failed, or Pattern Only mode - create a fallback ParsedScript
-        try {
+        } else {
           const fallbackScript = smartFallbackParse(scriptText);
           setParsedScriptResult(fallbackScript, scriptText);
-          console.log('[ScriptExtraction] Stored fallback parsed script for Ink Tracker import');
-        } catch (storeError) {
-          console.warn('[ScriptExtraction] Failed to store fallback parsed script for Ink Tracker:', storeError);
-          // Non-fatal - continue
+          if (parsedScript && !llmHasPanels) {
+            console.warn('[ScriptExtraction] LLM parse had no panels; stored fallback storyboard parse for Ink import');
+          } else {
+            console.log('[ScriptExtraction] Stored fallback parsed script for Ink Tracker import');
+          }
         }
+      } catch (storeError) {
+        console.warn('[ScriptExtraction] Failed to store parsed script for Ink Tracker:', storeError);
+        // Non-fatal - continue
       }
 
       setCurrentProposal(proposal);

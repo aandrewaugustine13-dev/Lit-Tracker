@@ -114,6 +114,14 @@ function normalizeName(name: string): string {
 }
 
 /**
+ * Build a dedupe key that preserves entity type and name so similarly named
+ * entities across different categories (e.g. location vs faction) are not lost.
+ */
+function entityDedupeKey(entityType: ProposedNewEntity['entityType'], name: string): string {
+  return `${entityType}::${normalizeName(name)}`;
+}
+
+/**
  * Convert string to title case
  */
 function toTitleCase(str: string): string {
@@ -1329,15 +1337,15 @@ export async function parseScriptAndProposeUpdates(
     );
 
     // Deduplicate against Pass 1 results by normalized name
-    const existingNames = new Set(
-      pass1Result.newEntities.map(e => normalizeName(e.name))
+    const existingKeys = new Set(
+      pass1Result.newEntities.map(e => entityDedupeKey(e.entityType, e.name))
     );
 
     for (const entity of loreCandidateResult.newEntities) {
-      const normalized = normalizeName(entity.name);
-      if (!existingNames.has(normalized)) {
+      const key = entityDedupeKey(entity.entityType, entity.name);
+      if (!existingKeys.has(key)) {
         pass1Result.newEntities.push(entity);
-        existingNames.add(normalized);
+        existingKeys.add(key);
       }
     }
 
@@ -1360,15 +1368,15 @@ export async function parseScriptAndProposeUpdates(
       const comicProposals = convertComicParserResults(comicResult, entityIndex);
 
       // Deduplicate against Pass 1 results by normalized name
-      const existingNames = new Set(
-        pass1Result.newEntities.map(e => normalizeName(e.name))
+      const existingKeys = new Set(
+        pass1Result.newEntities.map(e => entityDedupeKey(e.entityType, e.name))
       );
 
       for (const entity of comicProposals.newEntities) {
-        const normalized = normalizeName(entity.name);
-        if (!existingNames.has(normalized)) {
+        const key = entityDedupeKey(entity.entityType, entity.name);
+        if (!existingKeys.has(key)) {
           pass1Result.newEntities.push(entity);
-          existingNames.add(normalized);
+          existingKeys.add(key);
         }
       }
 
@@ -1408,13 +1416,13 @@ export async function parseScriptAndProposeUpdates(
     
     // Start with Pass 2 (AI) entities - these have richer descriptions
     finalEntities = [...pass2Result.newEntities];
-    const llmNames = new Set(pass2Result.newEntities.map(e => normalizeName(e.name)));
+    const llmKeys = new Set(pass2Result.newEntities.map(e => entityDedupeKey(e.entityType, e.name)));
 
     // Add Pass 1 entities that AI didn't find (supplementary)
     let supplementaryCount = 0;
     for (const entity of pass1Result.newEntities) {
-      const normalized = normalizeName(entity.name);
-      if (!llmNames.has(normalized)) {
+      const key = entityDedupeKey(entity.entityType, entity.name);
+      if (!llmKeys.has(key)) {
         finalEntities.push(entity);
         supplementaryCount++;
       }
