@@ -4,37 +4,37 @@
 
 @theme {
   /* Backgrounds */
-  --color-paper: #FAF9F6;
-  --color-card: #FFFFFF;
-  --color-ink: #1A1A1A;
-  --color-border: #E8E6E1;
+  --color-paper: #faf9f7;
+  --color-card: #fcfbf9;
+  --color-ink: #3d3428;
+  --color-border: #e8e4df;
 
   /* Surface scale */
   --color-ink-600: #94918B;
   --color-ink-700: #C8C5BF;
   --color-ink-750: #D6D3CD;
-  --color-ink-800: #E8E6E1;
-  --color-ink-850: #EFEDE8;
-  --color-ink-900: #F3F1ED;
-  --color-ink-950: #FAF9F6;
+  --color-ink-800: #e8e4df;
+  --color-ink-850: #f0ede8;
+  --color-ink-900: #f4ede4;
+  --color-ink-950: #faf9f7;
 
-  /* Primary accent — warm copper/sienna */
-  --color-ember-300: #E0A872;
-  --color-ember-400: #D08E52;
-  --color-ember-500: #BF7A3D;
-  --color-ember-600: #A66830;
-  --color-ember-700: #8B5526;
-  --color-ember-900: rgba(191, 122, 61, 0.12);
+  /* Primary accent — warm literary brown/sepia */
+  --color-ember-300: #b8996b;
+  --color-ember-400: #9d7e54;
+  --color-ember-500: #8b6f47;
+  --color-ember-600: #7a5f3a;
+  --color-ember-700: #6b4f2e;
+  --color-ember-900: rgba(139, 111, 71, 0.12);
 
   /* Text scale */
-  --color-steel-50: #1A1A1A;
-  --color-steel-100: #1A1A1A;
-  --color-steel-200: #3D3D3D;
-  --color-steel-300: #525250;
-  --color-steel-400: #6E6C68;
+  --color-steel-50: #3d3428;
+  --color-steel-100: #4a3f35;
+  --color-steel-200: #574d43;
+  --color-steel-300: #6b5d52;
+  --color-steel-400: #7a6f65;
   --color-steel-500: #94918B;
   --color-steel-600: #C8C5BF;
-  --color-steel-700: #E8E6E1;
+  --color-steel-700: #ddd8d3;
 
   /* Lore — rich indigo */
   --color-lore-300: #9499E0;
