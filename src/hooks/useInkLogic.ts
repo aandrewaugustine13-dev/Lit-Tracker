@@ -572,7 +572,7 @@ export function useInkLogic() {
     // Prefer the AI-structured parse when available so Ink Tracker gets richer paneling,
     // dialogue typing, and character context from the same extraction run.
     if (parsedScriptResult?.pages?.length) {
-      const parseResult = parsedScriptToParseResult(parsedScriptResult);
+      const parseResult = convertParsedScriptToParseResult(parsedScriptResult);
       handleScriptImport(parseResult, rawScriptText);
       return;
     }
