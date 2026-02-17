@@ -156,7 +156,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-card rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-stone-200">
+      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-stone-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
           <h2 className="font-display text-xl text-ink">Import Script to Storyboard</h2>
@@ -173,7 +173,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
               onClick={() => setParseMode('deterministic')}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-body font-semibold text-sm transition-colors ${
                 parseMode === 'deterministic'
-                  ? 'bg-ink text-white'
+                  ? 'bg-ember-500 text-white'
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
               }`}
             >
@@ -184,7 +184,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
               onClick={() => setParseMode('llm')}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-body font-semibold text-sm transition-colors ${
                 parseMode === 'llm'
-                  ? 'bg-ink text-white'
+                  ? 'bg-ember-500 text-white'
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
               }`}
             >
@@ -199,7 +199,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
               value={scriptText}
               onChange={(e) => setScriptText(e.target.value)}
               placeholder={`Paste your script here...\n\nSupported formats:\n  PAGE 1\n  Panel 1: Close-up of Elias at his desk.\n  ELIAS: I've been searching for years.\n\nOr screenplay format:\n  INT. APARTMENT - NIGHT\n  ELIAS\n  I've been searching for years.`}
-              className="w-full h-56 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 resize-none"
+              className="w-full h-56 px-4 py-3 border border-stone-200 rounded-lg font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20 resize-none"
             />
             <div className="mt-2 flex items-center justify-between">
               <label className="cursor-pointer px-3 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-lg text-xs font-body font-medium text-stone-600 transition-colors flex items-center gap-1.5">
@@ -230,7 +230,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
                       onClick={() => setProvider(p)}
                       className={`px-3 py-1.5 rounded-full text-xs font-body font-semibold transition-colors flex items-center gap-1.5 ${
                         provider === p
-                          ? 'bg-ink text-white'
+                          ? 'bg-ember-500 text-white'
                           : pm.browserWorks
                             ? 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                             : 'bg-stone-50 text-stone-400 hover:bg-stone-100'
@@ -261,7 +261,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={meta.placeholder}
-                  className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ember-500 focus:ring-1 focus:ring-ember-500/20"
                 />
                 <p className="text-[10px] text-stone-500 mt-1">
                   Get your key at{' '}
@@ -297,7 +297,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
           <button
             onClick={handleParse}
             disabled={isLoading || !scriptText.trim() || (parseMode === 'llm' && !apiKey.trim())}
-            className="px-6 py-2 font-body font-semibold text-white bg-ink hover:bg-stone-800 disabled:bg-stone-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2 text-sm"
+            className="px-6 py-2 font-body font-semibold text-white bg-ember-500 hover:bg-ember-600 disabled:bg-stone-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2 text-sm"
           >
             {isLoading ? (
               <>

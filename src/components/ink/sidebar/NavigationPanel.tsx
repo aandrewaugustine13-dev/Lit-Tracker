@@ -261,7 +261,7 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
                         <div className="flex gap-2">
                             <button
                                 onClick={handleAddChar}
-                                className="flex-1 bg-ink text-white font-bold py-1.5 rounded text-[10px] uppercase tracking-widest hover:bg-stone-800 transition-colors"
+                                className="flex-1 bg-ember-500 text-white font-bold py-1.5 rounded text-[10px] uppercase tracking-widest hover:bg-ember-400 transition-colors"
                             >
                                 Save Cast
                             </button>

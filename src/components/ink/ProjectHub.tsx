@@ -38,7 +38,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
 
     return (
         <div className="fixed inset-0 z-[500] bg-black/10 flex items-center justify-center p-8 animate-fade-in">
-        <div className="max-w-5xl w-full bg-paper border border-stone-200 rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="max-w-5xl w-full bg-paper border border-stone-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-10 border-b border-stone-200 flex items-center justify-between">
         <div>
         <h2 className="font-display text-5xl tracking-widest text-ink uppercase text-center">Archive</h2>
@@ -67,21 +67,21 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
             <div
             key={proj.id}
             onClick={() => { dispatch({ type: 'SET_ACTIVE_PROJECT', id: proj.id }); onClose(); }}
-            className={`p-8 rounded-sm border-2 cursor-pointer transition-all group relative overflow-hidden flex flex-col ${
+            className={`p-8 rounded-2xl border-2 cursor-pointer transition-all group relative overflow-hidden flex flex-col ${
                 state.activeProjectId === proj.id
-                ? 'border-stone-400 bg-stone-50 ring-4 ring-ink/10'
+                ? 'border-ember-500 bg-ember-500/5 ring-4 ring-ember-500/10'
                 : 'border-stone-200 hover:border-stone-300 bg-card'
             }`}
             >
             <div className="relative z-10 flex-1">
             <div className="flex justify-between items-start">
-            <h3 className="font-display text-3xl text-ink transition-colors mb-2 uppercase truncate pr-4">
+            <h3 className="font-display text-3xl text-ink group-hover:text-ember-500 transition-colors mb-2 uppercase truncate pr-4">
             {proj.title}
             </h3>
             <button
             onClick={(e) => { e.stopPropagation(); setEditingId(proj.id === editingId ? null : proj.id); }}
             className={`p-2 rounded-full border transition-all flex-shrink-0 ${
-                editingId === proj.id ? 'bg-ink text-white border-ink' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'
+                editingId === proj.id ? 'bg-ember-500 text-white border-ember-500' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'
             }`}
             >
             <Icons.Edit />
@@ -99,7 +99,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
                 proj.imageProvider === 'gemini' ? 'bg-blue-600/20 text-blue-400 border-blue-600/50' :
                 proj.imageProvider === 'leonardo' ? 'bg-orange-600/20 text-orange-400 border-orange-600/50' :
                 proj.imageProvider === 'grok' ? 'bg-gray-600/20 text-gray-400 border-gray-600/50' :
-                proj.imageProvider === 'fal' ? 'bg-ink/10 text-ink border-stone-300' :
+                proj.imageProvider === 'fal' ? 'bg-ember-500/20 text-ember-400 border-ember-500/50' :
                 proj.imageProvider === 'seaart' ? 'bg-pink-600/20 text-pink-400 border-pink-600/50' :
                 proj.imageProvider === 'openai' ? 'bg-green-600/20 text-green-400 border-green-600/50' :
                 'bg-stone-100 text-stone-600 border-stone-200'
@@ -118,31 +118,31 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
             </div>
 
             {editingId === proj.id && (
-                <div onClick={e => e.stopPropagation()} className="mt-6 p-4 bg-white rounded-lg border border-stone-200 space-y-4 animate-fade-in shadow-2xl">
+                <div onClick={e => e.stopPropagation()} className="mt-6 p-4 bg-white rounded-xl border border-stone-200 space-y-4 animate-fade-in shadow-2xl">
                 <div>
                 <label className="text-[9px] font-body text-stone-600 uppercase block mb-2">Image Provider</label>
                 <div className="grid grid-cols-2 gap-1.5">
                 <button
                 onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'gemini' } })}
-                className={`text-[10px] font-body py-2 rounded border transition-all ${proj.imageProvider === 'gemini' ? 'bg-ink text-white border-ink font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
+                className={`text-[10px] font-body py-2 rounded-lg border transition-all ${proj.imageProvider === 'gemini' ? 'bg-blue-600 text-white border-blue-500 font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
                 >
                 GEMINI
                 </button>
                 <button
                 onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'leonardo' } })}
-                className={`text-[10px] font-body py-2 rounded border transition-all ${proj.imageProvider === 'leonardo' ? 'bg-ink text-white border-ink font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
+                className={`text-[10px] font-body py-2 rounded-lg border transition-all ${proj.imageProvider === 'leonardo' ? 'bg-orange-600 text-white border-orange-500 font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
                 >
                 LEONARDO
                 </button>
                 <button
                 onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'grok' } })}
-                className={`text-[10px] font-body py-2 rounded border transition-all ${proj.imageProvider === 'grok' ? 'bg-ink text-white border-ink font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
+                className={`text-[10px] font-body py-2 rounded-lg border transition-all ${proj.imageProvider === 'grok' ? 'bg-gray-600 text-white border-gray-500 font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
                 >
                 GROK
                 </button>
                 <button
                 onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'fal' } })}
-                className={`text-[10px] font-body py-2 rounded border transition-all ${proj.imageProvider === 'fal' ? 'bg-ink text-white border-ink font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
+                className={`text-[10px] font-body py-2 rounded-lg border transition-all ${proj.imageProvider === 'fal' ? 'bg-ember-500 text-white border-ember-400 font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
                 >
                 FAL
                 </button>
@@ -150,13 +150,13 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
                 <div className="grid grid-cols-2 gap-1.5 mt-1.5">
                 <button
                 onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'seaart' } })}
-                className={`text-[10px] font-body py-2 rounded border transition-all ${proj.imageProvider === 'seaart' ? 'bg-ink text-white border-ink font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
+                className={`text-[10px] font-body py-2 rounded-lg border transition-all ${proj.imageProvider === 'seaart' ? 'bg-pink-600 text-white border-pink-500 font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
                 >
                 SEAART
                 </button>
                 <button
                 onClick={() => dispatch({ type: 'UPDATE_PROJECT', id: proj.id, updates: { imageProvider: 'openai' } })}
-                className={`text-[10px] font-body py-2 rounded border transition-all ${proj.imageProvider === 'openai' ? 'bg-ink text-white border-ink font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
+                className={`text-[10px] font-body py-2 rounded-lg border transition-all ${proj.imageProvider === 'openai' ? 'bg-green-600 text-white border-green-500 font-bold' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-100'}`}
                 >
                 OPENAI
                 </button>
@@ -193,7 +193,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
                     else if (proj.imageProvider === 'seaart') setLocalSeaArtKey(e.target.value);
                     else if (proj.imageProvider === 'openai') setLocalOpenAIKey(e.target.value);
                 }}
-                className="flex-1 bg-white border border-stone-200 rounded px-3 py-2 text-xs text-ink font-body outline-none focus:border-stone-400"
+                className="flex-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-xs text-ink font-body outline-none focus:border-ember-500"
                 />
                 <button
                 onClick={() => {
@@ -217,7 +217,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
                         alert('OpenAI Key saved!');
                     }
                 }}
-                className="bg-ink hover:bg-stone-800 text-white font-bold px-4 py-2 rounded uppercase text-[9px] transition-colors"
+                className="bg-ember-500 hover:bg-ember-400 text-white font-bold px-4 py-2 rounded-lg uppercase text-[9px] transition-colors"
                 >
                 Save
                 </button>
@@ -285,9 +285,9 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
 
         <button
         onClick={() => setShowNewProjectModal(true)}
-        className="p-8 rounded-sm border-2 border-dashed border-stone-200 hover:border-stone-400 hover:bg-stone-50 flex flex-col items-center justify-center gap-6 text-stone-400 hover:text-ink transition-all group min-h-[220px]"
+        className="p-8 rounded-2xl border-2 border-dashed border-stone-200 hover:border-ember-500 hover:bg-ember-500/5 flex flex-col items-center justify-center gap-6 text-stone-400 hover:text-ember-500 transition-all group min-h-[220px]"
         >
-        <div className="w-16 h-16 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center transition-transform">
+        <div className="w-16 h-16 rounded-full border-2 border-dashed border-stone-300 flex items-center justify-center group-hover:scale-110 transition-transform">
         <Icons.Plus />
         </div>
         <span className="font-display text-2xl uppercase tracking-widest text-center">Initialize Sequence</span>
@@ -306,7 +306,7 @@ const ProjectHub: React.FC<ProjectHubProps> = ({ state, dispatch, onClose }) => 
                   }
                 }
               }}
-              className="w-full py-3 px-4 rounded border-2 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-500 transition-all font-display text-xs uppercase tracking-widest"
+              className="w-full py-3 px-4 rounded-xl border-2 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-500 transition-all font-display text-xs uppercase tracking-widest"
             >
               🔥 Delete All Projects
             </button>

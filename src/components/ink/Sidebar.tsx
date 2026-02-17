@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ state, dispatch, onOpenProjects }) =>
                     <button
                         onClick={signInWithGoogle}
                         aria-label="Sign in with Google for cloud sync"
-                        className="w-full mt-4 py-2 px-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-[10px] font-body uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2"
+                        className="w-full mt-4 py-2 px-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-[10px] font-body uppercase tracking-widest rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
                     >
                         <svg className="w-3 h-3" viewBox="0 0 24 24" aria-hidden="true">
                             <path

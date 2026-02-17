@@ -111,7 +111,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/10 z-[600] flex items-center justify-center p-4">
-            <div className="bg-card border border-stone-200 rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div className="bg-card border border-stone-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-stone-200">
                     <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-stone-100 rounded text-stone-400 hover:text-stone-700 transition-colors"
+                        className="p-2 hover:bg-stone-100 rounded-lg text-stone-400 hover:text-stone-700 transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -132,7 +132,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                     {!isAdding && !editingId && (
                         <button
                             onClick={handleStartAdd}
-                            className="w-full py-3 border-2 border-dashed border-stone-200 rounded text-stone-500 hover:text-ink hover:border-stone-400 hover:bg-stone-50 transition-colors flex items-center justify-center gap-2 font-body text-sm"
+                            className="w-full py-3 border-2 border-dashed border-stone-200 rounded-xl text-stone-500 hover:text-ember-500 hover:border-ember-500 transition-colors flex items-center justify-center gap-2 font-body text-sm"
                         >
                             <Plus size={16} />
                             Add New Character
@@ -141,8 +141,8 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
 
                     {/* Add/Edit Form */}
                     {(isAdding || editingId) && (
-                        <div className="bg-paper border border-stone-200 rounded-sm p-4 space-y-4">
-                            <h3 className="font-body text-xs uppercase tracking-widest text-ink mb-3">
+                        <div className="bg-paper border border-stone-200 rounded-xl p-4 space-y-4">
+                            <h3 className="font-body text-xs uppercase tracking-widest text-ember-500 mb-3">
                                 {isAdding ? 'New Character' : 'Edit Character'}
                             </h3>
 
@@ -155,7 +155,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                                         value={formData.name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="e.g., Elias"
-                                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded text-ink text-sm placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
+                                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-ink text-sm placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
                                     />
                                 </div>
                                 <div>
@@ -165,7 +165,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                                         value={formData.description}
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                         placeholder="e.g., The protagonist"
-                                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded text-ink text-sm placeholder:text-stone-400 focus:outline-none focus:border-stone-400"
+                                        className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-ink text-sm placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
                                     />
                                 </div>
                             </div>
@@ -210,7 +210,7 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                                 <button
                                     onClick={handleSave}
                                     disabled={!formData.name.trim()}
-                                    className="flex-1 py-2 bg-ink hover:bg-stone-800 text-white rounded font-body text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    className="flex-1 py-2 bg-ember-500 hover:bg-ember-400 text-white rounded-lg font-body text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                                 >
                                     <Save size={14} />
                                     Save Character
@@ -233,8 +233,8 @@ export function CharacterBank({ characters, dispatch, onClose }: Props) {
                             {characters.map(char => (
                                 <div 
                                     key={char.id} 
-                                    className={`bg-card border rounded-sm overflow-hidden transition-colors ${
-                                        editingId === char.id ? 'border-stone-400' : 'border-stone-200'
+                                    className={`bg-card border rounded-xl overflow-hidden transition-colors ${
+                                        editingId === char.id ? 'border-ember-500' : 'border-stone-200'
                                     }`}
                                 >
                                     <div className="flex items-center gap-3 p-3">
@@ -323,7 +323,7 @@ function AppearanceField({ label, value, onChange, placeholder }: {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded text-ink text-xs placeholder:text-stone-400 focus:outline-none focus:border-ink"
+                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded text-ink text-xs placeholder:text-stone-400 focus:outline-none focus:border-ember-500"
             />
         </div>
     );

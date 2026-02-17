@@ -106,7 +106,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
             <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Canvas Controls
             </h2>
-            <div className="rounded-lg overflow-hidden border bg-card border-stone-200">
+            <div className="rounded-2xl overflow-hidden border bg-card border-stone-200">
               <table className="w-full">
                 <thead className="bg-stone-50">
                   <tr>
@@ -160,7 +160,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
             <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Keyboard Shortcuts
             </h2>
-            <div className="rounded-lg overflow-hidden border bg-card border-stone-200">
+            <div className="rounded-2xl overflow-hidden border bg-card border-stone-200">
               <table className="w-full">
                 <thead className="bg-stone-50">
                   <tr>
@@ -211,7 +211,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
             <h2 className="font-display text-2xl uppercase tracking-wider mb-6 text-ember-500">
               Storage
             </h2>
-            <div className="p-6 rounded-lg border bg-card border-stone-200">
+            <div className="p-6 rounded-2xl border bg-card border-stone-200">
               <p className="mb-4 text-stone-700">
                 Ink Tracker stores your projects and data locally in your browser using two mechanisms:
               </p>
@@ -233,7 +233,7 @@ const UserGuide: React.FC<UserGuideProps> = ({ showGutters }) => {
 
 // Helper components
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="p-6 rounded-lg border bg-card border-stone-200">
+  <div className="p-6 rounded-2xl border bg-card border-stone-200">
     <div className="mb-3 text-ember-500">{icon}</div>
     <h3 className="font-body text-sm uppercase tracking-wider mb-2 text-ink">{title}</h3>
     <p className="text-sm text-stone-600">{description}</p>
@@ -241,7 +241,7 @@ const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description:
 );
 
 const ExportCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="p-4 rounded border bg-card border-stone-200">
+  <div className="p-4 rounded-xl border bg-card border-stone-200">
     <div className="flex items-start gap-3">
       <div className="mt-1 text-ember-500">{icon}</div>
       <div>
@@ -260,7 +260,7 @@ const TableRow: React.FC<{ action: string; howTo: string }> = ({ action, howTo }
 );
 
 const TipCard: React.FC<{ title: string; description: string }> = ({ title, description }) => (
-  <div className="p-4 rounded border bg-card border-stone-200">
+  <div className="p-4 rounded-xl border bg-card border-stone-200">
     <h3 className="font-body text-sm uppercase tracking-wide mb-2 text-ink">{title}</h3>
     <p className="text-sm text-stone-600">{description}</p>
   </div>

@@ -171,7 +171,7 @@ const CharacterDetail: React.FC<{ character: Character }> = ({ character }) => {
       <div className="px-5 py-4">
         <div className="flex items-start gap-4">
           {/* Avatar / gallery image */}
-          <div className="w-16 h-16 rounded-lg bg-ink-900 border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center overflow-hidden flex-shrink-0">
             {character.gallery?.[0] ? (
               <img src={character.gallery[0]} alt={character.name} className="w-full h-full object-cover" />
             ) : (

@@ -3,63 +3,62 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Backgrounds */
-  --color-paper: #FAF9F6;
-  --color-card: #FFFFFF;
-  --color-ink: #1A1A1A;
-  --color-border: #E8E6E1;
+  /* New semantic "Paper & Ink" colors */
+  --color-paper: #F9F9F7;      /* Primary background — warm off-white */
+  --color-card: #FFFFFF;       /* Pure white for panels, sidebars, cards */
+  --color-ink: #2D2D2D;        /* Deep charcoal for primary text */
+  --color-border: #E7E5E4;     /* stone-200 — Light warm gray for borders */
 
-  /* Surface scale */
-  --color-ink-600: #94918B;
-  --color-ink-700: #C8C5BF;
-  --color-ink-750: #D6D3CD;
-  --color-ink-800: #E8E6E1;
-  --color-ink-850: #EFEDE8;
-  --color-ink-900: #F3F1ED;
-  --color-ink-950: #FAF9F6;
+  /* Surface scale — Remapped to warm grays (stone palette) */
+  --color-ink-600: #A8A29E;    /* stone-400 */
+  --color-ink-700: #D6D3D1;    /* stone-300 */
+  --color-ink-750: #E0DDDB;    /* between stone-300 and stone-200 */
+  --color-ink-800: #E7E5E4;    /* stone-200 */
+  --color-ink-850: #F0EFEE;    /* between stone-200 and stone-100 */
+  --color-ink-900: #F5F5F4;    /* stone-100 */
+  --color-ink-950: #F9F9F7;    /* paper (warm off-white) */
 
-  /* Primary accent — warm copper/sienna */
-  --color-ember-300: #E0A872;
-  --color-ember-400: #D08E52;
-  --color-ember-500: #BF7A3D;
-  --color-ember-600: #A66830;
-  --color-ember-700: #8B5526;
-  --color-ember-900: rgba(191, 122, 61, 0.12);
+  /* Primary accent — warm amber tones (unchanged) */
+  --color-ember-300: #fcd34d;  /* amber-300 */
+  --color-ember-400: #fbbf24;  /* amber-400 */
+  --color-ember-500: #f59e0b;  /* amber-500 */
+  --color-ember-600: #d97706;  /* amber-600 — primary buttons/highlights */
+  --color-ember-700: #b45309;  /* amber-700 */
+  --color-ember-900: rgba(217, 119, 6, 0.2);  /* amber-900/20 — subtle backgrounds */
 
-  /* Text scale */
-  --color-steel-50: #1A1A1A;
-  --color-steel-100: #1A1A1A;
-  --color-steel-200: #3D3D3D;
-  --color-steel-300: #525250;
-  --color-steel-400: #6E6C68;
-  --color-steel-500: #94918B;
-  --color-steel-600: #C8C5BF;
-  --color-steel-700: #E8E6E1;
+  /* Text scale — Dark charcoals and stone grays for light backgrounds */
+  --color-steel-50: #2D2D2D;   /* ink (deep charcoal) */
+  --color-steel-100: #2D2D2D;  /* ink (deep charcoal) */
+  --color-steel-200: #44403C;  /* stone-700 */
+  --color-steel-300: #57534E;  /* stone-600 */
+  --color-steel-400: #78716C;  /* stone-500 */
+  --color-steel-500: #A8A29E;  /* stone-400 */
+  --color-steel-600: #D6D3D1;  /* stone-300 */
+  --color-steel-700: #E7E5E4;  /* stone-200 */
 
-  /* Lore — rich indigo */
-  --color-lore-300: #9499E0;
-  --color-lore-400: #7B80D4;
-  --color-lore-500: #6366D8;
-  --color-lore-600: #5254BE;
-  --color-lore-900: #EDEDF8;
+  /* Character module accent — teal */
+  --color-char-300: #5eead4;
+  --color-char-400: #2dd4bf;
+  --color-char-500: #14b8a6;
+  --color-char-600: #0d9488;
+  --color-char-900: #e6f7f5;
 
-  /* Characters — warm teal */
-  --color-char-300: #5ED4C2;
-  --color-char-400: #36C0AC;
-  --color-char-500: #1DAF9E;
-  --color-char-600: #159485;
-  --color-char-900: #E6F6F3;
+  /* Lore module accent — indigo */
+  --color-lore-300: #a5b4fc;
+  --color-lore-400: #818cf8;
+  --color-lore-500: #6366f1;
+  --color-lore-600: #4f46e5;
+  --color-lore-900: #eef0fe;
 
-  /* Proof — emerald */
-  --color-proof-300: #6DD4A0;
-  --color-proof-400: #44C488;
-  --color-proof-500: #30A87A;
-  --color-proof-600: #238D65;
-  --color-proof-900: #E5F5ED;
+  /* Proof module accent — emerald */
+  --color-proof-300: #6ee7b7;
+  --color-proof-400: #34d399;
+  --color-proof-500: #10b981;
+  --color-proof-600: #059669;
+  --color-proof-900: #d1fae5;
 
-  /* Fonts */
-  --font-family-display: 'Cormorant Garamond', Georgia, serif;
-  --font-family-body: 'DM Sans', system-ui, sans-serif;
+  --font-family-display: 'Lora', Georgia, serif;
+  --font-family-body: 'Inter', system-ui, sans-serif;
   --font-family-mono: 'JetBrains Mono', Consolas, monospace;
 }
 
@@ -128,7 +127,9 @@ body {
 }
 
 /* Noise texture overlay for panels */
-.noise-overlay { position: relative; }
+.noise-overlay {
+  position: relative;
+}
 .noise-overlay::after {
   content: '';
   position: absolute;
@@ -138,27 +139,37 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Glass panel */
+/* Module header gradient underlines */
+.header-gradient-ember {
+  background: linear-gradient(90deg, var(--color-ember-500), var(--color-ember-600), transparent);
+}
+.header-gradient-char {
+  background: linear-gradient(90deg, var(--color-char-500), var(--color-char-600), transparent);
+}
+.header-gradient-lore {
+  background: linear-gradient(90deg, var(--color-lore-500), var(--color-lore-600), transparent);
+}
+
+/* Glass panel — now solid white with stone border */
 .glass-panel {
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* Card — editorial style */
+/* Card — for content containers across all modules (solid white) */
 .card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 3px;
-  box-shadow: none;
-  transition: all 200ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 300ms ease;
 }
 .card:hover {
-  border-color: var(--color-ink-700);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: var(--color-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
-/* Writer's input style */
+/* Writer's input style — notebook paper feel */
 .writer-input {
   background: transparent;
   border: none;

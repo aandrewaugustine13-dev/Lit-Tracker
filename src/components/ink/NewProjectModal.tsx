@@ -22,7 +22,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ onClose, dispatch }) 
 
     return (
         <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-[600] p-8">
-            <div className="w-full max-w-md bg-card border border-stone-200 rounded-lg shadow-2xl overflow-hidden">
+            <div className="w-full max-w-md bg-card border border-stone-200 rounded-2xl shadow-2xl overflow-hidden">
                 
                 {/* Header */}
                 <div className="p-6 border-b border-stone-200 flex items-center justify-between">
@@ -50,7 +50,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ onClose, dispatch }) 
                             value={projectTitle}
                             onChange={(e) => setProjectTitle(e.target.value)}
                             placeholder="Enter project title..."
-                            className="w-full bg-white border border-stone-200 rounded px-4 py-3 text-sm text-ink font-body outline-none focus:border-stone-400 transition-colors"
+                            className="w-full bg-white border border-stone-200 rounded-lg px-4 py-3 text-sm text-ink font-body outline-none focus:border-ember-500 transition-colors"
                             autoFocus
                         />
                     </div>
@@ -63,7 +63,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ onClose, dispatch }) 
                         <select
                             value={projectType}
                             onChange={(e) => setProjectType(e.target.value as typeof projectType)}
-                            className="w-full bg-white border border-stone-200 rounded px-4 py-3 text-sm text-ink font-body outline-none focus:border-stone-400 transition-colors cursor-pointer"
+                            className="w-full bg-white border border-stone-200 rounded-lg px-4 py-3 text-sm text-ink font-body outline-none focus:border-ember-500 transition-colors cursor-pointer"
                         >
                             <option value="comic">Comic / Graphic Novel</option>
                             <option value="screenplay">Screenplay</option>
@@ -77,13 +77,13 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ onClose, dispatch }) 
                 <div className="p-6 border-t border-stone-200 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 bg-transparent text-ink border border-stone-200 hover:border-stone-400 hover:bg-stone-50 font-bold py-3 rounded uppercase text-xs transition-colors"
+                        className="flex-1 bg-white hover:bg-stone-100 text-stone-700 font-bold py-3 rounded-lg uppercase text-xs transition-colors border border-stone-200"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleCreate}
-                        className="flex-1 bg-ink text-white hover:bg-stone-800 font-bold py-3 rounded uppercase text-xs transition-colors"
+                        className="flex-1 bg-ember-500 hover:bg-ember-400 text-white font-bold py-3 rounded-lg uppercase text-xs transition-colors"
                     >
                         Create
                     </button>

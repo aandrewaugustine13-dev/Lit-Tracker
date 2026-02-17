@@ -184,7 +184,7 @@ export function ScriptReparseModal({ issue, onClose, onApplyChanges }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-[700] p-8">
-            <div className="w-full max-w-6xl bg-paper border border-stone-200 rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="w-full max-w-6xl bg-paper border border-stone-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-stone-200 flex items-center justify-between">
                     <div>
                         <h2 className="font-display text-3xl tracking-widest text-ink uppercase">Script Re-parse</h2>

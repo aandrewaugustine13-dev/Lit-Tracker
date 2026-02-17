@@ -71,7 +71,7 @@ const ProofModule: React.FC = () => {
       <div className="flex-1 flex items-center justify-center bg-paper">
         <div className="text-center">
           <ScrollText size={48} className="mx-auto mb-4 text-stone-300" />
-          <h2 className="text-xl font-display font-medium text-ink mb-2">No Project Selected</h2>
+          <h2 className="text-xl font-display font-bold text-ink mb-2">No Project Selected</h2>
           <p className="text-stone-500">Create or select a project to view the proof.</p>
         </div>
       </div>
@@ -83,7 +83,7 @@ const ProofModule: React.FC = () => {
       <div className="flex-1 flex items-center justify-center bg-paper">
         <div className="text-center">
           <ScrollText size={48} className="mx-auto mb-4 text-stone-300" />
-          <h2 className="text-xl font-display font-medium text-ink mb-2">No Issue Selected</h2>
+          <h2 className="text-xl font-display font-bold text-ink mb-2">No Issue Selected</h2>
           <p className="text-stone-500">Select an issue to view its reconstructed script.</p>
         </div>
       </div>
@@ -95,11 +95,11 @@ const ProofModule: React.FC = () => {
       {/* Header */}
       <header className="h-16 bg-card border-b border-stone-200 flex items-center justify-between px-6 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded bg-proof-500/15 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-proof-500/15 flex items-center justify-center">
             <ScrollText size={18} className="text-proof-500" />
           </div>
           <div>
-            <h1 className="text-lg font-display font-medium text-ink leading-tight">Proof</h1>
+            <h1 className="text-lg font-display font-bold text-ink leading-tight">Proof</h1>
             <p className="text-[10px] font-body text-stone-500 uppercase tracking-wider">
               {activeIssue.title}
             </p>
@@ -115,14 +115,14 @@ const ProofModule: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search script..."
-              className="w-64 pl-9 pr-3 py-1.5 text-sm border border-stone-200 rounded focus:outline-none focus:ring-2 focus:ring-proof-500/20"
+              className="w-64 pl-9 pr-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-proof-500/20"
             />
           </div>
 
           {/* Edit Mode Toggle - Placeholder for future bidirectional editing */}
           <button
             disabled={true}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-all bg-stone-100 text-stone-400 cursor-not-allowed"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-stone-100 text-stone-400 cursor-not-allowed"
             title="Edit mode coming soon"
           >
             <Eye size={14} className="inline mr-1.5" />
@@ -145,7 +145,7 @@ const ProofModule: React.FC = () => {
                   key={`${line.panelId}-${line.elementId || 'panel'}-${index}`}
                   className={`group ${
                     line.type === 'panel'
-                      ? 'bg-card border border-stone-200 rounded-sm p-4'
+                      ? 'bg-card border border-stone-200 rounded-lg p-4'
                       : 'ml-8 p-2 rounded'
                   }`}
                 >
