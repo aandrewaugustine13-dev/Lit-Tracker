@@ -95,7 +95,7 @@ const CharactersModule: React.FC = () => {
             <div className="w-20 h-20 bg-char-500/10 border border-char-500/20 rounded-lg flex items-center justify-center mb-6 text-char-400">
               <UserPlus size={32} />
             </div>
-            <h2 className="text-2xl font-display font-bold text-ink mb-3">Character Tracker is Empty</h2>
+            <h2 className="text-2xl font-display font-medium text-ink mb-3">Character Tracker is Empty</h2>
             <p className="text-stone-600 mb-8 leading-relaxed text-sm">
               Begin your narrative journey by defining your first character. Archetypes, visual traits, eras, and story arcs start here.
             </p>

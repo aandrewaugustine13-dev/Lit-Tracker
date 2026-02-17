@@ -123,7 +123,7 @@ const CharacterEditor: React.FC = () => {
               <User size={22} />
             </div>
             <div>
-              <h2 className="text-lg font-display font-bold text-ink">
+              <h2 className="text-lg font-display font-medium text-ink">
                 {activeCharacterId ? 'Edit Dossier' : 'New Dossier'}
               </h2>
               <p className="text-[9px] text-stone-500 font-body uppercase tracking-[0.15em]">

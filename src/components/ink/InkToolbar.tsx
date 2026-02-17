@@ -105,7 +105,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <div className="hidden md:flex flex-col gap-0.5 min-w-0">
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${showGutters ? 'bg-black' : 'bg-ink'}`} />
-              <h1 className={`text-lg font-display font-bold tracking-tight ${showGutters ? 'text-black' : 'text-ink'}`}>
+              <h1 className={`text-lg font-display font-medium tracking-tight ${showGutters ? 'text-black' : 'text-ink'}`}>
                 Storyboard
               </h1>
             </div>

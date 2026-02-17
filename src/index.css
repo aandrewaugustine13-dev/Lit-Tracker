@@ -9,7 +9,7 @@
   --color-ink: #1A1A1A;
   --color-border: #E8E6E1;
 
-  /* Surface scale (warm grays, slightly desaturated) */
+  /* Surface scale */
   --color-ink-600: #94918B;
   --color-ink-700: #C8C5BF;
   --color-ink-750: #D6D3CD;
@@ -18,13 +18,13 @@
   --color-ink-900: #F3F1ED;
   --color-ink-950: #FAF9F6;
 
-  /* Primary accent — ochre (replaces amber) */
-  --color-ember-300: #C4A96D;
-  --color-ember-400: #A8956F;
-  --color-ember-500: #8B6F47;
-  --color-ember-600: #7A6240;
-  --color-ember-700: #644F33;
-  --color-ember-900: rgba(139, 111, 71, 0.12);
+  /* Primary accent — warm copper/sienna */
+  --color-ember-300: #E0A872;
+  --color-ember-400: #D08E52;
+  --color-ember-500: #BF7A3D;
+  --color-ember-600: #A66830;
+  --color-ember-700: #8B5526;
+  --color-ember-900: rgba(191, 122, 61, 0.12);
 
   /* Text scale */
   --color-steel-50: #1A1A1A;
@@ -36,26 +36,28 @@
   --color-steel-600: #C8C5BF;
   --color-steel-700: #E8E6E1;
 
-  /* Module accents — desaturated 30% from current */
-  --color-char-300: #6ECFBE;
-  --color-char-400: #4DB8A5;
-  --color-char-500: #3D8B7A;
-  --color-char-600: #2E7568;
-  --color-char-900: #E8F4F0;
+  /* Lore — rich indigo */
+  --color-lore-300: #9499E0;
+  --color-lore-400: #7B80D4;
+  --color-lore-500: #6366D8;
+  --color-lore-600: #5254BE;
+  --color-lore-900: #EDEDF8;
 
-  --color-lore-300: #8D97D4;
-  --color-lore-400: #7079C4;
-  --color-lore-500: #5B6ABF;
-  --color-lore-600: #4A56A3;
-  --color-lore-900: #EEEEF8;
+  /* Characters — warm teal */
+  --color-char-300: #5ED4C2;
+  --color-char-400: #36C0AC;
+  --color-char-500: #1DAF9E;
+  --color-char-600: #159485;
+  --color-char-900: #E6F6F3;
 
-  --color-proof-300: #A5B86A;
-  --color-proof-400: #8FA34E;
-  --color-proof-500: #7B8F3C;
-  --color-proof-600: #657530;
-  --color-proof-900: #F0F3E5;
+  /* Proof — emerald */
+  --color-proof-300: #6DD4A0;
+  --color-proof-400: #44C488;
+  --color-proof-500: #30A87A;
+  --color-proof-600: #238D65;
+  --color-proof-900: #E5F5ED;
 
-  /* Fonts — same variable names */
+  /* Fonts */
   --font-family-display: 'Cormorant Garamond', Georgia, serif;
   --font-family-body: 'DM Sans', system-ui, sans-serif;
   --font-family-mono: 'JetBrains Mono', Consolas, monospace;
@@ -126,9 +128,7 @@ body {
 }
 
 /* Noise texture overlay for panels */
-.noise-overlay {
-  position: relative;
-}
+.noise-overlay { position: relative; }
 .noise-overlay::after {
   content: '';
   position: absolute;
@@ -138,26 +138,27 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Glass panel — now solid white with stone border */
+/* Glass panel */
 .glass-panel {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   box-shadow: none;
 }
 
-/* Card — for content containers across all modules (solid white) */
+/* Card — editorial style */
 .card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
+  border-radius: 3px;
   box-shadow: none;
   transition: all 200ms ease;
 }
 .card:hover {
   border-color: var(--color-ink-700);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* Writer's input style — notebook paper feel */
+/* Writer's input style */
 .writer-input {
   background: transparent;
   border: none;

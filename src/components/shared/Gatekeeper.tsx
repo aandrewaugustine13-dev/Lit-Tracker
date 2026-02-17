@@ -10,7 +10,6 @@ const Gatekeeper: React.FC = () => {
 
   const handleSelectProject = (projectId: string) => {
     inkDispatch({ type: 'SET_ACTIVE_PROJECT', id: projectId });
-    // Set active module to Lore Tracker after selecting a project
     setActiveModule('lore');
   };
 
@@ -42,22 +41,21 @@ const Gatekeeper: React.FC = () => {
   };
 
   const hasProjects = inkState.projects.length > 0;
-  const mostRecentProject = inkState.projects[0]; // First project is most recent
 
   return (
     <div className="h-screen w-screen bg-paper text-ink flex items-center justify-center p-8">
       <div className="w-full max-w-5xl space-y-12 animate-fade-in">
         
-        {/* Logo & Wordmark */}
+        {/* Logo */}
         <div className="flex flex-col items-center space-y-6">
-          <h1 className="text-xl font-display font-semibold text-ink tracking-tight leading-tight">
-            Lit<span className="font-normal text-stone-400">Tracker</span>
+          <h1 className="text-2xl font-display font-semibold text-ink tracking-tight">
+            Lit<span className="font-normal text-steel-500">Tracker</span>
           </h1>
         </div>
 
         {/* Headline */}
         <div className="text-center">
-          <h2 className="text-5xl font-display font-normal text-ink leading-tight">
+          <h2 className="text-5xl font-display font-normal text-ink leading-tight tracking-tight">
             What are you working on?
           </h2>
         </div>
@@ -65,8 +63,7 @@ const Gatekeeper: React.FC = () => {
         {/* Projects or Create Button */}
         {hasProjects ? (
           <div className="space-y-8">
-            {/* Project Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {inkState.projects.map((project, index) => {
                 const { issueCount, pageCount } = getProjectStats(project);
                 const ProjectTypeIcon = getProjectTypeIcon(project.projectType);
@@ -77,22 +74,20 @@ const Gatekeeper: React.FC = () => {
                     key={project.id}
                     onClick={() => handleSelectProject(project.id)}
                     className={`
-                      group relative p-6 rounded-sm transition-all duration-300 text-left bg-card border border-stone-200 hover:border-stone-400
+                      group relative p-6 text-left bg-card border border-border rounded-sm
+                      hover:border-steel-600 transition-all duration-200
                       ${isMostRecent ? 'col-span-full lg:col-span-2 border-l-[3px] border-l-ember-500' : ''}
                     `}
                   >
-                    {/* Project Type Icon */}
-                    <div className="mb-4">
-                      <ProjectTypeIcon className="w-8 h-8 text-stone-500" />
+                    <div className="mb-3">
+                      <ProjectTypeIcon className="w-6 h-6 text-steel-500" />
                     </div>
 
-                    {/* Project Title */}
-                    <h3 className="text-2xl font-display font-medium mb-3 text-ink transition-colors">
+                    <h3 className="text-2xl font-display font-medium mb-3 text-ink group-hover:text-ember-500 transition-colors tracking-tight">
                       {project.title}
                     </h3>
 
-                    {/* Project Stats */}
-                    <div className="flex items-center gap-6 text-sm text-stone-500">
+                    <div className="flex items-center gap-5 text-sm text-steel-500">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         <span>
@@ -108,9 +103,8 @@ const Gatekeeper: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Project Type Badge */}
                     <div className="mt-4">
-                      <span className="inline-block px-3 py-1 bg-stone-100 text-stone-700 text-xs font-body rounded-full border border-stone-200">
+                      <span className="inline-block px-3 py-1 bg-ink-900 text-steel-400 text-xs font-body rounded">
                         {getProjectTypeLabel(project.projectType)}
                       </span>
                     </div>
@@ -119,37 +113,29 @@ const Gatekeeper: React.FC = () => {
               })}
             </div>
 
-            {/* Create New Button for Returning Users */}
             <div className="flex justify-center pt-4">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="group flex items-center gap-3 px-6 py-3 bg-transparent text-ink border border-stone-200 hover:border-stone-400 hover:bg-stone-50 rounded font-body font-semibold text-sm transition-all duration-300"
+                className="group flex items-center gap-3 px-6 py-3 bg-card text-ink border border-border hover:border-steel-600 rounded font-body font-semibold text-sm transition-all"
               >
-                <Plus className="w-5 h-5" />
-                <span>
-                  Create New Universe
-                </span>
+                <Plus className="w-5 h-5 text-steel-500" />
+                Create New Universe
               </button>
             </div>
           </div>
         ) : (
-          /* Create New Button for New Users */
           <div className="flex justify-center">
             <button
               onClick={() => setShowNewProjectModal(true)}
-              className="group flex items-center gap-4 px-8 py-4 bg-transparent text-ink border border-stone-200 hover:border-stone-400 hover:bg-stone-50 rounded font-body font-semibold text-sm transition-all duration-300"
+              className="group flex items-center gap-4 px-8 py-4 bg-ink text-white hover:bg-steel-200 rounded font-body font-semibold text-base transition-all"
             >
               <Plus className="w-6 h-6" />
-              <span>
-                Create New Universe
-              </span>
+              Create New Universe
             </button>
           </div>
         )}
-
       </div>
 
-      {/* New Project Modal */}
       {showNewProjectModal && (
         <NewProjectModal
           onClose={() => setShowNewProjectModal(false)}

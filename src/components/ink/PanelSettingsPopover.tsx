@@ -69,7 +69,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
     return (
         <div 
             ref={popoverRef}
-            className="absolute right-0 top-full mt-1.5 z-[200] w-72 bg-card border border-stone-200 shadow-2xl rounded-xl p-4 space-y-4"
+            className="absolute right-0 top-full mt-1.5 z-[200] w-72 bg-card border border-border shadow-2xl rounded-lg p-4 space-y-4"
         >
             {/* Character selector */}
             <div className="relative">

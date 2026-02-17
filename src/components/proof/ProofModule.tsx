@@ -71,7 +71,7 @@ const ProofModule: React.FC = () => {
       <div className="flex-1 flex items-center justify-center bg-paper">
         <div className="text-center">
           <ScrollText size={48} className="mx-auto mb-4 text-stone-300" />
-          <h2 className="text-xl font-display font-bold text-ink mb-2">No Project Selected</h2>
+          <h2 className="text-xl font-display font-medium text-ink mb-2">No Project Selected</h2>
           <p className="text-stone-500">Create or select a project to view the proof.</p>
         </div>
       </div>
@@ -83,7 +83,7 @@ const ProofModule: React.FC = () => {
       <div className="flex-1 flex items-center justify-center bg-paper">
         <div className="text-center">
           <ScrollText size={48} className="mx-auto mb-4 text-stone-300" />
-          <h2 className="text-xl font-display font-bold text-ink mb-2">No Issue Selected</h2>
+          <h2 className="text-xl font-display font-medium text-ink mb-2">No Issue Selected</h2>
           <p className="text-stone-500">Select an issue to view its reconstructed script.</p>
         </div>
       </div>
@@ -99,7 +99,7 @@ const ProofModule: React.FC = () => {
             <ScrollText size={18} className="text-proof-500" />
           </div>
           <div>
-            <h1 className="text-lg font-display font-bold text-ink leading-tight">Proof</h1>
+            <h1 className="text-lg font-display font-medium text-ink leading-tight">Proof</h1>
             <p className="text-[10px] font-body text-stone-500 uppercase tracking-wider">
               {activeIssue.title}
             </p>

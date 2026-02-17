@@ -76,35 +76,33 @@ const LoreModule: React.FC = () => {
     <div className="flex-1 flex flex-col min-w-0 bg-paper">
       {/* Project Management Bar */}
       {activeProject && (
-        <div className="flex-shrink-0 bg-gradient-to-r from-stone-50 to-stone-50 border-b border-stone-200">
+        <div className="flex-shrink-0 bg-ink-950 border-b border-border">
           <div className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-lore-500/20 flex items-center justify-center">
-                  <FolderOpen size={16} className="text-ink" />
-                </div>
+                <FolderOpen size={16} className="text-steel-500" />
                 <div>
-                  <p className="text-xs font-body text-stone-500 uppercase tracking-wider">Active Project</p>
-                  <h2 className="font-display text-lg font-bold text-ink">{activeProject.title}</h2>
+                  <p className="text-[10px] font-body text-steel-500 tracking-wide">Active Project</p>
+                  <h2 className="font-display text-base font-medium text-ink">{activeProject.title}</h2>
                 </div>
               </div>
               <button
                 onClick={() => setShowProjectSelector(!showProjectSelector)}
-                className="text-xs text-ink hover:text-stone-800 font-bold uppercase tracking-wider hover:underline transition-colors"
+                className="text-xs text-steel-500 hover:text-ink font-medium hover:underline transition-colors"
               >
-                Switch Project
+                Switch
               </button>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="text-xs bg-white hover:bg-stone-50 text-ink px-3 py-1.5 rounded-lg border border-stone-200 font-bold uppercase tracking-wider transition-all"
+                className="text-xs bg-card hover:bg-ink-900 text-ink px-3 py-1.5 rounded border border-border font-medium transition-all"
               >
                 New Project
               </button>
               <button
                 onClick={() => setShowDeleteProjectConfirm(!showDeleteProjectConfirm)}
-                className="text-xs bg-white hover:bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
+                className="text-xs bg-card hover:bg-red-50 text-red-600 px-3 py-1.5 rounded border border-red-200 font-medium transition-all flex items-center gap-1.5"
               >
                 <Trash2 size={12} />
                 Delete
@@ -217,31 +215,34 @@ const LoreModule: React.FC = () => {
             {/* Module identity */}
             <div className="hidden md:flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-display font-medium text-ink tracking-tight">Lore Tracker</h1>
+                <h1 className="text-xl font-display font-medium text-ink tracking-tight">Lore Tracker</h1>
               </div>
-              <p className="text-[11px] font-display font-semibold text-stone-500 uppercase tracking-[0.14em]">
-                {loreEntries.length} entr{loreEntries.length !== 1 ? 'ies' : 'y'} cataloged
+              <p className="text-xs font-body text-steel-500 mt-0.5">
+                {loreEntries.length} entr{loreEntries.length !== 1 ? 'ies' : 'y'} across {Object.keys(typeCounts).length} types
               </p>
             </div>
 
             {/* Search */}
             <div className="relative flex-1 max-w-md group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-lore-400 transition-colors" size={15} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-500 group-focus-within:text-lore-500 transition-colors" size={15} />
               <input
                 type="text"
-                placeholder="Search lore entries, tags..."
+                placeholder="Search entries..."
                 value={loreSearchTerm}
                 onChange={(e) => setLoreSearchTerm(e.target.value)}
-                className="w-full bg-white border border-stone-200 rounded pl-9 pr-4 py-2 text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-lore-500/20 transition-all"
+                className="w-full bg-ink-900 border border-transparent rounded pl-9 pr-4 py-2 text-sm text-ink placeholder:text-steel-500 focus:outline-none focus:border-steel-600 focus:bg-white transition-all"
               />
             </div>
 
-            {/* Type filter pills */}
-            <div className="hidden md:flex border border-stone-200 rounded overflow-hidden">
+            {/* Rule */}
+            <div className="hidden md:block flex-1 h-px bg-border" />
+
+            {/* Type filter — segmented control */}
+            <div className="hidden md:flex gap-px bg-border rounded overflow-hidden">
               <button
                 onClick={() => setLoreFilterType('all')}
-                className={`px-3 py-1.5 text-xs font-body font-medium border-r border-stone-200 transition-all ${
-                  loreFilterType === 'all' ? 'bg-stone-100 text-ink font-semibold' : 'bg-white text-stone-500 hover:text-ink'
+                className={`px-3.5 py-1.5 text-xs font-body font-medium transition-all ${
+                  loreFilterType === 'all' ? 'bg-ink-900 text-ink font-semibold' : 'bg-card text-steel-500 hover:text-ink'
                 }`}
               >
                 All
@@ -253,12 +254,12 @@ const LoreModule: React.FC = () => {
                   <button
                     key={t}
                     onClick={() => setLoreFilterType(t)}
-                    className={`px-3 py-1.5 text-xs font-body font-medium border-r border-stone-200 last:border-r-0 transition-all ${
-                      loreFilterType === t ? 'bg-stone-100 text-ink font-semibold' : 'bg-white text-stone-500 hover:text-ink'
+                    className={`px-3.5 py-1.5 text-xs font-body font-medium transition-all ${
+                      loreFilterType === t ? 'bg-ink-900 text-ink font-semibold' : 'bg-card text-steel-500 hover:text-ink'
                     }`}
                   >
                     {cfg.label}
-                    {count > 0 && <span className="hidden lg:inline ml-1">({count})</span>}
+                    {count > 0 && <span className="hidden lg:inline ml-1 text-steel-600">({count})</span>}
                   </button>
                 );
               })}
@@ -305,7 +306,7 @@ const LoreModule: React.FC = () => {
             <div className="w-20 h-20 bg-lore-900/30 border border-lore-500/20 rounded-lg flex items-center justify-center mb-6 text-lore-400">
               <BookOpen size={32} />
             </div>
-            <h2 className="text-2xl font-display font-bold text-ink mb-3">Lore Tracker is Empty</h2>
+            <h2 className="text-2xl font-display font-medium text-ink mb-3">Lore Tracker is Empty</h2>
             <p className="text-stone-600 mb-8 leading-relaxed text-sm">
               Build your universe from the ground up. Factions, locations, events, concepts, artifacts, and canon rules — everything lives here.
             </p>
