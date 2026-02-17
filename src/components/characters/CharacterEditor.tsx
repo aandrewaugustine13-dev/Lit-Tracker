@@ -119,11 +119,11 @@ const CharacterEditor: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-stone-200 bg-card flex-shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-11 h-11 bg-char-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-char-500/20">
+            <div className="w-11 h-11 bg-ink rounded flex items-center justify-center text-white ">
               <User size={22} />
             </div>
             <div>
-              <h2 className="text-lg font-display font-bold text-ink">
+              <h2 className="text-lg font-display font-medium text-ink">
                 {activeCharacterId ? 'Edit Dossier' : 'New Dossier'}
               </h2>
               <p className="text-[9px] text-stone-500 font-body uppercase tracking-[0.15em]">
@@ -147,7 +147,7 @@ const CharacterEditor: React.FC = () => {
                 <input
                   type="text" value={formData.name || ''}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-ink text-sm focus:border-char-400 focus:outline-none transition-all"
+                  className="w-full bg-white border border-stone-200 rounded px-3.5 py-2 text-ink text-sm focus:border-stone-400 focus:outline-none transition-all"
                   placeholder="Character Name"
                 />
               </div>
@@ -156,7 +156,7 @@ const CharacterEditor: React.FC = () => {
                 <input
                   type="text" value={formData.archetype || ''}
                   onChange={e => setFormData({ ...formData, archetype: e.target.value })}
-                  className="w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-ink text-sm focus:border-char-400 focus:outline-none"
+                  className="w-full bg-white border border-stone-200 rounded px-3.5 py-2 text-ink text-sm focus:border-stone-400 focus:outline-none"
                   placeholder="e.g. The Reluctant Hero"
                 />
               </div>
@@ -165,7 +165,7 @@ const CharacterEditor: React.FC = () => {
                 <select
                   value={formData.role || 'Supporting'}
                   onChange={e => setFormData({ ...formData, role: e.target.value as CharacterRole })}
-                  className="w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-ink text-sm cursor-pointer"
+                  className="w-full bg-white border border-stone-200 rounded px-3.5 py-2 text-ink text-sm cursor-pointer"
                 >
                   <option value="Protagonist">Protagonist</option>
                   <option value="Antagonist">Antagonist</option>
@@ -202,7 +202,7 @@ const CharacterEditor: React.FC = () => {
                     placeholder="Add tag key..."
                     className="flex-1 bg-white border border-stone-200 rounded px-2.5 py-1 text-xs text-ink"
                   />
-                  <button onClick={addSmartTag} className="text-char-400 hover:text-char-500 p-1"><Plus size={14} /></button>
+                  <button onClick={addSmartTag} className="text-ink hover:text-ink p-1"><Plus size={14} /></button>
                 </div>
               </div>
             </section>
@@ -259,7 +259,7 @@ const CharacterEditor: React.FC = () => {
               <div className="w-44 flex-shrink-0">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em]">Eras</label>
-                  <button onClick={addEra} className="p-1 hover:bg-stone-100 rounded text-char-400"><Plus size={13} /></button>
+                  <button onClick={addEra} className="p-1 hover:bg-stone-100 rounded text-ink"><Plus size={13} /></button>
                 </div>
                 <div className="space-y-1">
                   {(formData.eras || []).map((era) => (
@@ -268,7 +268,7 @@ const CharacterEditor: React.FC = () => {
                       onClick={() => setActiveEra(era.id)}
                       className={`group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all border text-xs ${
                         activeEraId === era.id
-                          ? 'bg-char-500/10 border-char-400 text-char-400 font-bold'
+                          ? 'bg-ink/10 border-stone-400 text-ink font-bold'
                           : 'bg-white border-stone-200 text-stone-600 hover:border-stone-400'
                       }`}
                     >
@@ -299,7 +299,7 @@ const CharacterEditor: React.FC = () => {
                         <input
                           type="text" value={currentEra.name}
                           onChange={e => updateEra(currentEra.id, { name: e.target.value })}
-                          className="w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-ink text-sm"
+                          className="w-full bg-white border border-stone-200 rounded px-3.5 py-2 text-ink text-sm"
                         />
                       </div>
                       <div className="w-28">
@@ -308,7 +308,7 @@ const CharacterEditor: React.FC = () => {
                           type="text" value={currentEra.age_appearance}
                           onChange={e => updateEra(currentEra.id, { age_appearance: e.target.value })}
                           placeholder="e.g. 40s"
-                          className="w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2 text-ink text-sm"
+                          className="w-full bg-white border border-stone-200 rounded px-3.5 py-2 text-ink text-sm"
                         />
                       </div>
                     </div>
@@ -316,7 +316,7 @@ const CharacterEditor: React.FC = () => {
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em]">Visual Prompt Tags</label>
-                        <button className="text-[8px] text-char-400 font-bold flex items-center gap-1 hover:underline">
+                        <button className="text-[8px] text-ink font-bold flex items-center gap-1 hover:underline">
                           <Sparkles size={9} /> Suggest
                         </button>
                       </div>
@@ -330,7 +330,7 @@ const CharacterEditor: React.FC = () => {
                     </div>
 
                     {/* Prompt preview */}
-                    <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <div className="bg-stone-50 border border-stone-200 p-4 rounded">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-[9px] font-bold text-stone-600 uppercase tracking-[0.2em]">Master Prompt Preview</p>
                         <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-1 bg-white border border-stone-200 rounded-lg text-[10px] font-bold text-stone-600 hover:text-ink transition-all">
@@ -338,7 +338,7 @@ const CharacterEditor: React.FC = () => {
                           {copied ? 'Copied' : 'Copy'}
                         </button>
                       </div>
-                      <p className="text-xs text-char-400 font-body italic p-3 bg-white rounded border border-char-400/20 leading-relaxed">
+                      <p className="text-xs text-ink font-body italic p-3 bg-white rounded border border-stone-400/20 leading-relaxed">
                         {generateMasterPrompt(formData as Character, activeEraId)}
                       </p>
                     </div>
@@ -357,7 +357,7 @@ const CharacterEditor: React.FC = () => {
         {/* Footer */}
         <div className="p-5 border-t border-stone-200 bg-card flex items-center justify-between flex-shrink-0">
           <button onClick={() => setCharacterEditorOpen(false)} className="px-5 py-2 text-stone-600 hover:text-ink font-medium transition-colors text-sm">Cancel</button>
-          <button onClick={handleSave} className="flex items-center gap-2 bg-char-500 hover:bg-char-400 text-white px-7 py-2 rounded-lg font-bold shadow-lg shadow-char-500/20 transition-all hover:-translate-y-0.5 text-sm">
+          <button onClick={handleSave} className="flex items-center gap-2 bg-ink text-white hover:bg-stone-800 px-7 py-2 rounded font-bold transition-all text-sm">
             <Save size={16} /> Save Dossier
           </button>
         </div>

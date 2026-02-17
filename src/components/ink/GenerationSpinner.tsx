@@ -9,7 +9,7 @@ const PROVIDER_META: Record<ImageProvider, { label: string; color: string; bgCol
     gemini:   { label: 'Gemini',   color: 'text-blue-400',   bgColor: 'border-blue-500' },
     leonardo: { label: 'Leonardo', color: 'text-orange-400', bgColor: 'border-orange-500' },
     grok:     { label: 'Grok',     color: 'text-gray-400',   bgColor: 'border-gray-500' },
-    fal:      { label: 'FAL Flux', color: 'text-ember-400',  bgColor: 'border-ember-500' },
+    fal:      { label: 'FAL Flux', color: 'text-ink',  bgColor: 'border-ink' },
     seaart:   { label: 'SeaArt',   color: 'text-pink-400',   bgColor: 'border-pink-500' },
     openai:   { label: 'OpenAI',   color: 'text-green-400',  bgColor: 'border-green-500' },
 };

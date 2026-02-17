@@ -167,7 +167,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     // Compact variant for sidebar sections
     if (compact) {
         return (
-            <div className="flex flex-col items-center text-center py-6 px-3 rounded-xl border border-dashed transition-colors border-stone-200 bg-paper">
+            <div className="flex flex-col items-center text-center py-6 px-3 rounded border border-dashed transition-colors border-stone-200 bg-paper">
                 <Illustration className="w-16 h-12 mb-3 text-stone-400" />
                 <p className="font-body text-[10px] uppercase tracking-widest mb-1 text-stone-500">
                     {config.title}
@@ -179,7 +179,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                     <ul className="space-y-1 mb-3">
                         {config.tips.map((tip, i) => (
                             <li key={i} className="text-[9px] flex items-start gap-1.5 text-left text-stone-600">
-                                <span className="mt-0.5 w-1 h-1 rounded-full flex-shrink-0 bg-ember-500/50" />
+                                <span className="mt-0.5 w-1 h-1 rounded-full flex-shrink-0 bg-ink/50" />
                                 {tip}
                             </li>
                         ))}
@@ -188,7 +188,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                 {onAction && (
                     <button
                         onClick={onAction}
-                        className="mt-1 px-4 py-1.5 text-[9px] font-body uppercase tracking-widest rounded-lg border transition-all hover:scale-105 active:scale-95 bg-ember-500/10 text-ember-500 border-ember-500/30 hover:bg-ember-500/20"
+                        className="mt-1 px-4 py-1.5 text-[9px] font-body uppercase tracking-widest rounded border transition-all hover:scale-105 bg-ink/10 text-ink border-stone-400 hover:bg-ink/20"
                     >
                         {actionLabel || config.actionDefault || 'Get Started'}
                     </button>
@@ -213,14 +213,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             </p>
 
             {config.tips.length > 0 && (
-                <div className="rounded-xl border px-6 py-4 mb-6 max-w-sm border-stone-200 bg-card">
+                <div className="rounded border px-6 py-4 mb-6 max-w-sm border-stone-200 bg-card">
                     <p className="text-[10px] font-body uppercase tracking-widest mb-3 text-stone-500">
                         Quick tips
                     </p>
                     <ul className="space-y-2 text-left">
                         {config.tips.map((tip, i) => (
                             <li key={i} className="text-xs flex items-start gap-2 text-stone-600">
-                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-ember-500/60" />
+                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-ink/60" />
                                 {tip}
                             </li>
                         ))}
@@ -231,7 +231,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             {onAction && (
                 <button
                     onClick={onAction}
-                    className="px-8 py-3 font-display text-lg tracking-widest uppercase rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 bg-ink text-paper hover:bg-stone-800"
+                    className="px-8 py-3 font-display text-lg tracking-widest uppercase rounded-full transition-all hover:scale-105 bg-ink text-paper hover:bg-stone-800"
                 >
                     {actionLabel || config.actionDefault || 'Get Started'}
                 </button>

@@ -5,13 +5,9 @@ import {
   PenTool,
   Users,
   BookOpen,
-  Flame,
   CloudOff,
   RefreshCcw,
   Cloud,
-  ChevronRight,
-  Layers,
-  FileText,
   ScrollText,
 } from 'lucide-react';
 
@@ -19,79 +15,44 @@ const MODULE_CONFIG: {
   id: ModuleId;
   label: string;
   shortLabel: string;
-  description: string;
   icon: React.ReactNode;
   accent: string;
 }[] = [
   {
     id: 'lore',
-    label: 'Lore Tracker',
-    shortLabel: 'LORE',
-    description: '🏠 Home & Hub',
-    icon: <BookOpen size={18} />,
+    label: 'Lore',
+    shortLabel: 'L',
+    icon: <BookOpen size={16} />,
     accent: 'lore',
   },
   {
     id: 'ink',
     label: 'Storyboard',
-    shortLabel: 'INK',
-    description: 'Visual layout',
-    icon: <PenTool size={18} />,
+    shortLabel: 'S',
+    icon: <PenTool size={16} />,
     accent: 'ember',
   },
   {
     id: 'characters',
     label: 'Characters',
-    shortLabel: 'CHAR',
-    description: 'Cast & voices',
-    icon: <Users size={18} />,
+    shortLabel: 'C',
+    icon: <Users size={16} />,
     accent: 'char',
   },
   {
     id: 'proof',
     label: 'Proof',
-    shortLabel: 'PROOF',
-    description: 'Read & revise',
-    icon: <ScrollText size={18} />,
+    shortLabel: 'P',
+    icon: <ScrollText size={16} />,
     accent: 'proof',
   },
 ];
 
-const accentMap: Record<string, {
-  active: string;
-  activeBg: string;
-  indicator: string;
-  iconBg: string;
-  hoverBg: string;
-}> = {
-  ember: {
-    active: 'text-ember-400',
-    activeBg: 'bg-ember-900/40',
-    indicator: 'bg-ember-500',
-    iconBg: 'bg-ember-500/15 text-ember-400',
-    hoverBg: 'hover:bg-ink-800/80',
-  },
-  char: {
-    active: 'text-char-400',
-    activeBg: 'bg-char-900/40',
-    indicator: 'bg-char-500',
-    iconBg: 'bg-char-500/15 text-char-400',
-    hoverBg: 'hover:bg-ink-800/80',
-  },
-  lore: {
-    active: 'text-lore-400',
-    activeBg: 'bg-lore-900/40',
-    indicator: 'bg-lore-500',
-    iconBg: 'bg-lore-500/15 text-lore-400',
-    hoverBg: 'hover:bg-ink-800/80',
-  },
-  proof: {
-    active: 'text-proof-400',
-    activeBg: 'bg-proof-900/40',
-    indicator: 'bg-proof-500',
-    iconBg: 'bg-proof-500/15 text-proof-400',
-    hoverBg: 'hover:bg-ink-800/80',
-  },
+const indicatorColor: Record<string, string> = {
+  ember: 'bg-ember-500',
+  char: 'bg-char-500',
+  lore: 'bg-lore-500',
+  proof: 'bg-proof-500',
 };
 
 const GlobalSidebar: React.FC = () => {
@@ -103,46 +64,44 @@ const GlobalSidebar: React.FC = () => {
         iSum + i.pages.reduce((pSum, pg) => pSum + pg.panels.length, 0), 0), 0);
     const totalPages = inkState.projects.reduce((sum, p) =>
       sum + p.issues.reduce((iSum, i) => iSum + i.pages.length, 0), 0);
-    const totalIssues = inkState.projects.reduce((sum, p) => sum + p.issues.length, 0);
-    return { totalPanels, totalPages, totalIssues };
+    return { totalPanels, totalPages };
   }, [inkState.projects]);
 
   const moduleStats: Record<ModuleId, string> = {
-    ink: stats.totalPanels > 0 ? `${stats.totalPanels} panels` : '',
-    characters: characters.length > 0 ? `${characters.length} cast` : '',
-    lore: loreEntries.length > 0 ? `${loreEntries.length} entries` : '',
-    proof: stats.totalPages > 0 ? `${stats.totalPages} pages` : '',
+    ink: stats.totalPanels > 0 ? `${stats.totalPanels}` : '',
+    characters: characters.length > 0 ? `${characters.length}` : '',
+    lore: loreEntries.length > 0 ? `${loreEntries.length}` : '',
+    proof: stats.totalPages > 0 ? `${stats.totalPages}` : '',
   };
 
   return (
-    <aside className="w-16 lg:w-60 bg-card border-r border-stone-200 h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
+    <aside className="w-16 lg:w-60 bg-card border-r border-border h-screen flex flex-col flex-shrink-0 transition-all duration-300 z-50">
       {/* Brand */}
-      <div className="h-16 flex items-center gap-3 px-3 lg:px-4 border-b border-stone-200 flex-shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ember-500 to-ember-600 flex items-center justify-center flex-shrink-0">
-          <Flame size={16} className="text-white" />
-        </div>
-        <div className="hidden lg:block min-w-0">
-          <h1 className="text-sm font-display font-bold text-ink tracking-tight leading-tight truncate">
-            Lit Tracker
+      <div className="h-16 flex items-center px-3 lg:px-5 border-b border-border flex-shrink-0">
+        <div className="hidden lg:block">
+          <h1 className="text-[22px] font-display font-semibold text-ink tracking-tight leading-none">
+            Lit<span className="font-normal text-steel-500">Tracker</span>
           </h1>
-          <p className="text-[9px] font-body text-stone-500 uppercase tracking-[0.15em] truncate mt-0.5">
+          <p className="text-[10px] font-body text-steel-500 tracking-wide mt-1 truncate">
             {projectName}
           </p>
+        </div>
+        <div className="lg:hidden flex items-center justify-center w-full">
+          <span className="text-lg font-display font-semibold text-ink">L</span>
         </div>
       </div>
 
       {/* Module Navigation */}
       <nav className="flex-1 py-3 overflow-y-auto custom-scrollbar">
-        <div className="hidden lg:block px-4 mb-2">
-          <p className="text-[8px] font-body text-stone-500 uppercase tracking-[0.25em]">
+        <div className="hidden lg:block px-5 mb-2">
+          <p className="text-[11px] font-display font-semibold text-steel-600 uppercase tracking-[0.18em]">
             Modules
           </p>
         </div>
 
-        <div className="space-y-0.5 px-2">
+        <div className="space-y-0.5 px-2 lg:px-3">
           {MODULE_CONFIG.map((mod) => {
             const isActive = activeModule === mod.id;
-            const colors = accentMap[mod.accent];
             const stat = moduleStats[mod.id];
 
             return (
@@ -150,81 +109,50 @@ const GlobalSidebar: React.FC = () => {
                 key={mod.id}
                 onClick={() => setActiveModule(mod.id)}
                 className={`
-                  w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 transition-all duration-200 group relative rounded-lg
+                  w-full flex items-center gap-2.5 px-2 lg:px-2.5 py-2 transition-all duration-150 group relative rounded-md
                   ${isActive
-                    ? `${colors.active} font-bold`
-                    : `text-stone-500 hover:bg-stone-50 hover:text-ink`
+                    ? 'text-ink font-semibold bg-ink-900'
+                    : 'text-steel-500 hover:text-ink hover:bg-ink-900'
                   }
                 `}
               >
-                {isActive && (
-                  <div className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-full ${colors.indicator}`} />
-                )}
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                  isActive ? colors.iconBg : 'bg-stone-100 text-stone-500 group-hover:bg-stone-200 group-hover:text-ink'
-                }`}>
+                <span className={`flex-shrink-0 ${isActive ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'}`}>
                   {mod.icon}
-                </div>
-                <div className="hidden lg:flex flex-col items-start min-w-0 flex-1">
-                  <span className="text-[13px] truncate leading-tight">{mod.label}</span>
-                  <span className={`text-[9px] font-body tracking-wider mt-0.5 ${
-                    isActive ? 'opacity-60' : 'text-stone-400'
-                  }`}>
-                    {stat || mod.description}
+                </span>
+                <span className="hidden lg:block text-[13px] truncate leading-tight flex-1 text-left">
+                  {mod.label}
+                </span>
+                {stat && (
+                  <span className="hidden lg:block text-[11px] text-steel-600 tabular-nums">
+                    {stat}
                   </span>
-                </div>
+                )}
                 {isActive && (
-                  <ChevronRight size={14} className="ml-auto hidden lg:block opacity-40" />
+                  <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] rounded-sm ${indicatorColor[mod.accent]}`} />
                 )}
               </button>
             );
           })}
         </div>
-
-        {/* Divider */}
-        <div className="sidebar-divider my-4" />
-
-        {/* Project stats — desktop */}
-        <div className="hidden lg:block px-4 pb-2">
-          <p className="text-[8px] font-body text-stone-500 uppercase tracking-[0.25em] mb-3">
-            Project
-          </p>
-          <div className="space-y-2">
-            {[
-              { icon: <Layers size={12} />, label: 'Issues', value: stats.totalIssues, color: 'text-ember-500' },
-              { icon: <FileText size={12} />, label: 'Pages', value: stats.totalPages, color: 'text-ember-500' },
-              { icon: <Users size={12} />, label: 'Cast', value: characters.length, color: 'text-char-500' },
-              { icon: <BookOpen size={12} />, label: 'Lore', value: loreEntries.length, color: 'text-lore-500' },
-            ].map((s, i) => (
-              <div key={i} className="flex items-center gap-2.5">
-                <span className="text-stone-400">{s.icon}</span>
-                <span className="text-[10px] text-stone-500 flex-1">{s.label}</span>
-                <span className={`text-[11px] font-body font-bold ${s.value > 0 ? s.color : 'text-stone-400'}`}>
-                  {s.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </nav>
 
       {/* Footer — sync status */}
-      <div className="p-3 lg:px-4 lg:py-3 border-t border-stone-200">
-        <div className="hidden lg:flex items-center gap-2.5">
+      <div className="p-3 lg:px-5 lg:py-3 border-t border-border">
+        <div className="hidden lg:flex items-center gap-2">
           {syncStatus === 'saving' ? (
-            <RefreshCcw size={12} className="text-ember-500 animate-spin flex-shrink-0" />
+            <RefreshCcw size={11} className="text-ember-500 animate-spin flex-shrink-0" />
           ) : syncStatus === 'synced' ? (
-            <Cloud size={12} className="text-emerald-500 flex-shrink-0" />
+            <Cloud size={11} className="text-emerald-500 flex-shrink-0" />
           ) : syncStatus === 'error' ? (
-            <CloudOff size={12} className="text-red-500 flex-shrink-0" />
+            <CloudOff size={11} className="text-red-500 flex-shrink-0" />
           ) : (
-            <CloudOff size={12} className="text-stone-400 flex-shrink-0" />
+            <CloudOff size={11} className="text-steel-600 flex-shrink-0" />
           )}
-          <span className={`text-[9px] font-body uppercase tracking-wider ${
+          <span className={`text-[10px] font-body ${
             syncStatus === 'saving' ? 'text-ember-500'
             : syncStatus === 'synced' ? 'text-emerald-500'
             : syncStatus === 'error' ? 'text-red-500'
-            : 'text-stone-400'
+            : 'text-steel-600'
           }`}>
             {syncStatus === 'saving' ? 'Saving...'
               : syncStatus === 'synced' ? 'Cloud synced'
@@ -238,7 +166,7 @@ const GlobalSidebar: React.FC = () => {
           ) : syncStatus === 'synced' ? (
             <Cloud size={14} className="text-emerald-500" />
           ) : (
-            <CloudOff size={14} className="text-stone-400" />
+            <CloudOff size={14} className="text-steel-600" />
           )}
         </div>
       </div>

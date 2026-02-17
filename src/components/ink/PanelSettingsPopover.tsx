@@ -69,7 +69,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
     return (
         <div 
             ref={popoverRef}
-            className="absolute right-0 top-full mt-1.5 z-[200] w-72 bg-card border border-stone-200 shadow-2xl rounded-xl p-4 space-y-4"
+            className="absolute right-0 top-full mt-1.5 z-[200] w-72 bg-card border border-border shadow-2xl rounded-lg p-4 space-y-4"
         >
             {/* Character selector */}
             <div className="relative">
@@ -80,7 +80,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                             onClick={() => setShowCharMenu(!showCharMenu)}
                             className={`w-full text-left px-3 py-2 rounded-lg text-xs font-body flex items-center justify-between transition-colors ${
                                 selectedChars.length > 0 
-                                    ? 'bg-ember-500/10 border border-ember-500/30 text-ember-500' 
+                                    ? 'bg-ink/10 border border-stone-400/30 text-ink' 
                                     : 'bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100'
                             }`}
                         >
@@ -88,7 +88,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                             <ChevronDown size={14} />
                         </button>
                         {showCharMenu && (
-                            <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
+                            <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
                                 {characters.map(char => {
                                     const isSelected = panel.characterIds.includes(char.id);
                                     const appearanceSummary = getAppearanceSummary(char);
@@ -97,14 +97,14 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                                             key={char.id} 
                                             onClick={() => toggleCharacter(char.id)}
                                             className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                                                isSelected ? 'bg-ember-500/20' : 'hover:bg-stone-100'
+                                                isSelected ? 'bg-ink/20' : 'hover:bg-stone-100'
                                             }`}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <span className={`w-3 h-3 rounded border flex-shrink-0 ${
-                                                    isSelected ? 'bg-ember-500 border-ember-500' : 'border-stone-300'
+                                                    isSelected ? 'bg-ink border-stone-400' : 'border-stone-300'
                                                 }`} />
-                                                <span className={`font-bold ${isSelected ? 'text-ember-500' : 'text-ink'}`}>
+                                                <span className="text-ink font-bold">
                                                     {char.name}
                                                 </span>
                                             </div>
@@ -158,14 +158,14 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                         <ChevronDown size={14} />
                     </button>
                     {showRefMenu && (
-                        <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
+                        <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-lg border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
                             <button 
                                 onClick={() => {
                                     dispatch({ type: 'UPDATE_PANEL', panelId: panel.id, updates: { referencePanelId: undefined } });
                                     setShowRefMenu(false);
                                 }}
                                 className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${
-                                    !panel.referencePanelId ? 'bg-ember-500/20 text-ember-500' : 'text-stone-600 hover:bg-stone-100'
+                                    !panel.referencePanelId ? 'bg-ink/20 text-ink' : 'text-stone-600 hover:bg-stone-100'
                                 }`}
                             >
                                 <Unlink size={12} />
@@ -308,7 +308,7 @@ const PanelSettingsPopover: React.FC<PanelSettingsPopoverProps> = ({
                         <History size={12} />View ({panel.promptHistory.length})
                     </button>
                     {showPromptHistory && (
-                        <div className="mt-1 rounded-lg shadow-xl border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
+                        <div className="mt-1 rounded-lg border py-1 max-h-48 overflow-y-auto bg-card border-stone-200">
                             {[...panel.promptHistory].reverse().map((historyPrompt, idx) => {
                                 const historyLength = panel.promptHistory?.length || 0;
                                 const versionsAgo = historyLength - idx;

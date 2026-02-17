@@ -105,7 +105,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <div className="hidden md:flex flex-col gap-0.5 min-w-0">
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${showGutters ? 'bg-black' : 'bg-ink'}`} />
-              <h1 className={`text-lg font-display font-bold tracking-tight ${showGutters ? 'text-black' : 'text-ink'}`}>
+              <h1 className={`text-lg font-display font-medium tracking-tight ${showGutters ? 'text-black' : 'text-ink'}`}>
                 Storyboard
               </h1>
             </div>
@@ -146,7 +146,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                 activeTab === 'canvas'
                   ? showGutters
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-ink text-card shadow-lg'
+                    : 'bg-ink text-card'
                   : showGutters
                     ? 'text-gray-600 hover:text-black'
                     : 'text-stone-600 hover:bg-stone-100'
@@ -160,7 +160,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                 activeTab === 'guide'
                   ? showGutters
                     ? 'bg-white text-black shadow-sm'
-                    : 'bg-ink text-card shadow-lg'
+                    : 'bg-ink text-card'
                   : showGutters
                     ? 'text-gray-600 hover:text-black'
                     : 'text-stone-600 hover:bg-stone-100'
@@ -177,7 +177,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
         {/* Left Side: Canvas Controls — grouped */}
         <div className="flex items-center gap-2">
           {/* Undo/Redo group */}
-          <div className={`flex items-center gap-0.5 rounded-lg border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-stone-200 bg-card'}`}>
+          <div className={`flex items-center gap-0.5 rounded border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-stone-200 bg-card'}`}>
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={!inkCanUndo}
@@ -205,7 +205,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           </div>
 
           {/* View controls group */}
-          <div className={`flex items-center gap-0.5 rounded-lg border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-stone-200 bg-card'}`}>
+          <div className={`flex items-center gap-0.5 rounded border p-0.5 ${showGutters ? 'border-gray-300 bg-gray-100' : 'border-stone-200 bg-card'}`}>
             <ZoomControls
               zoomEnabled={zoomEnabled}
               setZoomEnabled={setZoomEnabled}
@@ -219,7 +219,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
               className={`p-1.5 rounded transition-all ${
                 showSpreadView
                   ? showGutters 
-                    ? 'bg-ember-500 text-white' 
+                    ? 'bg-ink text-white' 
                     : 'bg-ink text-card'
                   : showGutters 
                     ? 'hover:bg-gray-200 text-gray-600' 
@@ -237,7 +237,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                 className={`p-1.5 rounded transition-all ${
                   showSplitView
                     ? showGutters 
-                      ? 'bg-ember-500 text-white' 
+                      ? 'bg-ink text-white' 
                       : 'bg-ink text-card'
                     : showGutters 
                       ? 'hover:bg-gray-200 text-gray-600' 
@@ -257,13 +257,13 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded border flex items-center gap-2 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
             >
               {exporting ? <Icons.Loader /> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
               {exporting ? 'EXPORTING...' : 'EXPORT'}
             </button>
             {showExportMenu && (
-              <div className={`absolute top-full right-0 mt-2 w-56 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-card border border-stone-200'}`}>
+              <div className={`absolute top-full right-0 mt-2 w-56 rounded-lg shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-card border border-stone-200'}`}>
                 <div className={`px-4 py-2 text-[9px] font-body uppercase tracking-widest ${showGutters ? 'text-gray-400 border-b border-gray-200' : 'text-stone-500 border-b border-stone-200'}`}>Images</div>
                 <button onClick={handleExportPage} className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}><FileImage size={14} /><span>ZIP Page Images</span></button>
                 <button onClick={handleExportIssue} className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors uppercase tracking-widest flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}><FileImage size={14} /><span>CBZ Issue</span></button>
@@ -273,7 +273,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
               </div>
             )}
           </div>
-          <button disabled={batching || !activePage?.panels.length} onClick={generatePage} className={`font-body text-[10px] px-4 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 disabled:opacity-20 active:scale-95 ${showGutters ? 'bg-black border-black text-white hover:bg-gray-800' : 'bg-ink border-ink text-card hover:bg-stone-900 shadow-lg'}`}>
+          <button disabled={batching || !activePage?.panels.length} onClick={generatePage} className={`font-body text-[10px] px-4 py-1.5 tracking-widest transition-all rounded border flex items-center gap-2 disabled:opacity-20 ${showGutters ? 'bg-black border-black text-white hover:bg-gray-800' : 'bg-ink border-ink text-card hover:bg-stone-900'}`}>
             {batching ? <Icons.Loader /> : <Icons.Magic />}{batching ? `INKING WITH ${(activeProject?.imageProvider || 'AI').toUpperCase()}...` : 'AUTO-INK'}
           </button>
           {/* Generate All Button */}
@@ -291,7 +291,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
                   <button
                     onClick={handleGenerateAll}
                     disabled={isGeneratingAll || batching}
-                    className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 disabled:opacity-20 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                    className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded border flex items-center gap-2 disabled:opacity-20 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
                   >
                     <Sparkles className="w-4 h-4" />
                     GENERATE ALL
@@ -307,14 +307,14 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowTemplateMenu(!showTemplateMenu)}
-              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded border flex items-center gap-2 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
               title="Apply page template"
             >
               <LayoutGrid size={16} />
               TEMPLATES
             </button>
             {showTemplateMenu && (
-              <div className={`absolute top-full right-0 mt-2 w-48 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-card border border-stone-200'}`}>
+              <div className={`absolute top-full right-0 mt-2 w-48 rounded-lg shadow-2xl overflow-hidden z-50 animate-fade-in py-1 ${showGutters ? 'bg-white border border-gray-300' : 'bg-card border border-stone-200'}`}>
                 <button 
                   onClick={() => { activePage && dispatch({ type: 'APPLY_PAGE_TEMPLATE', pageId: activePage.id, template: '2x2' }); setShowTemplateMenu(false); }}
                   className={`w-full text-left px-4 py-2.5 text-xs font-body transition-colors flex items-center gap-3 ${showGutters ? 'text-gray-700 hover:bg-gray-100' : 'text-stone-700 hover:bg-stone-100'}`}
@@ -364,7 +364,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           {activeIssue?.scriptText && (
             <button
               onClick={() => setShowScriptPanel(!showScriptPanel)}
-              className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg ${showScriptPanel ? 'bg-ink border-ink text-card' : showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
+              className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 ${showScriptPanel ? 'bg-ink border-ink text-card' : showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
               title="Toggle script reference panel"
             >
               <FileText size={16} />
@@ -374,7 +374,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           {/* Character Bank */}
           <button
             onClick={() => setShowCharacterBank(true)}
-            className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
+            className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
             title="Manage characters"
           >
             <Users size={16} />
@@ -384,7 +384,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           <button
             onClick={() => setShowReadThrough(true)}
             disabled={totalIssuePanels === 0}
-            className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 active:scale-95 shadow-lg disabled:opacity-30 ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
+            className={`font-body text-xs px-4 py-2 tracking-widest transition-all rounded-full border flex items-center gap-2 disabled:opacity-30 ${showGutters ? 'bg-white border-black text-black hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-700 hover:bg-stone-100'}`}
             title="Cinematic presentation mode"
           >
             <Play size={16} />
@@ -394,7 +394,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
           {activeIssue && characters.length > 0 && (
             <button
               onClick={handleAutoLink}
-              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded-lg border flex items-center gap-2 active:scale-95 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+              className={`font-body text-[10px] px-3 py-1.5 tracking-widest transition-all rounded border flex items-center gap-2 ${showGutters ? 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100' : 'bg-card border-stone-200 text-stone-600 hover:bg-stone-100'}`}
               title="Scan panels and auto-link characters by name"
             >
               <Link2 size={14} />
@@ -413,7 +413,7 @@ const InkToolbar: React.FC<InkToolbarProps> = ({
               // No pages at all - create one first
               dispatch({ type: 'ADD_PAGE', issueId: activeIssue.id });
             }
-          }} className={`font-display text-xl px-6 py-2 tracking-widest transition-all rounded-full shadow-lg active:translate-y-1 ${showGutters ? 'bg-black text-white hover:bg-gray-800' : 'bg-ink hover:bg-stone-900 text-card'}`}>
+          }} className={`font-display text-xl px-6 py-2 tracking-widest transition-all rounded-full ${showGutters ? 'bg-black text-white hover:bg-gray-800' : 'bg-ink hover:bg-stone-900 text-card'}`}>
             ADD FRAME
           </button>
         </div>

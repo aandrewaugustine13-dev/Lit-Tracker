@@ -420,7 +420,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                             onClick={handleFalClick}
                             className={`text-[9px] font-body py-2 rounded-lg transition-all ${
                                 activeProject?.imageProvider === 'fal'
-                                    ? 'bg-ember-500 hover:bg-ember-400 text-white font-bold shadow-sm'
+                                    ? 'bg-ink hover:bg-stone-800 text-white font-bold shadow-sm'
                                     : 'bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-ink border border-stone-200'
                             }`}
                         >
@@ -493,7 +493,7 @@ export const ScriptPanel: React.FC<ScriptPanelProps> = ({
                                     alert('API key saved!');
                                 }
                             }}
-                            className="bg-ember-500 hover:bg-ember-400 text-white px-4 rounded-lg text-[9px] transition-colors font-bold"
+                            className="bg-ink hover:bg-stone-800 text-white px-4 rounded-lg text-[9px] transition-colors font-bold"
                         >
                             SET
                         </button>

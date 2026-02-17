@@ -190,16 +190,16 @@ const PanelCard: React.FC<PanelCardProps> = ({
     return (
         <div ref={setNodeRef} style={style}
             onClick={(e) => { if (onSelect && (e.target as HTMLElement).closest('button, input, textarea, [contenteditable]') === null) onSelect(); }}
-            className={`group rounded-xl border transition-all flex flex-col ${
-                panelFrameStyle === 'translucent' ? 'bg-transparent border border-stone-300 shadow-sm hover:shadow-md'
-                    : 'bg-paper border-2 border-stone-200 shadow-md hover:shadow-lg'
+            className={`group rounded-sm border transition-all flex flex-col ${
+                panelFrameStyle === 'translucent' ? 'bg-transparent border border-stone-300'
+                    : 'bg-paper border-2 border-stone-200'
             } ${isDragging ? 'ring-2 ring-ember-500 shadow-2xl' : ''} ${isResizing ? 'cursor-nwse-resize' : ''}`}
         >
             {/* HEADER */}
             <div className={`flex items-center justify-between px-2 py-1 border-b ${
                 panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50'
                     : 'border-stone-200 bg-stone-50'
-            } rounded-t-xl`}>
+            } rounded-t-sm`}>
                 <div className="flex items-center gap-1.5">
                     <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none hover:text-ember-500 transition-colors p-0.5 rounded hover:bg-stone-100" title="Drag to move">
                         <Move size={14} className="text-stone-500" />
@@ -243,15 +243,15 @@ const PanelCard: React.FC<PanelCardProps> = ({
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
                 {/* IMAGE */}
-                <div className={`relative rounded-lg overflow-hidden ${aspectConfig?.class || 'aspect-video'} bg-stone-100 border border-stone-200 group`}>
+                <div className={`relative rounded-sm overflow-hidden ${aspectConfig?.class || 'aspect-video'} bg-stone-100 border border-stone-200 group`}>
                     {imageDataUrl ? (
                         <>
                             <img src={imageDataUrl} alt={`Panel ${index + 1}`} className="w-full h-full object-cover" />
                             {overlayElements.map(element => (<TextOverlay key={element.id} element={element} panelId={panel.id} dispatch={dispatch} textOverlayStyle={textOverlayStyle} />))}
                             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={handleAddDialogueLine} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={12} /></button>
-                                <button onClick={handleGenerateImage} disabled={isGenerating} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors disabled:opacity-50" title="Regenerate" aria-label="Regenerate image"><RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /></button>
-                                <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-black/60 hover:bg-ember-500 text-white rounded-full transition-colors" title="Upload" aria-label="Upload image"><Upload size={12} /></button>
+                                <button onClick={handleAddDialogueLine} className="p-1.5 bg-black/60 hover:bg-stone-700 text-white rounded-full transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={12} /></button>
+                                <button onClick={handleGenerateImage} disabled={isGenerating} className="p-1.5 bg-black/60 hover:bg-stone-700 text-white rounded-full transition-colors disabled:opacity-50" title="Regenerate" aria-label="Regenerate image"><RefreshCw size={12} className={isGenerating ? 'animate-spin' : ''} /></button>
+                                <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-black/60 hover:bg-stone-700 text-white rounded-full transition-colors" title="Upload" aria-label="Upload image"><Upload size={12} /></button>
                                 <button onClick={handleClearImage} className="p-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full transition-colors" title="Clear" aria-label="Clear image"><Trash2 size={12} /></button>
                             </div>
                         </>
@@ -259,7 +259,7 @@ const PanelCard: React.FC<PanelCardProps> = ({
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                             <ImageIcon size={32} className="text-stone-400" />
                             <div className="flex items-center gap-2">
-                                <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-body bg-ember-500 hover:bg-ember-400 text-white transition-colors"><Upload size={14} />Upload Image</button>
+                                <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 rounded text-xs font-body bg-ink hover:bg-stone-800 text-white transition-colors"><Upload size={14} />Upload Image</button>
                                 <button onClick={handleAddDialogueLine} className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-200 transition-colors" title="Add dialogue line" aria-label="Add dialogue line"><Plus size={16} /></button>
                             </div>
                             <span className="text-[10px] font-body text-stone-400">No image yet</span>
@@ -270,7 +270,7 @@ const PanelCard: React.FC<PanelCardProps> = ({
 
                 {/* DIALOGUE BOX (below image) */}
                 {dialogueLines.length > 0 && (
-                    <div className="rounded-lg border border-stone-200 bg-stone-50">
+                    <div className="rounded-sm border border-stone-200 bg-stone-50">
                         <div className="px-3 py-1.5 text-[10px] font-body uppercase tracking-wider border-b text-stone-500 border-stone-200">Dialogue</div>
                         <div className="p-2 space-y-1">
                             {dialogueLines.map((line) => (
@@ -279,7 +279,7 @@ const PanelCard: React.FC<PanelCardProps> = ({
                                         onChange={(e) => dispatch({ type: 'UPDATE_TEXT_ELEMENT', panelId: panel.id, elementId: line.id, updates: { content: e.target.value } })}
                                         placeholder="CHARACTER: Dialogue text..."
                                         rows={1}
-                                        className="flex-1 rounded px-2 py-1 text-xs resize-none transition-colors outline-none bg-paper border border-stone-200 text-ink placeholder-stone-400 focus:border-ember-500"
+                                        className="flex-1 rounded px-2 py-1 text-xs resize-none transition-colors outline-none bg-paper border border-stone-200 text-ink placeholder-stone-400 focus:border-stone-400"
                                         onInput={(e) => { const t = e.target as HTMLTextAreaElement; t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }}
                                     />
                                     <button onClick={() => dispatch({ type: 'DELETE_TEXT_ELEMENT', panelId: panel.id, elementId: line.id })} className="p-1 text-stone-400 hover:text-red-500 transition-colors opacity-0 group-hover/line:opacity-100 flex-shrink-0" title="Remove"><X size={12} /></button>
@@ -298,12 +298,12 @@ const PanelCard: React.FC<PanelCardProps> = ({
                         placeholder="Describe this panel..." 
                         rows={4}
                         autoFocus
-                        className="w-full rounded-lg px-3 py-2 text-sm resize-none transition-colors outline-none bg-stone-50 border border-ember-500 ring-1 ring-ember-500/30 text-ink placeholder-stone-400"
+                        className="w-full rounded px-3 py-2 text-sm resize-none transition-colors outline-none bg-stone-50 border border-stone-400 ring-1 ring-stone-400/30 text-ink placeholder-stone-400"
                     />
                 ) : (
                     <div
                         onClick={() => setPromptFocused(true)}
-                        className="rounded-lg px-3 py-2 text-sm font-body cursor-text bg-stone-50 border border-stone-200 text-ink hover:border-stone-300 truncate min-h-[36px] flex items-center"
+                        className="rounded px-3 py-2 text-sm font-body cursor-text bg-stone-50 border border-stone-200 text-ink hover:border-stone-300 truncate min-h-[36px] flex items-center"
                     >
                         {panel.prompt || <span className="text-stone-400">Describe this panel…</span>}
                     </div>
@@ -311,14 +311,14 @@ const PanelCard: React.FC<PanelCardProps> = ({
             </div>
 
             {/* GENERATE BUTTON */}
-            <div className={`px-3 py-2 border-t ${panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50' : 'border-stone-200 bg-stone-50'} rounded-b-xl`}>
+            <div className={`px-3 py-2 border-t ${panelFrameStyle === 'translucent' ? 'border-stone-300 bg-stone-50/50' : 'border-stone-200 bg-stone-50'} rounded-b-sm`}>
                 <button 
                     onClick={handleGenerateImage} 
                     disabled={isGenerating || (!panel.prompt?.trim() && panel.characterIds.length === 0)}
-                    className={`w-full rounded-lg text-xs font-body font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                    className={`w-full rounded text-xs font-body font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                         imageDataUrl 
-                            ? 'py-1.5 border border-stone-300 text-stone-600 hover:border-ember-500 hover:text-ember-500 bg-transparent' 
-                            : 'py-2.5 bg-ember-500 hover:bg-ember-400 text-paper shadow-sm'
+                            ? 'py-1.5 border border-stone-200 text-ink hover:border-stone-400 hover:bg-stone-50 bg-transparent' 
+                            : 'py-2.5 bg-ink hover:bg-stone-800 text-white'
                     }`}
                 >
                     {isGenerating ? (
