@@ -41,6 +41,11 @@ A comprehensive script tracking and management application for screenwriters and
    npm run dev
    ```
 
+   If your machine cannot access the app from `localhost` with the default Vite bind address, start it with host exposure:
+   ```bash
+   npm run dev -- --host
+   ```
+
 5. Open your browser to `http://localhost:5173`
 
 ### Building for Production

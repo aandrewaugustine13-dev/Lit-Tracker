@@ -597,7 +597,7 @@ export function useInkLogic() {
 
   // Import script from store (parsed via Lore Tracker)
   const handleImportFromStore = () => {
-    const rawScriptText = useLitStore.getState().rawScriptText;
+    const { rawScriptText, parsedScriptResult } = useLitStore.getState();
     
     if (!rawScriptText) {
       alert(
@@ -610,8 +610,16 @@ export function useInkLogic() {
       alert('No active project. Please create or select a project first.');
       return;
     }
+
+    // Prefer the AI-structured parse when available so Ink Tracker gets richer paneling,
+    // dialogue typing, and character context from the same extraction run.
+    if (parsedScriptResult?.pages?.length) {
+      const parseResult = convertParsedScriptToParseResult(parsedScriptResult);
+      handleScriptImport(parseResult, rawScriptText);
+      return;
+    }
     
-    // Use rules-based parser directly for reliable storyboard structure
+    // Fallback to rules-based parser if no structured parse is available in store
     const parseResult = parseScript(rawScriptText);
     
     // Use existing handleScriptImport logic
