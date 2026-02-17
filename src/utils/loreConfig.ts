@@ -32,7 +32,7 @@ export const LORE_TYPE_CONFIG: Record<LoreType, {
     color: 'text-amber-700',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
-    accentHex: '#BF7A3D',
+    accentHex: '#C4713C',
   },
   [LoreType.CONCEPT]: {
     label: 'Concept',

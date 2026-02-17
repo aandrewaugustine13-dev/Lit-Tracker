@@ -3,38 +3,38 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Backgrounds */
-  --color-paper: #faf9f7;
-  --color-card: #fcfbf9;
-  --color-ink: #3d3428;
-  --color-border: #e8e4df;
+  /* Backgrounds — cool eggshell */
+  --color-paper: #F7F7F5;
+  --color-card: #FFFFFF;
+  --color-ink: #1C1C1E;
+  --color-border: #E2E2DE;
 
-  /* Surface scale */
-  --color-ink-600: #94918B;
-  --color-ink-700: #C8C5BF;
-  --color-ink-750: #D6D3CD;
-  --color-ink-800: #e8e4df;
-  --color-ink-850: #f0ede8;
-  --color-ink-900: #f4ede4;
-  --color-ink-950: #faf9f7;
+  /* Surface scale — cool neutrals, no warm bias */
+  --color-ink-600: #8E8E8A;
+  --color-ink-700: #B8B8B4;
+  --color-ink-750: #CCCCC8;
+  --color-ink-800: #E2E2DE;
+  --color-ink-850: #EAEAE6;
+  --color-ink-900: #F0F0ED;
+  --color-ink-950: #F7F7F5;
 
-  /* Primary accent — warm literary brown/sepia */
-  --color-ember-300: #b8996b;
-  --color-ember-400: #9d7e54;
-  --color-ember-500: #8b6f47;
-  --color-ember-600: #7a5f3a;
-  --color-ember-700: #6b4f2e;
-  --color-ember-900: rgba(139, 111, 71, 0.12);
+  /* Primary accent — burnt sienna */
+  --color-ember-300: #E0956A;
+  --color-ember-400: #D07E4E;
+  --color-ember-500: #C4713C;
+  --color-ember-600: #B0632F;
+  --color-ember-700: #955228;
+  --color-ember-900: rgba(196, 113, 60, 0.08);
 
-  /* Text scale */
-  --color-steel-50: #3d3428;
-  --color-steel-100: #4a3f35;
-  --color-steel-200: #574d43;
-  --color-steel-300: #6b5d52;
-  --color-steel-400: #7a6f65;
-  --color-steel-500: #94918B;
-  --color-steel-600: #C8C5BF;
-  --color-steel-700: #ddd8d3;
+  /* Text scale — true neutral grays */
+  --color-steel-50: #1C1C1E;
+  --color-steel-100: #1C1C1E;
+  --color-steel-200: #3A3A3C;
+  --color-steel-300: #555557;
+  --color-steel-400: #6E6E70;
+  --color-steel-500: #8E8E8A;
+  --color-steel-600: #B8B8B4;
+  --color-steel-700: #E2E2DE;
 
   /* Lore — rich indigo */
   --color-lore-300: #9499E0;
