@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lit-tracker.local/schemas/lore-tracker.v1.schema.json",
+  "title": "LitTracker Lore Tracker v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifacts", "locations", "concepts", "events", "canon", "factions"],
+  "properties": {
+    "artifacts": { "type": "array", "items": { "$ref": "#/$defs/named_pages" } },
+    "locations": { "type": "array", "items": { "$ref": "#/$defs/named_pages" } },
+    "concepts": { "type": "array", "items": { "$ref": "#/$defs/named_pages" } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/named_pages" } },
+    "canon": { "type": "array", "items": { "$ref": "#/$defs/named_pages" } },
+    "factions": { "type": "array", "items": { "$ref": "#/$defs/named_pages" } }
+  },
+  "$defs": {
+    "named_pages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "pages"],
+      "properties": {
+        "name": { "type": "string" },
+        "pages": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}
