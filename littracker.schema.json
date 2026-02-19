@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lit-tracker.local/schemas/littracker.schema.json",
+  "title": "Lit-Tracker Script Extraction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "storyboard",
+    "character_tracker",
+    "lore_tracker"
+  ],
+  "properties": {
+    "storyboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pages"],
+      "properties": {
+        "pages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/storyboard_page" }
+        }
+      }
+    },
+    "character_tracker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries"],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/character_entry" }
+        }
+      }
+    },
+    "lore_tracker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factions", "events", "concepts", "canon", "artifacts", "locations"],
+      "properties": {
+        "factions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/lore_item" }
+        },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/event_item" }
+        },
+        "concepts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/lore_item" }
+        },
+        "canon": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/lore_item" }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/lore_item" }
+        },
+        "locations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/lore_item" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "storyboard_page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page_number", "panels"],
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "panels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/panel" }
+        }
+      }
+    },
+    "panel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "panel_number",
+        "description",
+        "dialogue",
+        "captions",
+        "characters_present",
+        "locations_mentioned",
+        "artifacts_mentioned"
+      ],
+      "properties": {
+        "panel_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dialogue": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dialogue_line" }
+        },
+        "captions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "characters_present": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "locations_mentioned": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "artifacts_mentioned": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "dialogue_line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["speaker", "line", "mode"],
+      "properties": {
+        "speaker": { "type": "string" },
+        "line": { "type": "string" },
+        "mode": {
+          "type": "string",
+          "enum": ["spoken", "thought", "narration", "other"]
+        }
+      }
+    },
+    "character_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "character_id",
+        "name",
+        "aliases",
+        "first_appearance_page",
+        "total_mentions",
+        "traits",
+        "relationships"
+      ],
+      "properties": {
+        "character_id": { "type": "string" },
+        "name": { "type": "string" },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "first_appearance_page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "total_mentions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "traits": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "relationships": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relationship" }
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_character", "relation_type", "notes"],
+      "properties": {
+        "target_character": { "type": "string" },
+        "relation_type": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "lore_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "pages_mentioned"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "pages_mentioned": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "event_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "pages_mentioned", "year"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "pages_mentioned": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
