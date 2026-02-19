@@ -135,6 +135,21 @@ src/
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
+
+### Script Extraction Schema (Codex prep)
+
+- `littracker.schema.json` defines a strict JSON Schema for `storyboard`, `character_tracker`, and `lore_tracker` output buckets.
+- `examples/sample_script.txt` and `examples/sample_output.json` provide a deterministic 2-page reference pair for parser iteration.
+- `scripts/parse-script.stub` is a minimal extraction stub that reads the sample script, splits by `PAGE N` headers, and emits schema-shaped JSON for downstream Codex extraction wiring.
+
+Run the stub with:
+
+```bash
+node scripts/parse-script.stub
+```
+
+Next step: replace stub panel field population with the real extractor while keeping the schema keys stable for validation and ingestion.
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
