@@ -1,0 +1,183 @@
+{
+  "storyboard": {
+    "pages": [
+      {
+        "page_number": 1,
+        "panels": [
+          {
+            "panel_number": 1,
+            "description": "Wide establishing shot. The CITY OF NEO TOKYO at night.",
+            "dialogue": [],
+            "captions": [],
+            "characters_present": [],
+            "locations_mentioned": ["NEO TOKYO"],
+            "artifacts_mentioned": []
+          },
+          {
+            "panel_number": 2,
+            "description": "ELI and MAYA discuss the search.",
+            "dialogue": [
+              {
+                "speaker": "ELI",
+                "line": "I've been searching for the ANCIENT SWORD for years.",
+                "mode": "spoken"
+              },
+              {
+                "speaker": "MAYA",
+                "line": "He doesn't know what he's getting into.",
+                "mode": "thought"
+              }
+            ],
+            "captions": [],
+            "characters_present": ["ELI", "MAYA"],
+            "locations_mentioned": [],
+            "artifacts_mentioned": ["ANCIENT SWORD"]
+          },
+          {
+            "panel_number": 3,
+            "description": "Narration marks a turning point.",
+            "dialogue": [],
+            "captions": ["2045 - The year everything changed."],
+            "characters_present": [],
+            "locations_mentioned": [],
+            "artifacts_mentioned": []
+          }
+        ]
+      },
+      {
+        "page_number": 2,
+        "panels": [
+          {
+            "panel_number": 1,
+            "description": "Inside a hidden shrine beneath NEO TOKYO with symbols of the ORDER OF DAWN.",
+            "dialogue": [],
+            "captions": [],
+            "characters_present": [],
+            "locations_mentioned": ["NEO TOKYO", "hidden shrine"],
+            "artifacts_mentioned": []
+          },
+          {
+            "panel_number": 2,
+            "description": "MAYA and ELI plan their next move.",
+            "dialogue": [
+              {
+                "speaker": "MAYA",
+                "line": "If the Order finds us, we're done.",
+                "mode": "spoken"
+              },
+              {
+                "speaker": "ELI",
+                "line": "Then we move before sunrise.",
+                "mode": "spoken"
+              }
+            ],
+            "captions": [],
+            "characters_present": ["MAYA", "ELI"],
+            "locations_mentioned": [],
+            "artifacts_mentioned": []
+          },
+          {
+            "panel_number": 3,
+            "description": "The SWORD reacts as a seal breaks.",
+            "dialogue": [],
+            "captions": ["The SWORD hums as the seal begins to crack."],
+            "characters_present": [],
+            "locations_mentioned": [],
+            "artifacts_mentioned": ["SWORD"]
+          }
+        ]
+      }
+    ]
+  },
+  "character_tracker": {
+    "entries": [
+      {
+        "character_id": "char_eli",
+        "name": "ELI",
+        "aliases": [],
+        "first_appearance_page": 1,
+        "total_mentions": 3,
+        "traits": ["driven", "urgent"],
+        "relationships": [
+          {
+            "target_character": "MAYA",
+            "relation_type": "ally",
+            "notes": "Shared search for the sword"
+          }
+        ]
+      },
+      {
+        "character_id": "char_maya",
+        "name": "MAYA",
+        "aliases": [],
+        "first_appearance_page": 1,
+        "total_mentions": 3,
+        "traits": ["cautious", "observant"],
+        "relationships": [
+          {
+            "target_character": "ELI",
+            "relation_type": "ally",
+            "notes": "Warns Eli about the Order"
+          }
+        ]
+      }
+    ]
+  },
+  "lore_tracker": {
+    "factions": [
+      {
+        "id": "faction_order_of_dawn",
+        "name": "ORDER OF DAWN",
+        "description": "Group associated with symbols in the hidden shrine.",
+        "pages_mentioned": [2]
+      }
+    ],
+    "events": [
+      {
+        "id": "event_year_everything_changed",
+        "name": "The year everything changed",
+        "description": "Narration identifies 2045 as a major turning point.",
+        "pages_mentioned": [1],
+        "year": 2045
+      }
+    ],
+    "concepts": [
+      {
+        "id": "concept_search",
+        "name": "Search for the sword",
+        "description": "ELI has pursued the sword for years.",
+        "pages_mentioned": [1, 2]
+      }
+    ],
+    "canon": [
+      {
+        "id": "canon_seal_cracking",
+        "name": "Seal begins to crack",
+        "description": "The sword's hum coincides with a seal breaking.",
+        "pages_mentioned": [2]
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "artifact_ancient_sword",
+        "name": "ANCIENT SWORD",
+        "description": "Central artifact sought by ELI; reacts in the shrine.",
+        "pages_mentioned": [1, 2]
+      }
+    ],
+    "locations": [
+      {
+        "id": "location_neo_tokyo",
+        "name": "NEO TOKYO",
+        "description": "City setting for the opening and underground shrine.",
+        "pages_mentioned": [1, 2]
+      },
+      {
+        "id": "location_hidden_shrine",
+        "name": "hidden shrine",
+        "description": "Subterranean structure marked with Order symbols.",
+        "pages_mentioned": [2]
+      }
+    ]
+  }
+}
