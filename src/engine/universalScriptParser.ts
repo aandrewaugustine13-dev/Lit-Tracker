@@ -830,6 +830,34 @@ async function callDeepSeekAPI(
   return stripMarkdownAndExtractJSON(text);
 }
 
+async function callGroqAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'user', content: systemPrompt },
+      ],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Groq API error: ${response.status} ${errorText}`);
+  }
+
+  const d = await response.json();
+  return d.choices?.[0]?.message?.content ?? '';
+}
+
 async function runPass2(
   rawScriptText: string,
   pass1Result: Pass1Result,
@@ -944,8 +972,10 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
 
   try {
     let textContent: string;
+    const providerKey = String(provider);
+    const normalizedProvider: LLMProvider = ((providerKey === 'groq-openai' ? 'groq' : providerKey) as LLMProvider);
     
-    switch (provider) {
+    switch (normalizedProvider) {
       case 'gemini':
         textContent = await callGeminiAPI(systemPrompt, apiKey);
         break;
@@ -960,6 +990,9 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
         break;
       case 'deepseek':
         textContent = await callDeepSeekAPI(systemPrompt, apiKey);
+        break;
+      case 'groq':
+        textContent = await callGroqAPI(systemPrompt, apiKey);
         break;
       default:
         throw new Error(`Unsupported LLM provider: ${provider}`);
@@ -1284,6 +1317,156 @@ export function reconstructFormattedScript(parsedScript: ParsedScript): string {
   return lines.join('\n');
 }
 
+
+function countStructuredPanels(scriptText: string): { pages: number; panels: number } {
+  const pageMatches = scriptText.match(/^\s*PAGE\b.*$/gim) || [];
+  const panelMatches = scriptText.match(/^\s*Panel\s+\d+/gim) || [];
+  return {
+    pages: pageMatches.length,
+    panels: panelMatches.length,
+  };
+}
+
+function buildDeterministicPanelStructure(scriptText: string): Array<{ page_number: number; panels: Array<{ panel_number: number; lines: string[] }> }> {
+  const lines = scriptText.split(/\r?\n/);
+  const pages: Array<{ page_number: number; panels: Array<{ panel_number: number; lines: string[] }> }> = [];
+  let currentPage = 1;
+  let currentPanel = 1;
+
+  const ensurePage = (pageNumber: number) => {
+    let page = pages.find(p => p.page_number === pageNumber);
+    if (!page) {
+      page = { page_number: pageNumber, panels: [] };
+      pages.push(page);
+    }
+    return page;
+  };
+
+  const ensurePanel = (pageNumber: number, panelNumber: number) => {
+    const page = ensurePage(pageNumber);
+    let panel = page.panels.find(p => p.panel_number === panelNumber);
+    if (!panel) {
+      panel = { panel_number: panelNumber, lines: [] };
+      page.panels.push(panel);
+    }
+    return panel;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const pageMatch = line.match(/^PAGE\s+(\d+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)\b/i);
+    if (pageMatch) {
+      const token = pageMatch[1].toUpperCase();
+      const wordMap: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8, NINE: 9, TEN: 10 };
+      currentPage = wordMap[token] || Number(token) || currentPage + 1;
+      currentPanel = 1;
+      ensurePage(currentPage);
+      continue;
+    }
+
+    const panelMatch = line.match(/^Panel\s+(\d+)/i);
+    if (panelMatch) {
+      currentPanel = Number(panelMatch[1]) || currentPanel + 1;
+      ensurePanel(currentPage, currentPanel);
+      continue;
+    }
+
+    ensurePanel(currentPage, currentPanel).lines.push(line);
+  }
+
+  for (const page of pages) {
+    page.panels.sort((a, b) => a.panel_number - b.panel_number);
+  }
+  pages.sort((a, b) => a.page_number - b.page_number);
+  return pages;
+}
+
+async function runSingleCallEnrichment(
+  scriptText: string,
+  pass1Result: Pass1Result,
+  config: ProjectConfig,
+  entityIndex: EntityIndex,
+  apiKey: string,
+  provider: LLMProvider
+): Promise<{ newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[]; warnings: string[] }> {
+  const warnings: string[] = [];
+  const deterministicPayload = {
+    parsed_pages: buildDeterministicPanelStructure(scriptText),
+    knownEntityNames: Array.from(entityIndex.knownNames.values()),
+    pass1Entities: pass1Result.newEntities.map(e => ({ type: e.entityType, name: e.name, context: e.contextSnippet })),
+    pass1Timeline: pass1Result.timelineEvents.map(e => ({ entityType: e.entityType, entityName: e.entityName, action: e.action, context: e.contextSnippet })),
+    customPatterns: config.customPatterns.map(p => p.label),
+  };
+
+  const singleCallPrompt = `You are a story enrichment engine. Input is deterministic parsed structure (not raw script).
+Return strict JSON with keys: newEntities, entityUpdates, timelineEvents.
+You may also include optional enrichment keys (storyboard, proof, lore, character_enrichment), but do not omit required keys.
+
+INPUT:
+${JSON.stringify(deterministicPayload).slice(0, MAX_LLM_SCRIPT_LENGTH)}`;
+
+  try {
+    let textContent = '';
+    if (provider === 'groq') {
+      textContent = await callGroqAPI(singleCallPrompt, apiKey);
+    } else {
+      return runPass2('', pass1Result, config, entityIndex, apiKey, provider);
+    }
+
+    let llmResponse: LLMExtractionResponse;
+    try {
+      llmResponse = JSON.parse(textContent);
+    } catch {
+      warnings.push(`LLM single-call returned invalid JSON. First 200 chars: ${textContent.substring(0, 200)}`);
+      return { newEntities: [], timelineEvents: [], warnings };
+    }
+
+    const newEntities: ProposedNewEntity[] = (llmResponse.newEntities || []).map(e => ({
+      tempId: generateUUID(),
+      entityType: e.type,
+      name: e.name,
+      confidence: e.confidence,
+      contextSnippet: e.context,
+      lineNumber: e.lineNumber,
+      source: 'llm' as const,
+      payload: {
+        role: e.suggestedRole,
+        description: e.suggestedDescription,
+        region: e.suggestedRegion,
+        timeOfDay: e.suggestedTimeOfDay,
+        holderId: e.suggestedHolderId,
+        itemDescription: e.suggestedItemDescription,
+        tags: e.suggestedTags,
+        ideology: e.suggestedIdeology,
+        leader: e.suggestedLeader,
+        date: e.suggestedDate,
+        origin: e.suggestedOrigin,
+      },
+    }));
+
+    const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(t => ({
+      tempId: generateUUID(),
+      source: 'llm' as const,
+      confidence: t.confidence,
+      contextSnippet: t.context,
+      lineNumber: t.lineNumber,
+      entityType: t.entityType,
+      entityId: t.entityId,
+      entityName: t.entityName,
+      action: t.action,
+      payload: t.payload,
+      description: t.description,
+    }));
+
+    return { newEntities, timelineEvents, warnings };
+  } catch (error) {
+    warnings.push(`LLM single-call failed: ${error instanceof Error ? error.message : String(error)}`);
+    return { newEntities: [], timelineEvents: [], warnings };
+  }
+}
+
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 export interface ParseScriptOptions {
@@ -1393,6 +1576,10 @@ export async function parseScriptAndProposeUpdates(
   // Resolve effective API key and provider (backwards compat)
   const effectiveApiKey = options.llmApiKey || options.geminiApiKey;
   const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey ? 'gemini' : 'anthropic');
+  const singleCallMode = effectiveProvider === 'groq';
+  const structureCounts = countStructuredPanels(options.formattedScriptText || options.rawScriptText);
+  console.log(`[universalParser] Parsed structure before LLM: pages=${structureCounts.pages}, panels=${structureCounts.panels}`);
+  console.log(`[universalParser] Single-call mode active: ${singleCallMode}`);
 
   // When LLM is enabled, make it the PRIMARY parser with deterministic as supplement
   // Initialize with Pass 1 results (used when LLM is disabled)
@@ -1401,14 +1588,23 @@ export async function parseScriptAndProposeUpdates(
 
   if (options.enableLLM && effectiveApiKey) {
     llmWasUsed = true;
-    const pass2Result = await runPass2(
-      options.rawScriptText,
-      pass1Result,
-      options.config,
-      entityIndex,
-      effectiveApiKey,
-      effectiveProvider
-    );
+    const pass2Result = singleCallMode
+      ? await runSingleCallEnrichment(
+          options.formattedScriptText || options.rawScriptText,
+          pass1Result,
+          options.config,
+          entityIndex,
+          effectiveApiKey,
+          effectiveProvider
+        )
+      : await runPass2(
+          options.rawScriptText,
+          pass1Result,
+          options.config,
+          entityIndex,
+          effectiveApiKey,
+          effectiveProvider
+        );
 
     // ═══ AI-PRIMARY MERGE LOGIC ═══
     // When LLM is enabled, prioritize AI-sourced entities (richer descriptions from comprehension)
@@ -1431,6 +1627,12 @@ export async function parseScriptAndProposeUpdates(
     // Merge timeline events (both sources)
     finalTimelineEvents = [...pass2Result.timelineEvents, ...pass1Result.timelineEvents];
     allWarnings.push(...pass2Result.warnings);
+
+    if (pass2Result.newEntities.length > 0 || pass2Result.timelineEvents.length > 0) {
+      console.log('[universalParser] Single-call enrichment succeeded');
+    } else if (singleCallMode) {
+      console.log('[universalParser] Single-call enrichment fell back to deterministic output');
+    }
 
     console.log(`[universalParser] AI-primary merge: ${pass2Result.newEntities.length} AI entities + ${supplementaryCount} supplementary deterministic entities`);
   }
