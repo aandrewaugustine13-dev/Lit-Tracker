@@ -1,0 +1,27 @@
+{
+  "code": "CAN",
+  "name": "Canada",
+  "capital": "Ottawa",
+  "region": "Americas",
+  "population": 40126723,
+  "gdpUsd": 2140000000000,
+  "gdpPerCapitaUsd": 53371,
+  "currencies": [
+    "Canadian dollar"
+  ],
+  "languages": [
+    "English",
+    "French"
+  ],
+  "sources": [
+    {
+      "name": "World Bank Open Data",
+      "url": "https://data.worldbank.org/"
+    },
+    {
+      "name": "REST Countries",
+      "url": "https://restcountries.com/"
+    }
+  ],
+  "updatedAt": "2026-02-19T00:00:00.000Z"
+}

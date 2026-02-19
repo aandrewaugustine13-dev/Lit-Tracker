@@ -1,0 +1,26 @@
+{
+  "code": "DEU",
+  "name": "Germany",
+  "capital": "Berlin",
+  "region": "Europe",
+  "population": 84552242,
+  "gdpUsd": 4525700000000,
+  "gdpPerCapitaUsd": 53555,
+  "currencies": [
+    "Euro"
+  ],
+  "languages": [
+    "German"
+  ],
+  "sources": [
+    {
+      "name": "World Bank Open Data",
+      "url": "https://data.worldbank.org/"
+    },
+    {
+      "name": "REST Countries",
+      "url": "https://restcountries.com/"
+    }
+  ],
+  "updatedAt": "2026-02-19T00:00:00.000Z"
+}

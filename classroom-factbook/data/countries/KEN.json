@@ -1,0 +1,27 @@
+{
+  "code": "KEN",
+  "name": "Kenya",
+  "capital": "Nairobi",
+  "region": "Africa",
+  "population": 55100587,
+  "gdpUsd": 113420000000,
+  "gdpPerCapitaUsd": 2059,
+  "currencies": [
+    "Kenyan shilling"
+  ],
+  "languages": [
+    "English",
+    "Swahili"
+  ],
+  "sources": [
+    {
+      "name": "World Bank Open Data",
+      "url": "https://data.worldbank.org/"
+    },
+    {
+      "name": "REST Countries",
+      "url": "https://restcountries.com/"
+    }
+  ],
+  "updatedAt": "2026-02-19T00:00:00.000Z"
+}
