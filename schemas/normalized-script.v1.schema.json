@@ -4,11 +4,7 @@
   "title": "Normalized Comic Script v1",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "source_hash",
-    "warnings",
-    "pages"
-  ],
+  "required": ["source_hash", "warnings", "pages"],
   "properties": {
     "source_hash": {
       "type": "string",
@@ -31,10 +27,7 @@
     "page": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "page_number",
-        "panels"
-      ],
+      "required": ["page_number", "panels"],
       "properties": {
         "page_number": {
           "type": "integer",
@@ -51,10 +44,7 @@
     "panel": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "panel_number",
-        "blocks"
-      ],
+      "required": ["panel_number", "blocks"],
       "properties": {
         "panel_number": {
           "type": "integer",
@@ -71,11 +61,7 @@
     "block": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "block_id",
-        "type",
-        "text"
-      ],
+      "required": ["type", "text"],
       "properties": {
         "type": {
           "type": "string",
@@ -99,10 +85,6 @@
         "meta": {
           "type": "object",
           "additionalProperties": true
-        },
-        "block_id": {
-          "type": "string",
-          "pattern": "^p\\d+-pa\\d+-b\\d+$"
         }
       },
       "allOf": [
@@ -113,14 +95,10 @@
                 "const": "DIALOGUE"
               }
             },
-            "required": [
-              "type"
-            ]
+            "required": ["type"]
           },
           "then": {
-            "required": [
-              "speaker"
-            ]
+            "required": ["speaker"]
           }
         },
         {
@@ -132,15 +110,11 @@
                 }
               }
             },
-            "required": [
-              "type"
-            ]
+            "required": ["type"]
           },
           "then": {
             "not": {
-              "required": [
-                "speaker"
-              ]
+              "required": ["speaker"]
             }
           }
         }
