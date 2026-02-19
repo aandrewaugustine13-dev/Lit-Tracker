@@ -1,0 +1,27 @@
+{
+  "code": "IND",
+  "name": "India",
+  "capital": "New Delhi",
+  "region": "Asia",
+  "population": 1438069596,
+  "gdpUsd": 3549900000000,
+  "gdpPerCapitaUsd": 2468,
+  "currencies": [
+    "Indian rupee"
+  ],
+  "languages": [
+    "English",
+    "Hindi"
+  ],
+  "sources": [
+    {
+      "name": "World Bank Open Data",
+      "url": "https://data.worldbank.org/"
+    },
+    {
+      "name": "REST Countries",
+      "url": "https://restcountries.com/"
+    }
+  ],
+  "updatedAt": "2026-02-19T00:00:00.000Z"
+}

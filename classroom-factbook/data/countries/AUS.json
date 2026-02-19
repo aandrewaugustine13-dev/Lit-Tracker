@@ -1,0 +1,26 @@
+{
+  "code": "AUS",
+  "name": "Australia",
+  "capital": "Canberra",
+  "region": "Oceania",
+  "population": 26658948,
+  "gdpUsd": 1729400000000,
+  "gdpPerCapitaUsd": 64846,
+  "currencies": [
+    "Australian dollar"
+  ],
+  "languages": [
+    "English"
+  ],
+  "sources": [
+    {
+      "name": "World Bank Open Data",
+      "url": "https://data.worldbank.org/"
+    },
+    {
+      "name": "REST Countries",
+      "url": "https://restcountries.com/"
+    }
+  ],
+  "updatedAt": "2026-02-19T00:00:00.000Z"
+}
