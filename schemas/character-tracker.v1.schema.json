@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lit-tracker.local/schemas/character-tracker.v1.schema.json",
+  "title": "LitTracker Character Tracker v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["characters"],
+  "properties": {
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "pages_present", "first_appearance_page", "lines_count", "notable_quotes"],
+        "properties": {
+          "name": { "type": "string" },
+          "pages_present": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 }
+          },
+          "first_appearance_page": { "type": "integer", "minimum": 1 },
+          "lines_count": { "type": "integer", "minimum": 0 },
+          "notable_quotes": {
+            "type": "array",
+            "maxItems": 2,
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

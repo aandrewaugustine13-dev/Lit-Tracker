@@ -18,3 +18,6 @@ tsconfig.tsbuildinfo
 # OS files
 .DS_Store
 Thumbs.db
+
+# Normalized CLI output
+out/
