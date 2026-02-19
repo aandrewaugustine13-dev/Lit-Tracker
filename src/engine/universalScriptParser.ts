@@ -830,6 +830,34 @@ async function callDeepSeekAPI(
   return stripMarkdownAndExtractJSON(text);
 }
 
+async function callGroqAPI(
+  systemPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'user', content: systemPrompt },
+      ],
+      temperature: 0.1,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Groq API error: ${response.status} ${errorText}`);
+  }
+
+  const d = await response.json();
+  return d.choices?.[0]?.message?.content ?? '';
+}
+
 async function runPass2(
   rawScriptText: string,
   pass1Result: Pass1Result,
@@ -944,8 +972,10 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
 
   try {
     let textContent: string;
+    const providerKey = String(provider);
+    const normalizedProvider: LLMProvider = ((providerKey === 'groq-openai' ? 'groq' : providerKey) as LLMProvider);
     
-    switch (provider) {
+    switch (normalizedProvider) {
       case 'gemini':
         textContent = await callGeminiAPI(systemPrompt, apiKey);
         break;
@@ -960,6 +990,9 @@ ${rawScriptText.substring(0, MAX_LLM_SCRIPT_LENGTH)}`;
         break;
       case 'deepseek':
         textContent = await callDeepSeekAPI(systemPrompt, apiKey);
+        break;
+      case 'groq':
+        textContent = await callGroqAPI(systemPrompt, apiKey);
         break;
       default:
         throw new Error(`Unsupported LLM provider: ${provider}`);
