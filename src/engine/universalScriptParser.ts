@@ -832,13 +832,13 @@ async function callDeepSeekAPI(
 
 async function callGroqAPI(
   systemPrompt: string,
-  apiKey: string
+  _apiKey: string
 ): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      'Authorization': `Bearer ${process.env.GROQ_API_KEY || ''}`,
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
@@ -1319,7 +1319,7 @@ export function reconstructFormattedScript(parsedScript: ParsedScript): string {
 
 
 function countStructuredPanels(scriptText: string): { pages: number; panels: number } {
-  const pageMatches = scriptText.match(/^\s*PAGE\b.*$/gim) || [];
+  const pageMatches = scriptText.match(/^\s*PAGE.*$/gim) || [];
   const panelMatches = scriptText.match(/^\s*Panel\s+\d+/gim) || [];
   return {
     pages: pageMatches.length,
@@ -1327,64 +1327,7 @@ function countStructuredPanels(scriptText: string): { pages: number; panels: num
   };
 }
 
-function buildDeterministicPanelStructure(scriptText: string): Array<{ page_number: number; panels: Array<{ panel_number: number; lines: string[] }> }> {
-  const lines = scriptText.split(/\r?\n/);
-  const pages: Array<{ page_number: number; panels: Array<{ panel_number: number; lines: string[] }> }> = [];
-  let currentPage = 1;
-  let currentPanel = 1;
-
-  const ensurePage = (pageNumber: number) => {
-    let page = pages.find(p => p.page_number === pageNumber);
-    if (!page) {
-      page = { page_number: pageNumber, panels: [] };
-      pages.push(page);
-    }
-    return page;
-  };
-
-  const ensurePanel = (pageNumber: number, panelNumber: number) => {
-    const page = ensurePage(pageNumber);
-    let panel = page.panels.find(p => p.panel_number === panelNumber);
-    if (!panel) {
-      panel = { panel_number: panelNumber, lines: [] };
-      page.panels.push(panel);
-    }
-    return panel;
-  };
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) continue;
-
-    const pageMatch = line.match(/^PAGE\s+(\d+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)\b/i);
-    if (pageMatch) {
-      const token = pageMatch[1].toUpperCase();
-      const wordMap: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5, SIX: 6, SEVEN: 7, EIGHT: 8, NINE: 9, TEN: 10 };
-      currentPage = wordMap[token] || Number(token) || currentPage + 1;
-      currentPanel = 1;
-      ensurePage(currentPage);
-      continue;
-    }
-
-    const panelMatch = line.match(/^Panel\s+(\d+)/i);
-    if (panelMatch) {
-      currentPanel = Number(panelMatch[1]) || currentPanel + 1;
-      ensurePanel(currentPage, currentPanel);
-      continue;
-    }
-
-    ensurePanel(currentPage, currentPanel).lines.push(line);
-  }
-
-  for (const page of pages) {
-    page.panels.sort((a, b) => a.panel_number - b.panel_number);
-  }
-  pages.sort((a, b) => a.page_number - b.page_number);
-  return pages;
-}
-
 async function runSingleCallEnrichment(
-  scriptText: string,
   pass1Result: Pass1Result,
   config: ProjectConfig,
   entityIndex: EntityIndex,
@@ -1393,7 +1336,6 @@ async function runSingleCallEnrichment(
 ): Promise<{ newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[]; warnings: string[] }> {
   const warnings: string[] = [];
   const deterministicPayload = {
-    parsed_pages: buildDeterministicPanelStructure(scriptText),
     knownEntityNames: Array.from(entityIndex.knownNames.values()),
     pass1Entities: pass1Result.newEntities.map(e => ({ type: e.entityType, name: e.name, context: e.contextSnippet })),
     pass1Timeline: pass1Result.timelineEvents.map(e => ({ entityType: e.entityType, entityName: e.entityName, action: e.action, context: e.contextSnippet })),
@@ -1590,7 +1532,6 @@ export async function parseScriptAndProposeUpdates(
     llmWasUsed = true;
     const pass2Result = singleCallMode
       ? await runSingleCallEnrichment(
-          options.formattedScriptText || options.rawScriptText,
           pass1Result,
           options.config,
           entityIndex,
