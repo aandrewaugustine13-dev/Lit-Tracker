@@ -150,14 +150,6 @@ node scripts/parse-script.stub
 
 Next step: replace stub panel field population with the real extractor while keeping the schema keys stable for validation and ingestion.
 
-## Validation: NormalizedScript v1
-
-Run the schema validator against the included example:
-
-```bash
-npm run validate:normalized
-```
-
 ## License
 
 See [LICENSE](LICENSE) file for details.
