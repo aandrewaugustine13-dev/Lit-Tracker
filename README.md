@@ -150,41 +150,6 @@ node scripts/parse-script.stub
 
 Next step: replace stub panel field population with the real extractor while keeping the schema keys stable for validation and ingestion.
 
-
-## Normalization CLI (BYOK)
-
-Generate NormalizedScript v1 JSON from a raw script:
-
-```bash
-npm run normalize
-```
-
-Then validate the generated file:
-
-```bash
-node scripts/validate-normalized.js out/normalized.json
-```
-
-## Validation: NormalizedScript v1
-
-Run the schema validator against the included example:
-
-```bash
-npm run validate:normalized
-```
-
-
-## Step 4: Deterministic parsing
-
-Run these commands in order:
-
-```bash
-npm run normalize
-npm run validate:normalized
-npm run parse:normalized
-npm run validate:parsed
-```
-
 ## License
 
 See [LICENSE](LICENSE) file for details.
