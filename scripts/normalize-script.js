@@ -55,24 +55,29 @@ const [provider, keyName] = configured;
 const apiKey = process.env[keyName].trim();
 const model = DEFAULT_MODELS[provider];
 
-const prompt = `You are a normalization engine. Convert the input comic script into NormalizedScript v1 JSON.
+const prompt = `You normalize comic scripts into NormalizedScript v1 JSON.
+Return STRICT JSON ONLY. No markdown, no prose, no comments.
+Output MUST conform to schemas/normalized-script.v1.schema.json.
 
 Rules:
-- Output JSON ONLY. No markdown. No commentary.
-- Do NOT rewrite any story text. Copy dialogue, narration, captions, crawlers, SFX verbatim.
-- Detect pages from headings like "PAGE ONE", "PAGE TWO", etc. Infer page_number accordingly.
-- Detect panels from "Panel X" markers.
-- Map content into blocks with types: ART_NOTE, NARRATOR, DIALOGUE, CAPTION, SFX, CRAWLER, TITLE_CARD, OTHER.
-- For DIALOGUE blocks, set speaker to the character name before the colon.
-- If you cannot confidently assign a page/panel boundary, put that content in OTHER and add a warning string to warnings[].
-- Produce output that conforms to the provided JSON Schema exactly.
+1) Do not rewrite any dialogue/narration/SFX text; copy verbatim.
+2) Detect page boundaries from PAGE headers (e.g., PAGE 1, PAGE ONE, PAGE TWO).
+3) Detect panel boundaries from markers like "Panel X".
+4) If boundaries are missing/ambiguous, append a warning string in warnings[] and place uncertain text in OTHER blocks.
+5) Block typing:
+   - ARTIST NOTE lines -> ART_NOTE
+   - NARRATOR lines -> NARRATOR
+   - CAPTION lines -> CAPTION
+   - CRAWLER lines -> CRAWLER
+   - TITLE CARD lines -> TITLE_CARD
+   - SFX lines -> SFX
+   - Dialogue -> DIALOGUE with speaker set to the character name
+   - Everything else -> OTHER
 
-Schema path: schemas/normalized-script.v1.schema.json
-
-Required output skeleton:
+Required output structure:
 {
   "source_hash": "${sourceHash}",
-  "warnings": [],
+  "warnings": ["..."],
   "pages": [
     {
       "page_number": 1,
@@ -81,8 +86,10 @@ Required output skeleton:
           "panel_number": 1,
           "blocks": [
             {
-              "type": "OTHER",
-              "text": ""
+              "type": "DIALOGUE",
+              "speaker": "NAME",
+              "text": "verbatim text",
+              "meta": { "optional": "object" }
             }
           ]
         }
