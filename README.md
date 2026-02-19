@@ -150,56 +150,6 @@ node scripts/parse-script.stub
 
 Next step: replace stub panel field population with the real extractor while keeping the schema keys stable for validation and ingestion.
 
-
-## Normalization CLI (BYOK)
-
-Generate NormalizedScript v1 JSON from a raw script:
-
-```bash
-npm run normalize
-```
-
-Then validate the generated file:
-
-```bash
-node scripts/validate-normalized.js out/normalized.json
-```
-
-## Validation: NormalizedScript v1
-
-Run the schema validator against the included example:
-
-```bash
-npm run validate:normalized
-```
-
-
-## Step 4: Deterministic parsing
-
-Run these commands in order:
-
-```bash
-npm run normalize
-npm run validate:normalized
-npm run parse:normalized
-npm run validate:parsed
-```
-
-
-## Step 5: Storyboard v2 overlay (single LLM call batch)
-
-Run these commands in order:
-
-```bash
-npm run normalize
-npm run validate:normalized
-npm run parse:normalized
-npm run storyboard:ai
-npm run validate:storyboard:v2
-```
-
-`storyboard:ai` now performs a single batch LLM call using a manifest of all page/panel pairs and writes `out/parsed/storyboard.v2.json` atomically. The batch output includes `manifest[]`, `ink[]`, and `proof[]`; generation fails if manifest coverage is incomplete or if counts collapse unexpectedly.
-
 ## License
 
 See [LICENSE](LICENSE) file for details.

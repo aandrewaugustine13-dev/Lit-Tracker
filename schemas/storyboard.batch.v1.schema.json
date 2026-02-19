@@ -4,46 +4,9 @@
   "title": "Storyboard Batch v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["manifest", "ink", "proof", "warnings"],
+  "required": ["coverage", "pages", "warnings"],
   "properties": {
-    "manifest": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/page_panel" }
-    },
-    "ink": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["page", "panel", "shot", "beat", "focus", "dialogue_intent", "tone", "evidence"],
-        "properties": {
-          "page": { "type": "integer", "minimum": 1 },
-          "panel": { "type": "integer", "minimum": 1 },
-          "shot": { "type": "string" },
-          "beat": { "type": "string" },
-          "focus": { "type": "string" },
-          "dialogue_intent": { "type": "string" },
-          "tone": {
-            "type": "string",
-            "enum": ["SETUP", "TENSION", "HORROR", "SATIRE", "ACTION", "REVEAL", "AFTERMATH", "OTHER"]
-          },
-          "evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["block_id", "snippet"],
-              "properties": {
-                "block_id": { "type": "string", "pattern": "^p\\d+-pa\\d+-b\\d+$" },
-                "snippet": { "type": "string", "minLength": 1 }
-              }
-            }
-          }
-        }
-      }
-    },
-    "proof": {
+    "coverage": {
       "type": "array",
       "items": {
         "type": "object",
@@ -57,20 +20,53 @@
         }
       }
     },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page_number", "panels", "page_summary"],
+        "properties": {
+          "page_number": { "type": "integer", "minimum": 1 },
+          "panels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["panel_number", "shot", "beat", "focus", "dialogue_intent", "tone", "evidence"],
+              "properties": {
+                "panel_number": { "type": "integer", "minimum": 1 },
+                "shot": { "type": "string" },
+                "beat": { "type": "string" },
+                "focus": { "type": "string" },
+                "dialogue_intent": { "type": "string" },
+                "tone": {
+                  "type": "string",
+                  "enum": ["SETUP", "TENSION", "HORROR", "SATIRE", "ACTION", "REVEAL", "AFTERMATH", "OTHER"]
+                },
+                "evidence": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["block_id", "snippet"],
+                    "properties": {
+                      "block_id": { "type": "string", "pattern": "^p\\d+-pa\\d+-b\\d+$" },
+                      "snippet": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "page_summary": { "type": "string" }
+        }
+      }
+    },
     "warnings": {
       "type": "array",
       "items": { "type": "string" }
-    }
-  },
-  "$defs": {
-    "page_panel": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["page", "panel"],
-      "properties": {
-        "page": { "type": "integer", "minimum": 1 },
-        "panel": { "type": "integer", "minimum": 1 }
-      }
     }
   }
 }

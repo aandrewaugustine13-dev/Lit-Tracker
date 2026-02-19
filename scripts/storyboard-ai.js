@@ -38,24 +38,28 @@ const [provider, keyName] = configured;
 const apiKey = process.env[keyName].trim();
 const model = DEFAULT_MODELS[provider];
 
-const SYSTEM_PROMPT = `You are a storyboard compiler.
+const SYSTEM_PROMPT = `You are a storyboard assistant.
 
-INPUT:
-- manifest: a list of (page,panel) pairs that MUST be covered.
-- panels: panel data with blocks. Each block has block_id, type, speaker(optional), and text.
+You will receive NormalizedScript v1 JSON for ONE PAGE at a time.
+Create Storyboard v2 JSON for that page ONLY.
 
-OUTPUT:
-Return JSON ONLY matching the schema.
+Rules:
+- Output JSON only. No markdown. No commentary.
+- Do NOT invent anything not present in the input blocks.
+- For each panel:
+  - Write shot (if artist note implies framing like wide/close/establishing; else empty string).
+  - Write beat as 1 sentence describing the change/action.
+  - Write focus as a short phrase of what the reader should notice.
+  - Write dialogue_intent as a short phrase describing what the dialogue is doing.
+  - Choose tone from: SETUP, TENSION, HORROR, SATIRE, ACTION, REVEAL, AFTERMATH, OTHER.
+  - Provide evidence[] with at least 1 referenced block from that panel:
+      * block_type must match the input block type
+      * block_index is the index in the panel.blocks[] array
+      * text_snippet is <= 12 words copied verbatim from the block text
+- If uncertain, keep beat conservative and tone OTHER.
 
-Hard requirements:
-1) For EVERY (page,panel) in manifest, output one entry in ink[].
-2) For EVERY (page,panel) in manifest, output one entry in proof[].
-3) Include manifest[] in output and keep entries exactly from input manifest.
-4) Each ink item MUST include evidence[] with at least 1 real block_id from that panel.
-5) evidence.snippet must be <= 12 words copied verbatim from that block's text.
-6) Do not invent events. Use only provided blocks.
-7) If a panel has little content, keep beat conservative, tone OTHER, and still provide evidence.
-8) If panel has no clear content, use beat="(no content)" and tone OTHER.`;
+Return an object:
+{ "page_number": <int>, "panels": [...], "page_summary": <string> }`;
 
 function parseJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -69,23 +73,30 @@ function countWords(text) {
   return (String(text).trim().match(/\S+/g) || []).length;
 }
 
-function ensureBlockIds(normalized) {
-  for (const page of normalized.pages || []) {
-    for (const panel of page.panels || []) {
-      panel.blocks = (panel.blocks || []).map((block, index) => ({
-        ...block,
-        block_id: block.block_id || `p${page.page_number}-pa${panel.panel_number}-b${index}`
-      }));
+function validatePageGrounding(pageOutput, inputPage) {
+  if (!Array.isArray(pageOutput.panels)) throw new Error('panels must be an array');
+  for (const panelOutput of pageOutput.panels) {
+    const sourcePanel = inputPage.panels.find((p) => p.panel_number === panelOutput.panel_number);
+    if (!sourcePanel) throw new Error(`panel_number ${panelOutput.panel_number} not found in input page`);
+    if (!Array.isArray(panelOutput.evidence) || panelOutput.evidence.length < 1) {
+      throw new Error(`panel ${panelOutput.panel_number} missing evidence`);
+    }
+    for (const ev of panelOutput.evidence) {
+      if (ev.block_index < 0 || ev.block_index >= sourcePanel.blocks.length) {
+        throw new Error(`panel ${panelOutput.panel_number} evidence block_index out of range`);
+      }
+      const sourceBlock = sourcePanel.blocks[ev.block_index];
+      if (sourceBlock.type !== ev.block_type) {
+        throw new Error(`panel ${panelOutput.panel_number} evidence block_type mismatch`);
+      }
+      if (countWords(ev.text_snippet) > 12) {
+        throw new Error(`panel ${panelOutput.panel_number} text_snippet exceeds 12 words`);
+      }
+      if (!String(sourceBlock.text).includes(String(ev.text_snippet))) {
+        throw new Error(`panel ${panelOutput.panel_number} text_snippet must be verbatim from source block`);
+      }
     }
   }
-}
-
-function compactText(text) {
-  return String(text || '').replace(/\s+/g, ' ').trim().slice(0, 500);
-}
-
-function setFromPairs(items, pageKey = 'page', panelKey = 'panel') {
-  return new Set((items || []).map((x) => `${x[pageKey]}:${x[panelKey]}`));
 }
 
 async function callProvider(promptText) {
@@ -113,7 +124,7 @@ async function callProvider(promptText) {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 7000,
+          max_tokens: 3000,
           messages: [{ role: 'user', content: promptText }],
           temperature: 0.1
         })
@@ -155,106 +166,92 @@ async function callProvider(promptText) {
 
 try {
   const normalized = parseJson(inputPath);
-  ensureBlockIds(normalized);
+  const normalizedSchema = parseJson(resolve(cwd, 'schemas/normalized-script.v1.schema.json'));
+  const pageSchema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['page_number', 'panels', 'page_summary'],
+    properties: {
+      page_number: { type: 'integer', minimum: 1 },
+      page_summary: { type: 'string' },
+      panels: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['panel_number', 'shot', 'beat', 'focus', 'dialogue_intent', 'tone', 'evidence'],
+          properties: {
+            panel_number: { type: 'integer', minimum: 1 },
+            shot: { type: 'string' },
+            beat: { type: 'string' },
+            focus: { type: 'string' },
+            dialogue_intent: { type: 'string' },
+            tone: { type: 'string', enum: ['SETUP', 'TENSION', 'HORROR', 'SATIRE', 'ACTION', 'REVEAL', 'AFTERMATH', 'OTHER'] },
+            evidence: {
+              type: 'array',
+              minItems: 1,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['block_type', 'block_index', 'text_snippet'],
+                properties: {
+                  block_type: { type: 'string', enum: ['ART_NOTE', 'NARRATOR', 'DIALOGUE', 'CAPTION', 'SFX', 'CRAWLER', 'TITLE_CARD', 'OTHER'] },
+                  block_index: { type: 'integer', minimum: 0 },
+                  text_snippet: { type: 'string' }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+  const finalSchema = parseJson(resolve(cwd, 'schemas/storyboard.v2.schema.json'));
 
   const ajv = new Ajv2020({ allErrors: true, strict: false });
-  const normalizedSchema = parseJson(resolve(cwd, 'schemas/normalized-script.v1.schema.json'));
-  const batchSchema = parseJson(resolve(cwd, 'schemas/storyboard.batch.v1.schema.json'));
   const validateNormalized = ajv.compile(normalizedSchema);
-  const validateBatch = ajv.compile(batchSchema);
-
   if (!validateNormalized(normalized)) {
     const errs = (validateNormalized.errors ?? []).map((e) => `- ${e.instancePath || '/'}: ${e.message}`).join('\n');
     throw new Error(`Input normalized JSON invalid:\n${errs}`);
   }
+  const validatePage = ajv.compile(pageSchema);
+  const validateFinal = ajv.compile(finalSchema);
 
-  const manifest = [];
-  const panels = [];
-  const panelMap = new Map();
+  const output = { pages: [], warnings: [] };
 
   for (const page of normalized.pages) {
-    for (const panel of page.panels) {
-      manifest.push({ page: page.page_number, panel: panel.panel_number });
-      const blocks = panel.blocks.map((b) => ({
-        block_id: b.block_id,
-        type: b.type,
-        ...(b.speaker ? { speaker: b.speaker } : {}),
-        text: compactText(b.text)
-      }));
-      panels.push({ page: page.page_number, panel: panel.panel_number, blocks });
-      panelMap.set(`${page.page_number}:${panel.panel_number}`, panel.blocks);
-    }
-  }
-
-  const expectedPages = normalized.pages.length;
-  const expectedPanels = manifest.length;
-  console.log(`expected_pages=${expectedPages}`);
-  console.log(`expected_panels=${expectedPanels}`);
-
-  const payload = { manifest, panels };
-  const prompt = `${SYSTEM_PROMPT}\n\nINPUT_JSON:\n${JSON.stringify(payload)}`;
-  const responseText = await callProvider(prompt);
-  const output = JSON.parse(stripMarkdownFences(responseText));
-
-  if (!validateBatch(output)) {
-    const errs = (validateBatch.errors ?? []).map((e) => `- ${e.instancePath || '/'}: ${e.message}`).join('\n');
-    throw new Error(`storyboard batch output invalid:\n${errs}`);
-  }
-
-  const actualPages = new Set((output.ink || []).map((x) => x.page)).size;
-  const actualPanels = (output.ink || []).length;
-  const actualProof = (output.proof || []).length;
-  console.log(`actual_pages=${actualPages}`);
-  console.log(`actual_panels=${actualPanels}`);
-  console.log(`actual_proof=${actualProof}`);
-
-  if (expectedPages > 1 && actualPages === 1) {
-    throw new Error(`Suspicious collapse: expected_pages=${expectedPages}, actual_pages=${actualPages}`);
-  }
-  if (expectedPanels > 1 && actualPanels === 1) {
-    throw new Error(`Suspicious collapse: expected_panels=${expectedPanels}, actual_panels=${actualPanels}`);
-  }
-  if (expectedPanels > 1 && actualProof === 1) {
-    throw new Error(`Suspicious collapse: expected_panels=${expectedPanels}, actual_proof=${actualProof}`);
-  }
-
-  const manifestSet = setFromPairs(manifest);
-  const outputManifestSet = setFromPairs(output.manifest || []);
-  const inkSet = setFromPairs(output.ink || []);
-  const proofSet = setFromPairs(output.proof || []);
-
-  const missingManifestEcho = Array.from(manifestSet).filter((k) => !outputManifestSet.has(k));
-  const missingInk = Array.from(manifestSet).filter((k) => !inkSet.has(k));
-  const missingProof = Array.from(manifestSet).filter((k) => !proofSet.has(k));
-
-  if (missingManifestEcho.length || missingInk.length || missingProof.length) {
-    throw new Error([
-      missingManifestEcho.length ? `Missing manifest echo: ${missingManifestEcho.join(', ')}` : null,
-      missingInk.length ? `Missing ink entries: ${missingInk.join(', ')}` : null,
-      missingProof.length ? `Missing proof entries: ${missingProof.join(', ')}` : null
-    ].filter(Boolean).join(' | '));
-  }
-
-  for (const ink of output.ink) {
-    const key = `${ink.page}:${ink.panel}`;
-    const blocks = panelMap.get(key) || [];
-    if (!Array.isArray(ink.evidence) || ink.evidence.length === 0) {
-      throw new Error(`ink ${key} missing evidence`);
-    }
-    for (const ev of ink.evidence) {
-      const source = blocks.find((b) => b.block_id === ev.block_id);
-      if (!source) throw new Error(`ink ${key} references unknown block_id ${ev.block_id}`);
-      if (countWords(ev.snippet) > 12) throw new Error(`ink ${key} snippet > 12 words`);
-      if (!String(source.text).includes(String(ev.snippet))) {
-        throw new Error(`ink ${key} snippet not verbatim from ${ev.block_id}`);
+    const requestPayload = { page_number: page.page_number, panels: page.panels };
+    const prompt = `${SYSTEM_PROMPT}\n\nINPUT_PAGE_JSON:\n${JSON.stringify(requestPayload)}`;
+    try {
+      const responseText = await callProvider(prompt);
+      const parsed = JSON.parse(stripMarkdownFences(responseText));
+      if (!validatePage(parsed)) {
+        const errs = (validatePage.errors ?? []).map((e) => `${e.instancePath || '/'}: ${e.message}`).join('; ');
+        output.warnings.push(`Page ${page.page_number} skipped: model output schema invalid (${errs})`);
+        continue;
       }
+      validatePageGrounding(parsed, page);
+      output.pages.push(parsed);
+    } catch (error) {
+      output.warnings.push(`Page ${page.page_number} skipped: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  output.pages.sort((a, b) => a.page_number - b.page_number);
+
+  if (!validateFinal(output)) {
+    const errs = (validateFinal.errors ?? []).map((e) => `- ${e.instancePath || '/'}: ${e.message}`).join('\n');
+    throw new Error(`Final storyboard.v2 output invalid:\n${errs}`);
   }
 
   const tempPath = `${outputPath}.tmp`;
   writeFileSync(tempPath, `${JSON.stringify(output, null, 2)}\n`, 'utf8');
   renameSync(tempPath, outputPath);
   console.log(`Wrote: ${outputPath}`);
+  if (output.warnings.length) {
+    console.log(`Warnings: ${output.warnings.length}`);
+    for (const w of output.warnings) console.log(`- ${w}`);
+  }
 } catch (error) {
   rmSync(`${outputPath}.tmp`, { force: true });
   console.error(`storyboard-ai failed: ${error instanceof Error ? error.message : String(error)}`);
