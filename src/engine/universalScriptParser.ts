@@ -1317,6 +1317,98 @@ export function reconstructFormattedScript(parsedScript: ParsedScript): string {
   return lines.join('\n');
 }
 
+
+function countStructuredPanels(scriptText: string): { pages: number; panels: number } {
+  const pageMatches = scriptText.match(/^\s*PAGE.*$/gim) || [];
+  const panelMatches = scriptText.match(/^\s*Panel\s+\d+/gim) || [];
+  return {
+    pages: pageMatches.length,
+    panels: panelMatches.length,
+  };
+}
+
+async function runSingleCallEnrichment(
+  pass1Result: Pass1Result,
+  config: ProjectConfig,
+  entityIndex: EntityIndex,
+  apiKey: string,
+  provider: LLMProvider
+): Promise<{ newEntities: ProposedNewEntity[]; timelineEvents: ProposedTimelineEvent[]; warnings: string[] }> {
+  const warnings: string[] = [];
+  const deterministicPayload = {
+    knownEntityNames: Array.from(entityIndex.knownNames.values()),
+    pass1Entities: pass1Result.newEntities.map(e => ({ type: e.entityType, name: e.name, context: e.contextSnippet })),
+    pass1Timeline: pass1Result.timelineEvents.map(e => ({ entityType: e.entityType, entityName: e.entityName, action: e.action, context: e.contextSnippet })),
+    customPatterns: config.customPatterns.map(p => p.label),
+  };
+
+  const singleCallPrompt = `You are a story enrichment engine. Input is deterministic parsed structure (not raw script).
+Return strict JSON with keys: newEntities, entityUpdates, timelineEvents.
+You may also include optional enrichment keys (storyboard, proof, lore, character_enrichment), but do not omit required keys.
+
+INPUT:
+${JSON.stringify(deterministicPayload).slice(0, MAX_LLM_SCRIPT_LENGTH)}`;
+
+  try {
+    let textContent = '';
+    if (provider === 'groq') {
+      textContent = await callGroqAPI(singleCallPrompt, apiKey);
+    } else {
+      return runPass2('', pass1Result, config, entityIndex, apiKey, provider);
+    }
+
+    let llmResponse: LLMExtractionResponse;
+    try {
+      llmResponse = JSON.parse(textContent);
+    } catch {
+      warnings.push(`LLM single-call returned invalid JSON. First 200 chars: ${textContent.substring(0, 200)}`);
+      return { newEntities: [], timelineEvents: [], warnings };
+    }
+
+    const newEntities: ProposedNewEntity[] = (llmResponse.newEntities || []).map(e => ({
+      tempId: generateUUID(),
+      entityType: e.type,
+      name: e.name,
+      confidence: e.confidence,
+      contextSnippet: e.context,
+      lineNumber: e.lineNumber,
+      source: 'llm' as const,
+      payload: {
+        role: e.suggestedRole,
+        description: e.suggestedDescription,
+        region: e.suggestedRegion,
+        timeOfDay: e.suggestedTimeOfDay,
+        holderId: e.suggestedHolderId,
+        itemDescription: e.suggestedItemDescription,
+        tags: e.suggestedTags,
+        ideology: e.suggestedIdeology,
+        leader: e.suggestedLeader,
+        date: e.suggestedDate,
+        origin: e.suggestedOrigin,
+      },
+    }));
+
+    const timelineEvents: ProposedTimelineEvent[] = (llmResponse.timelineEvents || []).map(t => ({
+      tempId: generateUUID(),
+      source: 'llm' as const,
+      confidence: t.confidence,
+      contextSnippet: t.context,
+      lineNumber: t.lineNumber,
+      entityType: t.entityType,
+      entityId: t.entityId,
+      entityName: t.entityName,
+      action: t.action,
+      payload: t.payload,
+      description: t.description,
+    }));
+
+    return { newEntities, timelineEvents, warnings };
+  } catch (error) {
+    warnings.push(`LLM single-call failed: ${error instanceof Error ? error.message : String(error)}`);
+    return { newEntities: [], timelineEvents: [], warnings };
+  }
+}
+
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 export interface ParseScriptOptions {
@@ -1426,6 +1518,10 @@ export async function parseScriptAndProposeUpdates(
   // Resolve effective API key and provider (backwards compat)
   const effectiveApiKey = options.llmApiKey || options.geminiApiKey;
   const effectiveProvider: LLMProvider = options.llmProvider || (options.geminiApiKey ? 'gemini' : 'anthropic');
+  const singleCallMode = effectiveProvider === 'groq';
+  const structureCounts = countStructuredPanels(options.formattedScriptText || options.rawScriptText);
+  console.log(`[universalParser] Parsed structure before LLM: pages=${structureCounts.pages}, panels=${structureCounts.panels}`);
+  console.log(`[universalParser] Single-call mode active: ${singleCallMode}`);
 
   // When LLM is enabled, make it the PRIMARY parser with deterministic as supplement
   // Initialize with Pass 1 results (used when LLM is disabled)
@@ -1434,14 +1530,22 @@ export async function parseScriptAndProposeUpdates(
 
   if (options.enableLLM && effectiveApiKey) {
     llmWasUsed = true;
-    const pass2Result = await runPass2(
-      options.rawScriptText,
-      pass1Result,
-      options.config,
-      entityIndex,
-      effectiveApiKey,
-      effectiveProvider
-    );
+    const pass2Result = singleCallMode
+      ? await runSingleCallEnrichment(
+          pass1Result,
+          options.config,
+          entityIndex,
+          effectiveApiKey,
+          effectiveProvider
+        )
+      : await runPass2(
+          options.rawScriptText,
+          pass1Result,
+          options.config,
+          entityIndex,
+          effectiveApiKey,
+          effectiveProvider
+        );
 
     // ═══ AI-PRIMARY MERGE LOGIC ═══
     // When LLM is enabled, prioritize AI-sourced entities (richer descriptions from comprehension)
@@ -1464,6 +1568,12 @@ export async function parseScriptAndProposeUpdates(
     // Merge timeline events (both sources)
     finalTimelineEvents = [...pass2Result.timelineEvents, ...pass1Result.timelineEvents];
     allWarnings.push(...pass2Result.warnings);
+
+    if (pass2Result.newEntities.length > 0 || pass2Result.timelineEvents.length > 0) {
+      console.log('[universalParser] Single-call enrichment succeeded');
+    } else if (singleCallMode) {
+      console.log('[universalParser] Single-call enrichment fell back to deterministic output');
+    }
 
     console.log(`[universalParser] AI-primary merge: ${pass2Result.newEntities.length} AI entities + ${supplementaryCount} supplementary deterministic entities`);
   }
