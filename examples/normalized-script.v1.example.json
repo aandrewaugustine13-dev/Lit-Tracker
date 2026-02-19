@@ -1,0 +1,96 @@
+{
+  "source_hash": "sha256:5d6f2b2f7f7f93234cc2a5a0f9c6d47db1f4114e2e4f9e8c1a9a938f4a2bc9de",
+  "warnings": [],
+  "pages": [
+    {
+      "page_number": 1,
+      "panels": [
+        {
+          "panel_number": 1,
+          "blocks": [
+            {
+              "type": "TITLE_CARD",
+              "text": "PAGE ONE"
+            },
+            {
+              "type": "ART_NOTE",
+              "text": "Wide establishing shot. The CITY OF NEO TOKYO at night.",
+              "meta": {
+                "shot": "Wide establishing shot"
+              }
+            }
+          ]
+        },
+        {
+          "panel_number": 2,
+          "blocks": [
+            {
+              "type": "DIALOGUE",
+              "speaker": "ELI",
+              "text": "I've been searching for the ANCIENT SWORD for years."
+            },
+            {
+              "type": "DIALOGUE",
+              "speaker": "MAYA",
+              "text": "He doesn't know what he's getting into.",
+              "meta": {
+                "delivery": "thought"
+              }
+            }
+          ]
+        },
+        {
+          "panel_number": 3,
+          "blocks": [
+            {
+              "type": "CAPTION",
+              "text": "2045 - The year everything changed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "page_number": 2,
+      "panels": [
+        {
+          "panel_number": 1,
+          "blocks": [
+            {
+              "type": "TITLE_CARD",
+              "text": "PAGE TWO"
+            },
+            {
+              "type": "ART_NOTE",
+              "text": "Inside a hidden shrine beneath NEO TOKYO. Stone walls are carved with symbols of the ORDER OF DAWN."
+            }
+          ]
+        },
+        {
+          "panel_number": 2,
+          "blocks": [
+            {
+              "type": "DIALOGUE",
+              "speaker": "MAYA",
+              "text": "If the Order finds us, we're done."
+            },
+            {
+              "type": "DIALOGUE",
+              "speaker": "ELI",
+              "text": "Then we move before sunrise."
+            }
+          ]
+        },
+        {
+          "panel_number": 3,
+          "blocks": [
+            {
+              "type": "CAPTION",
+              "text": "The SWORD hums as the seal begins to crack."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
