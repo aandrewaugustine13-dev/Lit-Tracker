@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+node <<'NODE'
+const { readFileSync } = require('node:fs');
+const { resolve } = require('node:path');
+
+const scriptPath = resolve(process.cwd(), 'examples/sample_script.txt');
+const raw = readFileSync(scriptPath, 'utf8');
+
+const pageChunks = raw
+  .split(/\n(?=PAGE\s+\d+)/i)
+  .map((chunk) => chunk.trim())
+  .filter(Boolean);
+
+const pages = pageChunks.map((chunk) => {
+  const lines = chunk.split(/\r?\n/).map((line) => line.trim());
+  const header = lines[0] || '';
+  const pageMatch = header.match(/^PAGE\s+(\d+)$/i);
+  const pageNumber = pageMatch ? Number(pageMatch[1]) : 0;
+
+  const panels = [];
+  for (let i = 1; i < lines.length; i += 1) {
+    const panelMatch = lines[i].match(/^Panel\s+(\d+)$/i);
+    if (!panelMatch) continue;
+
+    const panelNumber = Number(panelMatch[1]);
+    const content = [];
+    for (let j = i + 1; j < lines.length; j += 1) {
+      if (/^Panel\s+\d+$/i.test(lines[j])) break;
+      if (lines[j] !== '') content.push(lines[j]);
+    }
+
+    panels.push({
+      panel_number: panelNumber,
+      description: content.join(' '),
+      dialogue: [],
+      captions: [],
+      characters_present: [],
+      locations_mentioned: [],
+      artifacts_mentioned: []
+    });
+  }
+
+  return {
+    page_number: pageNumber,
+    panels
+  };
+});
+
+const result = {
+  storyboard: { pages },
+  character_tracker: { entries: [] },
+  lore_tracker: {
+    factions: [],
+    events: [],
+    concepts: [],
+    canon: [],
+    artifacts: [],
+    locations: []
+  }
+};
+
+console.log(JSON.stringify(result, null, 2));
+NODE
