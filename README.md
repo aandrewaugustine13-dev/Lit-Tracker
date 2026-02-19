@@ -135,6 +135,69 @@ src/
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 
+
+### Script Extraction Schema (Codex prep)
+
+- `littracker.schema.json` defines a strict JSON Schema for `storyboard`, `character_tracker`, and `lore_tracker` output buckets.
+- `examples/sample_script.txt` and `examples/sample_output.json` provide a deterministic 2-page reference pair for parser iteration.
+- `scripts/parse-script.stub` is a minimal extraction stub that reads the sample script, splits by `PAGE N` headers, and emits schema-shaped JSON for downstream Codex extraction wiring.
+
+Run the stub with:
+
+```bash
+node scripts/parse-script.stub
+```
+
+Next step: replace stub panel field population with the real extractor while keeping the schema keys stable for validation and ingestion.
+
+
+## Normalization CLI (BYOK)
+
+Generate NormalizedScript v1 JSON from a raw script:
+
+```bash
+npm run normalize
+```
+
+Then validate the generated file:
+
+```bash
+node scripts/validate-normalized.js out/normalized.json
+```
+
+## Validation: NormalizedScript v1
+
+Run the schema validator against the included example:
+
+```bash
+npm run validate:normalized
+```
+
+
+## Step 4: Deterministic parsing
+
+Run these commands in order:
+
+```bash
+npm run normalize
+npm run validate:normalized
+npm run parse:normalized
+npm run validate:parsed
+```
+
+
+## Step 5: Storyboard v2 overlay
+
+Run these commands in order:
+
+```bash
+npm run normalize
+npm run validate:normalized
+npm run parse:normalized
+npm run storyboard:ai
+npm run validate:storyboard:v2
+```
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
