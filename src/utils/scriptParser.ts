@@ -10,12 +10,15 @@ export interface ParsedScript {
   characters: Character[];
   lore_candidates: LoreCandidate[];
   overall_lore_summary?: string;
+  /** Optional comic-visual tracker payload for Ink Tracker. */
+  ink_elements?: InkElement[];
 }
 export interface Page {
   page_number: number;
   panels: Panel[];
 }
 export interface Panel {
+  /** Global sequential number across the whole script. */
   panel_number: number;
   description: string;
   dialogue: DialogueLine[];
@@ -38,6 +41,27 @@ export interface Character {
   name: string;
   description?: string;
   panel_count: number;
+}
+
+export type InkElementType =
+  | 'recurring_prop'
+  | 'sfx_style'
+  | 'color_philosophy'
+  | 'visual_motif'
+  | 'composition_pattern'
+  | 'character_design_progression'
+  | 'rendering_direction'
+  | 'lettering_direction'
+  | 'cinematic_language'
+  | 'other';
+
+export interface InkElement {
+  name: string;
+  type: InkElementType;
+  confidence: number; // 0.0-1.0
+  panels: string[];
+  description: string;
+  metadata?: Record<string, any>;
 }
 
 // ============= CONFIGURATION =============
