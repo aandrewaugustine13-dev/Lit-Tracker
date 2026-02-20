@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lit-tracker.local/schemas/normalized-script.v1.schema.json",
+  "title": "Normalized Comic Script v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_hash",
+    "warnings",
+    "pages"
+  ],
+  "properties": {
+    "source_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/page"
+      }
+    }
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page_number",
+        "panels"
+      ],
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "panels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panel"
+          }
+        }
+      }
+    },
+    "panel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "panel_number",
+        "blocks"
+      ],
+      "properties": {
+        "panel_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        }
+      }
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "block_id",
+        "type",
+        "text"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "ART_NOTE",
+            "NARRATOR",
+            "DIALOGUE",
+            "CAPTION",
+            "SFX",
+            "CRAWLER",
+            "TITLE_CARD",
+            "OTHER"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "speaker": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "block_id": {
+          "type": "string",
+          "pattern": "^p\\d+-pa\\d+-b\\d+$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "DIALOGUE"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "speaker"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "not": {
+                  "const": "DIALOGUE"
+                }
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "speaker"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

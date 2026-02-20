@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lit-tracker.local/schemas/storyboard.v2.schema.json",
+  "title": "LitTracker Storyboard v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pages", "warnings"],
+  "properties": {
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page_number", "panels", "page_summary"],
+        "properties": {
+          "page_number": { "type": "integer", "minimum": 1 },
+          "panels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["panel_number", "shot", "beat", "focus", "dialogue_intent", "tone", "evidence"],
+              "properties": {
+                "panel_number": { "type": "integer", "minimum": 1 },
+                "shot": { "type": "string" },
+                "beat": { "type": "string" },
+                "focus": { "type": "string" },
+                "dialogue_intent": { "type": "string" },
+                "tone": {
+                  "type": "string",
+                  "enum": ["SETUP", "TENSION", "HORROR", "SATIRE", "ACTION", "REVEAL", "AFTERMATH", "OTHER"]
+                },
+                "evidence": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["block_type", "block_index", "text_snippet"],
+                    "properties": {
+                      "block_type": {
+                        "type": "string",
+                        "enum": ["ART_NOTE", "NARRATOR", "DIALOGUE", "CAPTION", "SFX", "CRAWLER", "TITLE_CARD", "OTHER"]
+                      },
+                      "block_index": { "type": "integer", "minimum": 0 },
+                      "text_snippet": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "page_summary": { "type": "string" }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

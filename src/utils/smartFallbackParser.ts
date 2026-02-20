@@ -71,8 +71,11 @@ export function smartFallbackParse(scriptText: string): ParsedScript {
 
   // Patterns
   // Updated to match both numeric (PAGE 1) and word-form (PAGE ONE, PAGE TWENTY-TWO) page numbers
-  const pagePattern = /^PAGE\s+([\w\s-]+?)(?:\s*$|\s*\()/i;
-  const panelPattern = /^Panel\s+(\d+)\s*[:\-—]?\s*(.*)/i;
+  const pagePattern = /^(?:#{1,3}\s*)?(?:\*\*)?(?:PAGE|PG)\s+([\w\s-]+?)(?:\*\*)?(?:\s*$|\s*\()/i;
+  const panelPatterns = [
+    /^(?:[-*#>]+\s*)?(?:\*\*)?(?:PANEL|FRAME)\s*(\d+|[A-Z][A-Z-]*)\s*(?:\*\*)?\s*[:\-—]?\s*(.*)/i,
+    /^(\d{1,3})\.\s+(.*)/,
+  ];
   const sluglinePattern = /^(INT\.|EXT\.|INT\/EXT\.)\s+(.+)/i;
   const inlineDialogue = /^([A-Z][A-Z\s'./-]{1,28})\s*(?:\([^)]*\))?\s*:\s*(.+)/;
   const standaloneCharName = /^([A-Z][A-Z\s'./-]{1,28})\s*(?:\(([^)]*)\))?\s*$/;
@@ -124,19 +127,20 @@ export function smartFallbackParse(scriptText: string): ParsedScript {
       continue;
     }
 
-    // Skip all content before the first PAGE marker
-    if (!currentPage && pages.length === 0) {
-      continue;
-    }
 
     // PANEL header
-    const panelMatch = line.match(panelPattern);
+    let panelMatch: RegExpMatchArray | null = null;
+    for (const pattern of panelPatterns) {
+      panelMatch = line.match(pattern);
+      if (panelMatch) break;
+    }
     if (panelMatch) {
-      panelNum = parseInt(panelMatch[1], 10);
+      const parsedPanel = parsePageNumber(panelMatch[1]);
+      panelNum = parsedPanel > 0 ? parsedPanel : panelNum + 1;
       const page = ensurePage();
       currentPanel = {
         panel_number: panelNum,
-        description: panelMatch[2].trim() || '',
+        description: (panelMatch[2] || '').trim() || '',
         dialogue: [],
         panel_id: `p${page.page_number}-panel${panelNum}`,
       };
@@ -210,7 +214,7 @@ export function smartFallbackParse(scriptText: string): ParsedScript {
       const modifier = charMatch[2];
       const nextLine = lines[i + 1].trim();
 
-      if (!isSkipWord(charName) && nextLine && !pagePattern.test(nextLine) && !panelPattern.test(nextLine)) {
+      if (!isSkipWord(charName) && nextLine && !pagePattern.test(nextLine) && !panelPatterns.some(pattern => pattern.test(nextLine))) {
         const panel = ensurePanel();
         const text = nextLine.replace(/^["']|["']$/g, '').trim();
         const type = modifier && /think|thought/i.test(modifier) ? 'thought' as const : 'spoken' as const;
