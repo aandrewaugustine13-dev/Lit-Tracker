@@ -1,6 +1,14 @@
 /**
- * Pure TypeScript LLM-based Script Parser
- * Serverless implementation that calls LLM APIs directly to normalize comic scripts
+ * Lit-Tracker LLM Script Parser (full rewrite)
+ *
+ * What changed in this rewrite:
+ * - Preserved the existing provider call architecture (direct browser-compatible calls + proxy for CORS-blocked providers).
+ * - Upgraded the normalization prompt to a strict two-phase contract:
+ *   1) perfect comic panel extraction (119-panel target, global sequential panel numbering),
+ *   2) deep, diverse lore + visual/ink analysis with explicit category coverage requirements.
+ * - Added first-class Ink Tracker support via a new optional top-level key: `ink_elements`.
+ * - Strengthened output validation/cleanup so malformed model responses are normalized safely
+ *   while preserving rich metadata for lore and ink elements.
  */
 
 // ============= INTERFACES =============
@@ -10,6 +18,8 @@ export interface ParsedScript {
   characters: Character[];
   lore_candidates: LoreCandidate[];
   overall_lore_summary?: string;
+  /** Optional comic-visual tracker payload for Ink Tracker. */
+  ink_elements?: InkElement[];
 }
 
 export interface Page {
@@ -18,10 +28,11 @@ export interface Page {
 }
 
 export interface Panel {
+  /** Global sequential number across the whole script. */
   panel_number: number;
   description: string;
   dialogue: DialogueLine[];
-  panel_id: string; // e.g., "p1-panel3"
+  panel_id: string; // e.g. p12-panel57
 }
 
 export interface DialogueLine {
@@ -30,19 +41,53 @@ export interface DialogueLine {
   type: 'spoken' | 'thought' | 'caption' | 'sfx';
 }
 
+export type LoreCategory =
+  | 'location'
+  | 'timeline'
+  | 'echo'
+  | 'uncategorized'
+  | 'faction'
+  | 'event'
+  | 'concept'
+  | 'artifact'
+  | 'rule'
+  | 'item'
+  | 'character';
+
 export interface LoreCandidate {
   text: string;
-  category: 'location' | 'timeline' | 'echo' | 'uncategorized' | 'faction' | 'event' | 'concept' | 'artifact' | 'rule' | 'item' | 'character';
-  confidence: number; // 0.0 to 1.0
+  category: LoreCategory;
+  confidence: number; // 0.0-1.0
   panels: string[]; // panel_ids where this appears
-  description?: string; // Optional description for the entity
-  metadata?: Record<string, any>; // Optional metadata (ideology, leader, date, origin, etc.)
+  description?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface Character {
   name: string;
   description?: string;
   panel_count: number;
+}
+
+export type InkElementType =
+  | 'recurring_prop'
+  | 'sfx_style'
+  | 'color_philosophy'
+  | 'visual_motif'
+  | 'composition_pattern'
+  | 'character_design_progression'
+  | 'rendering_direction'
+  | 'lettering_direction'
+  | 'cinematic_language'
+  | 'other';
+
+export interface InkElement {
+  name: string;
+  type: InkElementType;
+  confidence: number; // 0.0-1.0
+  panels: string[];
+  description: string;
+  metadata?: Record<string, any>;
 }
 
 // ============= CONFIGURATION =============
@@ -56,72 +101,61 @@ export const DEFAULT_MODELS: Record<string, string> = {
   groq: 'llama-3.3-70b-versatile',
 };
 
-// Providers that work directly from browser (no CORS issues)
+// Providers that work directly from browser without proxy/CORS failures.
 export const BROWSER_COMPATIBLE_PROVIDERS = ['gemini', 'anthropic'] as const;
 
-export const NORMALIZATION_PROMPT = `You are an editor and English teacher analyzing a story. Your task is to read and comprehend the narrative, then extract world-building elements from your understanding.
+// ============= NORMALIZATION PROMPT =============
 
-⚠️ **CRITICAL REQUIREMENT**: You MUST return entities from MULTIPLE categories — not just locations. A typical script will contain characters, factions, events, concepts, artifacts, and more. Returning only locations is unacceptable and indicates you haven't fully analyzed the narrative.
+export const NORMALIZATION_PROMPT = `You are an expert comic script parser for Lit-Tracker, a digital storyboard + lore + ink tracking tool.
 
-📊 **EXPECTED YIELD**: A typical script page will yield:
-- 2-5 locations (settings, places)
-- 1-3 characters (minor/background characters, not main protagonists)
-- 1-2 factions/organizations (any groups mentioned)
-- 1-3 events (battles, discoveries, deaths, meetings, past events referenced)
-- 1-2 concepts (powers, abilities, magic systems, phenomena)
-- 0-2 artifacts (named weapons, tools, relics, important objects)
-- 0-2 rules (world mechanics, constraints, established laws)
-- 0-2 items (generic objects characters interact with)
+You must execute a strict TWO-PHASE workflow. Both phases are mandatory.
 
-**PHASE 1: COMPREHENSION (Read and Understand First)**
-Before extracting any data, read the story naturally to understand:
-- **Plot & Narrative Arc**: What's happening? What's the conflict? What are the stakes?
-- **Characters**: Who are they? What are their motivations, relationships, and roles in the story? (Don't rely on ALL-CAPS formatting)
-- **Settings**: Where does the story take place? What's the atmosphere and significance of each location? (Don't rely on INT./EXT. markers)
-- **Themes & Subtext**: What are the underlying themes? What's the emotional core?
-- **Narrative Elements**: What objects, events, and concepts are important to the story's progression?
+PHASE 1 — PANEL EXTRACTION (NON-NEGOTIABLE, DO FIRST, DO PERFECTLY)
+- Parse this as a comic script with explicit PAGE and Panel structure.
+- This script targets 119 panels total. Output AT LEAST 119 panels if present in source; never summarize or collapse.
+- Every "PAGE X" => one page object.
+- Every "Panel Y" => one panel object.
+- panel_number must be GLOBAL and sequential across the entire script.
+- page_number must match PAGE headers.
+- Build rich, production-grade panel descriptions by combining artist notes + visual direction.
+- Parse ALL dialogue-bearing lines and assign type correctly:
+  - spoken: character dialogue lines
+  - caption: narrator/caption/crawler/screen text boxes
+  - sfx: onomatopoeia / SFX cues
+  - thought: only explicit thought bubble/internal thought text
 
-**PHASE 2: EXTRACTION (Extract from Understanding)**
-Based on your comprehension of the story, now extract:
+PHASE 2 — DEEP LORE + INK ANALYSIS (DO AFTER PANELS ARE COMPLETE)
+Extract comprehensive worldbuilding and visual-language data.
 
-1. **Pages and panels** with their descriptions and dialogue (adapt to whatever format the text uses - prose, screenplay, comic script, or natural writing)
-2. **Characters** with rich descriptions including their motivations, relationships, and role in the narrative
-3. **Lore candidates** across ALL categories:
-   - **Characters**: Minor/background characters (protagonists go in 'characters' field) - describe their role in the story
-   - **Locations**: Places and settings - describe atmosphere, significance, and narrative importance
-   - **Factions/Organizations**: Groups, teams, agencies - describe ideology, influence, and role in conflict
-   - **Events**: Significant narrative moments - describe impact, participants, and consequences
-   - **Concepts**: Abstract ideas, powers, abilities - describe how they work and their significance
-   - **Artifacts**: Named significant objects - describe origin, properties, and narrative importance
-   - **Rules**: Established world rules - describe scope, implications, and exceptions
-   - **Items**: Generic trackable objects - describe usage and importance
-   - **Timeline/Years**: Temporal markers
-   - **Uncategorized**: Everything else that might be lore
+A) lore_candidates (must be diverse)
+- You MUST return candidates across 5-8+ categories, not only locations.
+- Allowed categories: location, faction, event, concept, artifact, rule, item, character, timeline, echo, uncategorized.
+- Use high-quality descriptions and useful metadata (participants, ideology, consequences, origin, symbolism, region, date, etc.).
 
-**FORMAT-AGNOSTIC APPROACH**: 
-This text may be in any format - prose, screenplay, comic script, or natural writing. Don't rely on specific formatting patterns like ALL-CAPS character names, INT./EXT. location markers, or Panel indicators. Read naturally and identify entities based on narrative understanding.
+B) ink_elements (comic visual tracker)
+Extract recurring visual/ink signals that matter for production continuity.
+Include elements such as:
+- recurring props/items (e.g., VIP wristband, Orb)
+- SFX style language and typography patterns (e.g., EC-comics-inspired impact words)
+- color philosophy and lighting cues (e.g., bioluminescence, decay palettes)
+- character design progression states (e.g., staged decay progression)
+- composition/camera grammar (repeated shot logic, framing motifs)
+- rendering/lettering directives that recur
 
-**EXTRACTION QUALITY GUIDELINES**:
-- **Richer Descriptions**: Since you understand the story, provide detailed descriptions that include:
-  - Characters: Motivations, relationships, character arc, role in narrative
-  - Locations: Atmosphere, emotional tone, significance to plot, narrative function
-  - Factions: Ideology, influence level, role in conflict, relationship to protagonists
-  - Events: Emotional impact, consequences, participants, thematic significance
-  - Concepts: How they work, why they matter to the story, thematic implications
-  - Artifacts: Origin story, powers/properties, symbolic meaning, narrative importance
-  - Rules: How they constrain/enable the story, exceptions, implications
-  
-- **Track panels** where each lore item appears
-- **Provide metadata** for each lore candidate based on your understanding:
-  - Characters: role, appearance, motivations
-  - Factions: ideology, leader, influence level, relationship dynamics
-  - Events: date, participants, consequences, emotional weight
-  - Concepts/Artifacts: origin, properties, significance, thematic meaning
-  - Rules: scope, exceptions, narrative implications
-- **Provide an overall lore summary** that synthesizes your understanding of the world-building
+For each ink element include:
+- name
+- type (one of: recurring_prop, sfx_style, color_philosophy, visual_motif, composition_pattern, character_design_progression, rendering_direction, lettering_direction, cinematic_language, other)
+- confidence (0-1)
+- panels (panel_ids)
+- description
+- metadata (optional)
 
-**Output Format:**
-Return ONLY valid JSON (no markdown fences) in this structure:
+OUTPUT RULES
+- Output ONLY valid JSON (no markdown, no commentary).
+- Do not omit required top-level keys.
+- Never return partial representative panels.
+
+Return exactly this shape:
 {
   "pages": [
     {
@@ -129,9 +163,9 @@ Return ONLY valid JSON (no markdown fences) in this structure:
       "panels": [
         {
           "panel_number": 1,
-          "description": "Panel description",
+          "description": "...",
           "dialogue": [
-            { "character": "CHARACTER", "text": "Dialogue text", "type": "spoken" }
+            { "character": "NARRATOR", "text": "...", "type": "caption" }
           ],
           "panel_id": "p1-panel1"
         }
@@ -139,159 +173,27 @@ Return ONLY valid JSON (no markdown fences) in this structure:
     }
   ],
   "characters": [
-    { "name": "CHARACTER", "description": "Brief description", "panel_count": 5 }
+    { "name": "...", "description": "...", "panel_count": 0 }
   ],
   "lore_candidates": [
-    // LOCATIONS - Settings and places
-    { 
-      "text": "The Crimson Tavern", 
-      "category": "location", 
-      "confidence": 0.9, 
-      "panels": ["p1-panel1"],
-      "description": "A dimly lit underground bar where rebels gather to plan",
-      "metadata": { "region": "Old Quarter", "atmosphere": "tense" }
-    },
-    {
-      "text": "Shadow District",
-      "category": "location",
-      "confidence": 0.85,
-      "panels": ["p1-panel2"],
-      "description": "The dangerous eastern sector controlled by gangs"
-    },
-    // CHARACTERS - Minor/background characters
-    {
-      "text": "Marcus the Informant",
-      "category": "character",
-      "confidence": 0.8,
-      "panels": ["p1-panel1"],
-      "description": "A nervous information broker who sells secrets to both sides"
-    },
-    // FACTIONS - Any organization, group, team, agency, order, guild, crew
-    {
-      "text": "The Iron Brotherhood",
-      "category": "faction",
-      "confidence": 0.9,
-      "panels": ["p1-panel2", "p1-panel4"],
-      "description": "A militant group seeking to overthrow the Council",
-      "metadata": { "ideology": "Freedom through force", "leader": "General Krane", "size": "200+ members" }
-    },
-    {
-      "text": "Council of Seven",
-      "category": "faction",
-      "confidence": 0.95,
-      "panels": ["p1-panel3"],
-      "description": "The ruling body that governs the city with an iron fist"
-    },
-    // EVENTS - Battles, discoveries, deaths, meetings, rituals, anything that happened
-    {
-      "text": "The Siege of Irongate",
-      "category": "event",
-      "confidence": 0.9,
-      "panels": ["p1-panel3"],
-      "description": "Bloody battle where the Brotherhood tried to storm the fortress",
-      "metadata": { "date": "Three years ago", "casualties": "Heavy", "outcome": "Failed assault" }
-    },
-    {
-      "text": "Sarah's Betrayal",
-      "category": "event",
-      "confidence": 0.85,
-      "panels": ["p1-panel5"],
-      "description": "When Sarah revealed herself as a Council spy, splitting the group"
-    },
-    // CONCEPTS - Powers, abilities, magic systems, phenomena, philosophies
-    {
-      "text": "Shadow Binding",
-      "category": "concept",
-      "confidence": 0.9,
-      "panels": ["p1-panel4"],
-      "description": "Rare ability to manipulate shadows to restrain enemies"
-    },
-    {
-      "text": "The Voice",
-      "category": "concept",
-      "confidence": 0.8,
-      "panels": ["p1-panel2"],
-      "description": "Telepathic communication method used by trained operatives"
-    },
-    // ARTIFACTS - Named weapons, tools, relics, documents, significant objects
-    {
-      "text": "Blade of Echoes",
-      "category": "artifact",
-      "confidence": 0.95,
-      "panels": ["p1-panel5"],
-      "description": "Legendary sword that shows its wielder glimpses of the future",
-      "metadata": { "origin": "Forged by the Ancient Smiths", "current_owner": "Unknown" }
-    },
-    {
-      "text": "The Lost Codex",
-      "category": "artifact",
-      "confidence": 0.9,
-      "panels": ["p1-panel3"],
-      "description": "Ancient book containing forbidden knowledge of reality manipulation"
-    },
-    // RULES - World mechanics, constraints, established laws
-    {
-      "text": "The Pact of Silence",
-      "category": "rule",
-      "confidence": 0.85,
-      "panels": ["p1-panel2"],
-      "description": "Ancient law forbidding anyone from speaking of the Old Gods"
-    },
-    // ITEMS - Generic objects that characters interact with
-    {
-      "text": "Communication Crystal",
-      "category": "item",
-      "confidence": 0.7,
-      "panels": ["p1-panel4"],
-      "description": "Standard issue device for long-range messaging"
-    }
+    { "text": "...", "category": "artifact", "confidence": 0.9, "panels": ["p1-panel1"], "description": "...", "metadata": {} }
   ],
-  "overall_lore_summary": "Brief summary of the lore"
+  "ink_elements": [
+    { "name": "...", "type": "visual_motif", "confidence": 0.9, "panels": ["p1-panel1"], "description": "...", "metadata": {} }
+  ],
+  "overall_lore_summary": "..."
 }
 
-**Note**: The above examples demonstrate the diversity of entities you should extract. This is what a well-analyzed script looks like - it contains multiple categories, not just locations. If you're only finding locations, you're not analyzing deeply enough.
+MANDATORY SELF-CHECK BEFORE RESPONDING
+- Did I extract the full panel set (target: 119)?
+- Are panel_number values global + sequential?
+- Did I include 5-8+ lore categories (not just locations)?
+- Did I include meaningful ink_elements for visual continuity?
+- Is the response strict valid JSON only?
 
-**Confidence Scoring:**
-- 1.0: Explicit entity clearly defined (e.g., organization name in dialogue, artifact with clear importance)
-- 0.8-0.9: Strong contextual indicators (e.g., character acting as faction leader, event described in detail)
-- 0.6-0.7: Moderate confidence (e.g., mentioned power or ability, referenced past event)
-- 0.4-0.5: Weak indicators (e.g., possible concept, unclear reference)
+If any check fails, fix it before returning.
 
-**Category Guidelines:**
-- Use "faction" for any group/organization with members
-- Use "event" for past or present significant happenings
-- Use "concept" for abstract ideas, powers, or phenomena  
-- Use "artifact" for named unique objects of importance
-- Use "rule" for explicit world mechanics or constraints
-- Use "item" for generic objects characters use
-- Use "character" for new characters not in main character list
-
-🚫 **COMMON MISTAKES TO AVOID**:
-- ❌ **DO NOT return only locations** - This is the most common failure. Every script has more than just places.
-- ❌ **DO NOT skip characters** just because they appear in the main characters array - Minor/background characters still go in lore_candidates
-- ❌ **DO NOT skip events** just because they're implied rather than explicitly stated - References to past battles, meetings, deaths, or discoveries are events
-- ❌ **DO NOT miss factions** - If a character mentions "the team," "the agency," "the order," "the guild," "the crew," or any group, that's a faction
-- ❌ **DO NOT miss concepts** - If a character uses a power, ability, or technique (even once), that's a concept
-- ❌ **DO NOT miss artifacts** - If a character wields a named weapon, tool, or important object, that's an artifact
-- ❌ **DO NOT ignore dialogue** - Organizations, events, and artifacts are often mentioned in conversation, not just descriptions
-
-✅ **MANDATORY SELF-CHECK BEFORE RESPONDING**:
-Before you finalize your JSON response, you MUST verify the following checklist. If you answer "NO" to any of these, go back and extract more entities:
-
-□ **Did I extract at least 2 locations?** (settings, places)
-□ **Did I extract characters?** (people mentioned by name who aren't main protagonists)
-□ **Did I extract factions/organizations?** (any group, team, agency, order, guild, crew, council, brotherhood, etc.)
-□ **Did I extract events?** (battles, discoveries, deaths, meetings, rituals, betrayals - anything that happened)
-□ **Did I extract concepts?** (powers, abilities, magic systems, phenomena, philosophies, techniques)
-□ **Did I extract artifacts?** (named weapons, tools, relics, documents, significant objects)
-□ **Did I check rules?** (world mechanics, constraints, laws, pacts, established limitations)
-□ **Did I check items?** (generic objects characters interact with)
-
-If your lore_candidates array has ONLY locations, you have FAILED this task. Go back and re-read the script specifically looking for the other categories listed above.
-
-**Critical reminder**: Most scripts contain entities across AT LEAST 4-6 different categories. If you're returning fewer than 3 categories, you're not analyzing thoroughly enough.
-
-Parse the following script:`;
+Now parse this script:`;
 
 // ============= API CALL FUNCTIONS =============
 
@@ -300,13 +202,13 @@ async function callOpenAI(
   script: string,
   apiKey: string,
   model: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
@@ -326,7 +228,7 @@ async function callOpenAI(
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  return data.choices?.[0]?.message?.content ?? '';
 }
 
 async function callAnthropic(
@@ -334,7 +236,7 @@ async function callAnthropic(
   script: string,
   apiKey: string,
   model: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -347,9 +249,7 @@ async function callAnthropic(
     body: JSON.stringify({
       model,
       max_tokens: 16384,
-      messages: [
-        { role: 'user', content: `${prompt}\n\n${script}` },
-      ],
+      messages: [{ role: 'user', content: `${prompt}\n\n${script}` }],
       temperature: 0.1,
     }),
     signal,
@@ -361,7 +261,11 @@ async function callAnthropic(
   }
 
   const data = await response.json();
-  return data.content[0].text;
+  const content = data.content?.[0]?.text;
+  if (!content) {
+    throw new Error('Anthropic returned empty content');
+  }
+  return content;
 }
 
 async function callGemini(
@@ -369,29 +273,22 @@ async function callGemini(
   script: string,
   apiKey: string,
   model: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: `${prompt}\n\n${script}` }] }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 16384,
+        responseMimeType: 'application/json',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: `${prompt}\n\n${script}` }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: 'application/json',
-        },
-      }),
-      signal,
-    }
-  );
+    }),
+    signal,
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -399,7 +296,7 @@ async function callGemini(
   }
 
   const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
 async function callGrok(
@@ -407,13 +304,13 @@ async function callGrok(
   script: string,
   apiKey: string,
   model: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
   const response = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
@@ -432,7 +329,7 @@ async function callGrok(
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  return data.choices?.[0]?.message?.content ?? '';
 }
 
 async function callDeepSeek(
@@ -440,13 +337,13 @@ async function callDeepSeek(
   script: string,
   apiKey: string,
   model: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
-  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+  const response = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
@@ -455,6 +352,7 @@ async function callDeepSeek(
         { role: 'user', content: script },
       ],
       temperature: 0.1,
+      response_format: { type: 'json_object' },
     }),
     signal,
   });
@@ -465,73 +363,169 @@ async function callDeepSeek(
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  return data.choices?.[0]?.message?.content ?? '';
 }
 
 // ============= HELPER FUNCTIONS =============
 
 export function stripMarkdownFences(text: string): string {
   let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
-  cleaned = cleaned.replace(/\n?```\s*$/, '');
+
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3);
+  }
+
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3);
+  }
+
+  cleaned = cleaned.trim();
+
   const firstBrace = cleaned.indexOf('{');
-  if (firstBrace > 0) {
-    cleaned = cleaned.substring(firstBrace);
-  }
   const lastBrace = cleaned.lastIndexOf('}');
-  if (lastBrace >= 0 && lastBrace < cleaned.length - 1) {
-    cleaned = cleaned.substring(0, lastBrace + 1);
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return cleaned.slice(firstBrace, lastBrace + 1);
   }
+
   return cleaned;
 }
 
-export function validateAndClean(data: any): ParsedScript {
-  // Ensure all required fields exist with safe defaults
-  const validated: ParsedScript = {
-    pages: Array.isArray(data.pages) ? data.pages : [],
-    characters: Array.isArray(data.characters) ? data.characters : [],
-    lore_candidates: Array.isArray(data.lore_candidates) ? data.lore_candidates : [],
-    overall_lore_summary: data.overall_lore_summary || undefined,
+function isObject(value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function clampConfidence(value: unknown, fallback = 0.5): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) return fallback;
+  return Math.max(0, Math.min(1, value));
+}
+
+function normalizeLoreCategory(value: unknown): LoreCategory {
+  const allowed: LoreCategory[] = [
+    'location',
+    'timeline',
+    'echo',
+    'uncategorized',
+    'faction',
+    'event',
+    'concept',
+    'artifact',
+    'rule',
+    'item',
+    'character',
+  ];
+  return allowed.includes(value as LoreCategory) ? (value as LoreCategory) : 'uncategorized';
+}
+
+function normalizeInkType(value: unknown): InkElementType {
+  const allowed: InkElementType[] = [
+    'recurring_prop',
+    'sfx_style',
+    'color_philosophy',
+    'visual_motif',
+    'composition_pattern',
+    'character_design_progression',
+    'rendering_direction',
+    'lettering_direction',
+    'cinematic_language',
+    'other',
+  ];
+  return allowed.includes(value as InkElementType) ? (value as InkElementType) : 'other';
+}
+
+export function validateAndClean(data: unknown): ParsedScript {
+  const root = isObject(data) ? data : {};
+
+  const pagesRaw = Array.isArray(root.pages) ? root.pages : [];
+  const pages: Page[] = pagesRaw.map((page, pageIdx) => {
+    const p = isObject(page) ? page : {};
+    const pageNumber = typeof p.page_number === 'number' ? p.page_number : pageIdx + 1;
+    const panelsRaw = Array.isArray(p.panels) ? p.panels : [];
+
+    const panels: Panel[] = panelsRaw.map((panel, panelIdx) => {
+      const pn = isObject(panel) ? panel : {};
+      const panelNumber = typeof pn.panel_number === 'number' ? pn.panel_number : panelIdx + 1;
+      const dialogueRaw = Array.isArray(pn.dialogue) ? pn.dialogue : [];
+
+      const dialogue: DialogueLine[] = dialogueRaw.map((entry) => {
+        const d = isObject(entry) ? entry : {};
+        const rawType = d.type;
+        const normalizedType: DialogueLine['type'] =
+          rawType === 'spoken' || rawType === 'thought' || rawType === 'caption' || rawType === 'sfx'
+            ? rawType
+            : 'spoken';
+
+        return {
+          character: String(d.character ?? 'UNKNOWN'),
+          text: String(d.text ?? ''),
+          type: normalizedType,
+        };
+      });
+
+      return {
+        panel_number: panelNumber,
+        description: String(pn.description ?? ''),
+        dialogue,
+        panel_id: String(pn.panel_id ?? `p${pageNumber}-panel${panelNumber}`),
+      };
+    });
+
+    return { page_number: pageNumber, panels };
+  });
+
+  const charactersRaw = Array.isArray(root.characters) ? root.characters : [];
+  const characters: Character[] = charactersRaw.map((character) => {
+    const c = isObject(character) ? character : {};
+    return {
+      name: String(c.name ?? 'UNKNOWN'),
+      description: c.description == null ? undefined : String(c.description),
+      panel_count: typeof c.panel_count === 'number' && c.panel_count >= 0 ? c.panel_count : 0,
+    };
+  });
+
+  const loreRaw = Array.isArray(root.lore_candidates) ? root.lore_candidates : [];
+  const loreCandidates: LoreCandidate[] = loreRaw
+    .map((candidate) => {
+      const l = isObject(candidate) ? candidate : {};
+      return {
+        text: String(l.text ?? ''),
+        category: normalizeLoreCategory(l.category),
+        confidence: clampConfidence(l.confidence),
+        panels: Array.isArray(l.panels) ? l.panels.map((panel) => String(panel)) : [],
+        description: l.description == null ? undefined : String(l.description),
+        metadata: isObject(l.metadata) ? l.metadata : undefined,
+      };
+    })
+    .filter((candidate) => candidate.text.length > 0);
+
+  const inkRaw = Array.isArray(root.ink_elements) ? root.ink_elements : [];
+  const inkElements: InkElement[] = inkRaw
+    .map((element) => {
+      const i = isObject(element) ? element : {};
+      return {
+        name: String(i.name ?? ''),
+        type: normalizeInkType(i.type),
+        confidence: clampConfidence(i.confidence),
+        panels: Array.isArray(i.panels) ? i.panels.map((panel) => String(panel)) : [],
+        description: String(i.description ?? ''),
+        metadata: isObject(i.metadata) ? i.metadata : undefined,
+      };
+    })
+    .filter((element) => element.name.length > 0 && element.description.length > 0);
+
+  const result: ParsedScript = {
+    pages,
+    characters,
+    lore_candidates: loreCandidates,
+    overall_lore_summary: root.overall_lore_summary == null ? undefined : String(root.overall_lore_summary),
   };
 
-  // Validate and clean pages
-  validated.pages = validated.pages.map((page, idx) => ({
-    page_number: typeof page.page_number === 'number' ? page.page_number : idx + 1,
-    panels: Array.isArray(page.panels)
-      ? page.panels.map((panel, panelIdx) => ({
-          panel_number: typeof panel.panel_number === 'number' ? panel.panel_number : panelIdx + 1,
-          description: String(panel.description || ''),
-          dialogue: Array.isArray(panel.dialogue)
-            ? panel.dialogue.map((d) => ({
-                character: String(d.character || 'UNKNOWN'),
-                text: String(d.text || ''),
-                type: (['spoken', 'thought', 'caption', 'sfx'].includes(d.type) ? d.type : 'spoken') as DialogueLine['type'],
-              }))
-            : [],
-          panel_id: panel.panel_id || `p${page.page_number || idx + 1}-panel${panel.panel_number || panelIdx + 1}`,
-        }))
-      : [],
-  }));
+  if (inkElements.length > 0) {
+    result.ink_elements = inkElements;
+  }
 
-  // Validate and clean characters
-  validated.characters = validated.characters.map((char) => ({
-    name: String(char.name || 'UNKNOWN'),
-    description: char.description ? String(char.description) : undefined,
-    panel_count: typeof char.panel_count === 'number' && char.panel_count >= 0 ? char.panel_count : 0,
-  }));
-
-  // Validate and clean lore candidates
-  const validCategories = ['location', 'timeline', 'echo', 'uncategorized', 'faction', 'event', 'concept', 'artifact', 'rule', 'item', 'character'];
-  validated.lore_candidates = validated.lore_candidates.map((lore) => ({
-    text: String(lore.text || ''),
-    category: (validCategories.includes(lore.category) ? lore.category : 'uncategorized') as LoreCandidate['category'],
-    confidence: typeof lore.confidence === 'number' ? Math.max(0, Math.min(1, lore.confidence)) : 0.5,
-    panels: Array.isArray(lore.panels) ? lore.panels.map(String) : [],
-    description: lore.description ? String(lore.description) : undefined,
-    metadata: (lore.metadata && typeof lore.metadata === 'object') ? lore.metadata : undefined,
-  })).filter((lore) => lore.text.length > 0); // Remove empty entries
-
-  return validated;
+  return result;
 }
 
 // ============= PROXY FUNCTION =============
@@ -542,7 +536,7 @@ async function callViaProxy(
   provider: 'openai' | 'grok' | 'deepseek' | 'groq',
   apiKey: string,
   model: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
   const response = await fetch('/api/llm-proxy', {
     method: 'POST',
@@ -568,7 +562,7 @@ async function callViaProxy(
   if (data.error) {
     throw new Error(data.error);
   }
-  
+
   return data.text;
 }
 
@@ -579,7 +573,7 @@ export async function parseScriptWithLLM(
   provider: 'openai' | 'anthropic' | 'gemini' | 'grok' | 'deepseek' | 'groq',
   apiKey: string,
   model?: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<ParsedScript> {
   if (!rawScript || rawScript.trim().length === 0) {
     throw new Error('Script text cannot be empty');
@@ -591,36 +585,38 @@ export async function parseScriptWithLLM(
 
   const selectedModel = model || DEFAULT_MODELS[provider];
 
-  // Create AbortController with 2-minute timeout
   const abortController = new AbortController();
-  const timeoutId = setTimeout(() => {
-    abortController.abort();
-  }, 120000);
+  const timeoutId = setTimeout(() => abortController.abort(), 120000);
 
   try {
-    // Use the signal from either the provided controller or our timeout controller
     const effectiveSignal = signal || abortController.signal;
     let responseText: string;
-    
-    // Route CORS-blocked providers through proxy
-    if (!BROWSER_COMPATIBLE_PROVIDERS.includes(provider as any)) {
-      // TypeScript knows these are the proxy-compatible providers
+
+    if (!BROWSER_COMPATIBLE_PROVIDERS.includes(provider as (typeof BROWSER_COMPATIBLE_PROVIDERS)[number])) {
       responseText = await callViaProxy(
-        NORMALIZATION_PROMPT, 
-        rawScript, 
-        provider as 'openai' | 'grok' | 'deepseek' | 'groq', 
-        apiKey, 
-        selectedModel, 
-        effectiveSignal
+        NORMALIZATION_PROMPT,
+        rawScript,
+        provider as 'openai' | 'grok' | 'deepseek' | 'groq',
+        apiKey,
+        selectedModel,
+        effectiveSignal,
       );
     } else {
-      // Direct calls for browser-compatible providers
       switch (provider) {
+        case 'openai':
+          responseText = await callOpenAI(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
+          break;
         case 'anthropic':
           responseText = await callAnthropic(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
           break;
         case 'gemini':
           responseText = await callGemini(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
+          break;
+        case 'grok':
+          responseText = await callGrok(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
+          break;
+        case 'deepseek':
+          responseText = await callDeepSeek(NORMALIZATION_PROMPT, rawScript, apiKey, selectedModel, effectiveSignal);
           break;
         default:
           throw new Error(`Unsupported provider: ${provider}`);
@@ -629,29 +625,28 @@ export async function parseScriptWithLLM(
 
     clearTimeout(timeoutId);
 
-    // Strip markdown fences if present
-    const cleanedResponse = stripMarkdownFences(responseText.trim());
+    const cleanedResponse = stripMarkdownFences(String(responseText || '').trim());
 
-    // Parse JSON
-    let parsedData: any;
+    let parsedData: unknown;
     try {
       parsedData = JSON.parse(cleanedResponse);
     } catch (parseError) {
-      throw new Error(`Failed to parse LLM response as JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to parse LLM response as JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+      );
     }
 
-    // Validate and clean the data
     return validateAndClean(parsedData);
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
         throw new Error('Request was cancelled');
       }
       throw error;
     }
-    
+
     throw new Error(`Failed to parse script: ${String(error)}`);
   }
 }

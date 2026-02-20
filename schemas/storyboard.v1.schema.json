@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lit-tracker.local/schemas/storyboard.v1.schema.json",
+  "title": "LitTracker Storyboard v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pages"],
+  "properties": {
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page_number", "panel_count", "locations", "time_markers", "characters", "beats"],
+        "properties": {
+          "page_number": { "type": "integer", "minimum": 1 },
+          "panel_count": { "type": "integer", "minimum": 0 },
+          "locations": { "type": "array", "items": { "type": "string" } },
+          "time_markers": { "type": "array", "items": { "type": "string" } },
+          "characters": { "type": "array", "items": { "type": "string" } },
+          "beats": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
