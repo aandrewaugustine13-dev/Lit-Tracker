@@ -10,16 +10,14 @@
           "blocks": [
             {
               "type": "TITLE_CARD",
-              "text": "PAGE ONE",
-              "block_id": "p1-pa1-b0"
+              "text": "PAGE ONE"
             },
             {
               "type": "ART_NOTE",
               "text": "Wide establishing shot. The CITY OF NEO TOKYO at night.",
               "meta": {
                 "shot": "Wide establishing shot"
-              },
-              "block_id": "p1-pa1-b1"
+              }
             }
           ]
         },
@@ -29,8 +27,7 @@
             {
               "type": "DIALOGUE",
               "speaker": "ELI",
-              "text": "I've been searching for the ANCIENT SWORD for years.",
-              "block_id": "p1-pa2-b0"
+              "text": "I've been searching for the ANCIENT SWORD for years."
             },
             {
               "type": "DIALOGUE",
@@ -38,8 +35,7 @@
               "text": "He doesn't know what he's getting into.",
               "meta": {
                 "delivery": "thought"
-              },
-              "block_id": "p1-pa2-b1"
+              }
             }
           ]
         },
@@ -48,8 +44,7 @@
           "blocks": [
             {
               "type": "CAPTION",
-              "text": "2045 - The year everything changed.",
-              "block_id": "p1-pa3-b0"
+              "text": "2045 - The year everything changed."
             }
           ]
         }
@@ -63,13 +58,11 @@
           "blocks": [
             {
               "type": "TITLE_CARD",
-              "text": "PAGE TWO",
-              "block_id": "p2-pa1-b0"
+              "text": "PAGE TWO"
             },
             {
               "type": "ART_NOTE",
-              "text": "Inside a hidden shrine beneath NEO TOKYO. Stone walls are carved with symbols of the ORDER OF DAWN.",
-              "block_id": "p2-pa1-b1"
+              "text": "Inside a hidden shrine beneath NEO TOKYO. Stone walls are carved with symbols of the ORDER OF DAWN."
             }
           ]
         },
@@ -79,14 +72,12 @@
             {
               "type": "DIALOGUE",
               "speaker": "MAYA",
-              "text": "If the Order finds us, we're done.",
-              "block_id": "p2-pa2-b0"
+              "text": "If the Order finds us, we're done."
             },
             {
               "type": "DIALOGUE",
               "speaker": "ELI",
-              "text": "Then we move before sunrise.",
-              "block_id": "p2-pa2-b1"
+              "text": "Then we move before sunrise."
             }
           ]
         },
@@ -95,8 +86,7 @@
           "blocks": [
             {
               "type": "CAPTION",
-              "text": "The SWORD hums as the seal begins to crack.",
-              "block_id": "p2-pa3-b0"
+              "text": "The SWORD hums as the seal begins to crack."
             }
           ]
         }
