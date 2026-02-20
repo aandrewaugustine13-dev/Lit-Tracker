@@ -59,69 +59,28 @@ export const DEFAULT_MODELS: Record<string, string> = {
 // Providers that work directly from browser (no CORS issues)
 export const BROWSER_COMPATIBLE_PROVIDERS = ['gemini', 'anthropic'] as const;
 
-export const NORMALIZATION_PROMPT = `You are an editor and English teacher analyzing a story. Your task is to read and comprehend the narrative, then extract world-building elements from your understanding.
+export const NORMALIZATION_PROMPT = `You are an expert comic script parser for a digital storyboard tool.
 
-⚠️ **CRITICAL REQUIREMENT**: You MUST return entities from MULTIPLE categories — not just locations. A typical script will contain characters, factions, events, concepts, artifacts, and more. Returning only locations is unacceptable and indicates you haven't fully analyzed the narrative.
+**PRIMARY MISSION (NON-NEGOTIABLE — DO THIS FIRST AND PERFECTLY)**:
+Extract **EVERY SINGLE PANEL** from this 29-page graphic novel script. 
+This script contains exactly 119 panels. You **must** output all 119. Do not summarize, combine, skip, or give only representative panels. Failure to output the full panel count will break the storyboard tool.
 
-📊 **EXPECTED YIELD**: A typical script page will yield:
-- 2-5 locations (settings, places)
-- 1-3 characters (minor/background characters, not main protagonists)
-- 1-2 factions/organizations (any groups mentioned)
-- 1-3 events (battles, discoveries, deaths, meetings, past events referenced)
-- 1-2 concepts (powers, abilities, magic systems, phenomena)
-- 0-2 artifacts (named weapons, tools, relics, important objects)
-- 0-2 rules (world mechanics, constraints, established laws)
-- 0-2 items (generic objects characters interact with)
+Follow the script’s explicit structure:
+- Every "PAGE X" → one page object
+- Every "Panel Y" → one panel object
+- panel_number is **global and sequential** (1 to 119 across the entire script)
+- page_number matches the PAGE header
+- For "description": combine the [ARTIST NOTE] + any visual direction in the script. Be extremely detailed.
+- For "dialogue": parse every spoken line, NARRATOR box, CAPTION, SFX. Correctly set "type":
+  - "spoken" for character lines (JOHN:, SINDY:, etc.)
+  - "caption" for NARRATOR: or plain narrator boxes
+  - "sfx" for SFX: lines
+  - "thought" if clearly a thought bubble (none in this script)
 
-**PHASE 1: COMPREHENSION (Read and Understand First)**
-Before extracting any data, read the story naturally to understand:
-- **Plot & Narrative Arc**: What's happening? What's the conflict? What are the stakes?
-- **Characters**: Who are they? What are their motivations, relationships, and roles in the story? (Don't rely on ALL-CAPS formatting)
-- **Settings**: Where does the story take place? What's the atmosphere and significance of each location? (Don't rely on INT./EXT. markers)
-- **Themes & Subtext**: What are the underlying themes? What's the emotional core?
-- **Narrative Elements**: What objects, events, and concepts are important to the story's progression?
+Only AFTER you have output the complete 119-panel structure, THEN extract characters and lore_candidates across multiple categories.
 
-**PHASE 2: EXTRACTION (Extract from Understanding)**
-Based on your comprehension of the story, now extract:
+**Output ONLY valid JSON** — no markdown, no extra text.
 
-1. **Pages and panels** with their descriptions and dialogue (adapt to whatever format the text uses - prose, screenplay, comic script, or natural writing)
-2. **Characters** with rich descriptions including their motivations, relationships, and role in the narrative
-3. **Lore candidates** across ALL categories:
-   - **Characters**: Minor/background characters (protagonists go in 'characters' field) - describe their role in the story
-   - **Locations**: Places and settings - describe atmosphere, significance, and narrative importance
-   - **Factions/Organizations**: Groups, teams, agencies - describe ideology, influence, and role in conflict
-   - **Events**: Significant narrative moments - describe impact, participants, and consequences
-   - **Concepts**: Abstract ideas, powers, abilities - describe how they work and their significance
-   - **Artifacts**: Named significant objects - describe origin, properties, and narrative importance
-   - **Rules**: Established world rules - describe scope, implications, and exceptions
-   - **Items**: Generic trackable objects - describe usage and importance
-   - **Timeline/Years**: Temporal markers
-   - **Uncategorized**: Everything else that might be lore
-
-**FORMAT-AGNOSTIC APPROACH**: 
-This text may be in any format - prose, screenplay, comic script, or natural writing. Don't rely on specific formatting patterns like ALL-CAPS character names, INT./EXT. location markers, or Panel indicators. Read naturally and identify entities based on narrative understanding.
-
-**EXTRACTION QUALITY GUIDELINES**:
-- **Richer Descriptions**: Since you understand the story, provide detailed descriptions that include:
-  - Characters: Motivations, relationships, character arc, role in narrative
-  - Locations: Atmosphere, emotional tone, significance to plot, narrative function
-  - Factions: Ideology, influence level, role in conflict, relationship to protagonists
-  - Events: Emotional impact, consequences, participants, thematic significance
-  - Concepts: How they work, why they matter to the story, thematic implications
-  - Artifacts: Origin story, powers/properties, symbolic meaning, narrative importance
-  - Rules: How they constrain/enable the story, exceptions, implications
-  
-- **Track panels** where each lore item appears
-- **Provide metadata** for each lore candidate based on your understanding:
-  - Characters: role, appearance, motivations
-  - Factions: ideology, leader, influence level, relationship dynamics
-  - Events: date, participants, consequences, emotional weight
-  - Concepts/Artifacts: origin, properties, significance, thematic meaning
-  - Rules: scope, exceptions, narrative implications
-- **Provide an overall lore summary** that synthesizes your understanding of the world-building
-
-**Output Format:**
-Return ONLY valid JSON (no markdown fences) in this structure:
 {
   "pages": [
     {
@@ -129,169 +88,35 @@ Return ONLY valid JSON (no markdown fences) in this structure:
       "panels": [
         {
           "panel_number": 1,
-          "description": "Panel description",
+          "description": "Wide establishing shot, top third of page. Living room of a nice suburban Texas home. Clean, beige, 'LIVE LAUGH LOVE' décor. Massive flatscreen TV dominates one wall showing news. Through the window, orange apocalyptic sky with something burning.",
           "dialogue": [
-            { "character": "CHARACTER", "text": "Dialogue text", "type": "spoken" }
+            { "character": "NARRATOR", "text": "The difference between panic and preparation is branding.", "type": "caption" }
           ],
           "panel_id": "p1-panel1"
+        },
+        {
+          "panel_number": 2,
+          "description": "Close on TV screen. News broadcast. Aerial shot of I-5 in California — solid river of headlights flowing toward the ocean. Speedboat capsizing in corner. Passengers smiling and waving. Upbeat crawler at bottom.",
+          "dialogue": [
+            { "character": "CRAWLER", "text": "GREAT TRAVEL WEATHER! 75° AND SUNNY! WEST COAST MOBILIZATION AHEAD OF SCHEDULE!", "type": "caption" }
+          ],
+          "panel_id": "p1-panel2"
         }
+        // ... continue for ALL 119 panels
       ]
     }
+    // ... all other pages
   ],
   "characters": [
-    { "name": "CHARACTER", "description": "Brief description", "panel_count": 5 }
+    // main characters with descriptions and panel_count
   ],
   "lore_candidates": [
-    // LOCATIONS - Settings and places
-    { 
-      "text": "The Crimson Tavern", 
-      "category": "location", 
-      "confidence": 0.9, 
-      "panels": ["p1-panel1"],
-      "description": "A dimly lit underground bar where rebels gather to plan",
-      "metadata": { "region": "Old Quarter", "atmosphere": "tense" }
-    },
-    {
-      "text": "Shadow District",
-      "category": "location",
-      "confidence": 0.85,
-      "panels": ["p1-panel2"],
-      "description": "The dangerous eastern sector controlled by gangs"
-    },
-    // CHARACTERS - Minor/background characters
-    {
-      "text": "Marcus the Informant",
-      "category": "character",
-      "confidence": 0.8,
-      "panels": ["p1-panel1"],
-      "description": "A nervous information broker who sells secrets to both sides"
-    },
-    // FACTIONS - Any organization, group, team, agency, order, guild, crew
-    {
-      "text": "The Iron Brotherhood",
-      "category": "faction",
-      "confidence": 0.9,
-      "panels": ["p1-panel2", "p1-panel4"],
-      "description": "A militant group seeking to overthrow the Council",
-      "metadata": { "ideology": "Freedom through force", "leader": "General Krane", "size": "200+ members" }
-    },
-    {
-      "text": "Council of Seven",
-      "category": "faction",
-      "confidence": 0.95,
-      "panels": ["p1-panel3"],
-      "description": "The ruling body that governs the city with an iron fist"
-    },
-    // EVENTS - Battles, discoveries, deaths, meetings, rituals, anything that happened
-    {
-      "text": "The Siege of Irongate",
-      "category": "event",
-      "confidence": 0.9,
-      "panels": ["p1-panel3"],
-      "description": "Bloody battle where the Brotherhood tried to storm the fortress",
-      "metadata": { "date": "Three years ago", "casualties": "Heavy", "outcome": "Failed assault" }
-    },
-    {
-      "text": "Sarah's Betrayal",
-      "category": "event",
-      "confidence": 0.85,
-      "panels": ["p1-panel5"],
-      "description": "When Sarah revealed herself as a Council spy, splitting the group"
-    },
-    // CONCEPTS - Powers, abilities, magic systems, phenomena, philosophies
-    {
-      "text": "Shadow Binding",
-      "category": "concept",
-      "confidence": 0.9,
-      "panels": ["p1-panel4"],
-      "description": "Rare ability to manipulate shadows to restrain enemies"
-    },
-    {
-      "text": "The Voice",
-      "category": "concept",
-      "confidence": 0.8,
-      "panels": ["p1-panel2"],
-      "description": "Telepathic communication method used by trained operatives"
-    },
-    // ARTIFACTS - Named weapons, tools, relics, documents, significant objects
-    {
-      "text": "Blade of Echoes",
-      "category": "artifact",
-      "confidence": 0.95,
-      "panels": ["p1-panel5"],
-      "description": "Legendary sword that shows its wielder glimpses of the future",
-      "metadata": { "origin": "Forged by the Ancient Smiths", "current_owner": "Unknown" }
-    },
-    {
-      "text": "The Lost Codex",
-      "category": "artifact",
-      "confidence": 0.9,
-      "panels": ["p1-panel3"],
-      "description": "Ancient book containing forbidden knowledge of reality manipulation"
-    },
-    // RULES - World mechanics, constraints, established laws
-    {
-      "text": "The Pact of Silence",
-      "category": "rule",
-      "confidence": 0.85,
-      "panels": ["p1-panel2"],
-      "description": "Ancient law forbidding anyone from speaking of the Old Gods"
-    },
-    // ITEMS - Generic objects that characters interact with
-    {
-      "text": "Communication Crystal",
-      "category": "item",
-      "confidence": 0.7,
-      "panels": ["p1-panel4"],
-      "description": "Standard issue device for long-range messaging"
-    }
+    // rich lore across ALL categories as before
   ],
-  "overall_lore_summary": "Brief summary of the lore"
+  "overall_lore_summary": "Brief summary..."
 }
 
-**Note**: The above examples demonstrate the diversity of entities you should extract. This is what a well-analyzed script looks like - it contains multiple categories, not just locations. If you're only finding locations, you're not analyzing deeply enough.
-
-**Confidence Scoring:**
-- 1.0: Explicit entity clearly defined (e.g., organization name in dialogue, artifact with clear importance)
-- 0.8-0.9: Strong contextual indicators (e.g., character acting as faction leader, event described in detail)
-- 0.6-0.7: Moderate confidence (e.g., mentioned power or ability, referenced past event)
-- 0.4-0.5: Weak indicators (e.g., possible concept, unclear reference)
-
-**Category Guidelines:**
-- Use "faction" for any group/organization with members
-- Use "event" for past or present significant happenings
-- Use "concept" for abstract ideas, powers, or phenomena  
-- Use "artifact" for named unique objects of importance
-- Use "rule" for explicit world mechanics or constraints
-- Use "item" for generic objects characters use
-- Use "character" for new characters not in main character list
-
-🚫 **COMMON MISTAKES TO AVOID**:
-- ❌ **DO NOT return only locations** - This is the most common failure. Every script has more than just places.
-- ❌ **DO NOT skip characters** just because they appear in the main characters array - Minor/background characters still go in lore_candidates
-- ❌ **DO NOT skip events** just because they're implied rather than explicitly stated - References to past battles, meetings, deaths, or discoveries are events
-- ❌ **DO NOT miss factions** - If a character mentions "the team," "the agency," "the order," "the guild," "the crew," or any group, that's a faction
-- ❌ **DO NOT miss concepts** - If a character uses a power, ability, or technique (even once), that's a concept
-- ❌ **DO NOT miss artifacts** - If a character wields a named weapon, tool, or important object, that's an artifact
-- ❌ **DO NOT ignore dialogue** - Organizations, events, and artifacts are often mentioned in conversation, not just descriptions
-
-✅ **MANDATORY SELF-CHECK BEFORE RESPONDING**:
-Before you finalize your JSON response, you MUST verify the following checklist. If you answer "NO" to any of these, go back and extract more entities:
-
-□ **Did I extract at least 2 locations?** (settings, places)
-□ **Did I extract characters?** (people mentioned by name who aren't main protagonists)
-□ **Did I extract factions/organizations?** (any group, team, agency, order, guild, crew, council, brotherhood, etc.)
-□ **Did I extract events?** (battles, discoveries, deaths, meetings, rituals, betrayals - anything that happened)
-□ **Did I extract concepts?** (powers, abilities, magic systems, phenomena, philosophies, techniques)
-□ **Did I extract artifacts?** (named weapons, tools, relics, documents, significant objects)
-□ **Did I check rules?** (world mechanics, constraints, laws, pacts, established limitations)
-□ **Did I check items?** (generic objects characters interact with)
-
-If your lore_candidates array has ONLY locations, you have FAILED this task. Go back and re-read the script specifically looking for the other categories listed above.
-
-**Critical reminder**: Most scripts contain entities across AT LEAST 4-6 different categories. If you're returning fewer than 3 categories, you're not analyzing thoroughly enough.
-
-Parse the following script:`;
+Now parse this script:`;
 
 // ============= API CALL FUNCTIONS =============
 
