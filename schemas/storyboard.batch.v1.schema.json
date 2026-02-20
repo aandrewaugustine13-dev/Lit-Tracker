@@ -11,24 +11,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["page", "panel", "status", "evidence", "reason"],
+        "required": ["page", "panel", "status", "reason"],
         "properties": {
           "page": { "type": "integer", "minimum": 1 },
           "panel": { "type": "integer", "minimum": 1 },
           "status": { "type": "string", "enum": ["ok", "missing"] },
-          "evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["block_id", "snippet"],
-              "properties": {
-                "block_id": { "type": "string", "pattern": "^p\\d+-pa\\d+-b\\d+$" },
-                "snippet": { "type": "string", "minLength": 1 }
-              }
-            }
-          },
           "reason": { "type": "string" }
         }
       }
