@@ -155,6 +155,38 @@ const LOCATION_INDICATORS = new Set([
   'CENTER', 'CENTRE', 'LOBBY', 'ELEVATOR', 'SITE',
 ]);
 
+// Organization/group keywords for faction detection
+const FACTION_KEYWORDS = new Set([
+  'DEPARTMENT', 'AGENCY', 'INSTITUTE', 'ORGANIZATION', 'ORDER', 'GUILD',
+  'SQUAD', 'DIVISION', 'BUREAU', 'TEAM', 'FORCE', 'CORPS', 'GROUP',
+  'UNION', 'COUNCIL', 'COMMITTEE', 'ALLIANCE', 'LEAGUE', 'SYNDICATE',
+  'COLLECTIVE', 'SOCIETY', 'BROTHERHOOD', 'SISTERHOOD', 'ASSOCIATION',
+  'FOUNDATION', 'MINISTRY', 'COMMAND', 'AUTHORITY',
+]);
+
+// Action verbs that suggest object interaction (for item/echo detection)
+const ITEM_ACTION_VERBS = [
+  'holds', 'hold', 'holding', 'wields', 'wield', 'wielding',
+  'carries', 'carry', 'carrying', 'grabs', 'grab', 'grabbing',
+  'picks up', 'pick up', 'picking up', 'draws', 'draw', 'drawing',
+  'clutches', 'clutch', 'clutching', 'brandishes', 'brandish', 'brandishing',
+  'wears', 'wear', 'wearing', 'raises', 'raise', 'raising',
+  'retrieves', 'retrieve', 'retrieving', 'activates', 'activate', 'activating',
+];
+
+// Significant object keywords for item/artifact detection
+const ITEM_OBJECT_KEYWORDS = new Set([
+  'SWORD', 'BLADE', 'KNIFE', 'DAGGER', 'AXE', 'HAMMER', 'SPEAR',
+  'GUN', 'PISTOL', 'RIFLE', 'WEAPON', 'SHIELD', 'ARMOR',
+  'RING', 'AMULET', 'PENDANT', 'NECKLACE', 'CROWN', 'STAFF', 'WAND',
+  'TOME', 'SCROLL', 'MAP', 'KEY', 'ARTIFACT', 'RELIC',
+  'CRYSTAL', 'GEM', 'STONE', 'ORB', 'DEVICE', 'GADGET',
+  'BADGE', 'VIAL', 'SERUM', 'SHARD', 'TALISMAN',
+]);
+
+// Articles/possessives that should not be used as item modifiers
+const ARTICLE_WORDS = new Set(['a', 'an', 'the', 'his', 'her', 'its', 'their', 'my', 'your', 'our']);
+
 function isNoiseWord(name: string): boolean {
   return NOISE_WORDS.has(name.trim().toUpperCase());
 }
@@ -162,6 +194,11 @@ function isNoiseWord(name: string): boolean {
 function hasLocationIndicator(text: string): boolean {
   const words = text.toUpperCase().split(/\s+/);
   return words.some(w => LOCATION_INDICATORS.has(w.replace(/[,\.\-]/g, '')));
+}
+
+function hasFactionKeyword(text: string): boolean {
+  const words = text.toUpperCase().split(/\s+/);
+  return words.some(w => FACTION_KEYWORDS.has(w.replace(/[,\.\-]/g, '')));
 }
 
 // ─── Non-Character Filter ────────────────────────────────────────────────────
@@ -413,6 +450,54 @@ export function deterministicParse(
       }
     }
 
+    // Check for faction/organization keywords in ALL-CAPS phrases
+    const capsMatches = Array.from(trimmed.matchAll(/\b([A-Z][A-Z\s'.\-]{2,49})\b/g));
+    for (const match of capsMatches) {
+      const phrase = match[1].trim();
+      if (!isNoiseWord(phrase) && !hasLocationIndicator(phrase) && hasFactionKeyword(phrase)) {
+        const key = phrase.toUpperCase();
+        if (!loreMap.has(key) && phrase.length >= 3 && phrase.length <= 60) {
+          loreMap.set(key, {
+            category: 'faction',
+            description: phrase,
+            pages: new Set([currentPageNumber]),
+            confidence: 0.7,
+          });
+        }
+      }
+    }
+
+    // Check for item interactions: action verb followed by a significant object keyword
+    const lowerTrimmed = trimmed.toLowerCase();
+    for (const verb of ITEM_ACTION_VERBS) {
+      const verbIdx = lowerTrimmed.indexOf(verb);
+      if (verbIdx !== -1) {
+        const afterVerb = trimmed.substring(verbIdx + verb.length);
+        const words = afterVerb.split(/\s+/);
+        for (let wi = 0; wi < Math.min(words.length, 6); wi++) {
+          const word = words[wi].replace(/[^A-Za-z]/g, '').toUpperCase();
+          if (ITEM_OBJECT_KEYWORDS.has(word)) {
+            // Include optional preceding adjective modifier (skip articles)
+            const prevWord = wi > 0 ? words[wi - 1].replace(/[^A-Za-z]/g, '') : '';
+            const useModifier = prevWord && !ARTICLE_WORDS.has(prevWord.toLowerCase());
+            const itemName = (useModifier ? prevWord + ' ' : '') + words[wi].replace(/[^A-Za-z]/g, '');
+            const cleanName = itemName.trim();
+            const key = cleanName.toUpperCase();
+            if (cleanName.length >= 3 && !loreMap.has(key)) {
+              loreMap.set(key, {
+                category: 'item',
+                description: cleanName,
+                pages: new Set([currentPageNumber]),
+                confidence: 0.75,
+              });
+            }
+            break;
+          }
+        }
+        break; // Only process the first matching verb per line
+      }
+    }
+
     // Extract timeline years (4-digit years in range 2000-2199)
     const yearMatches = Array.from(trimmed.matchAll(/\b(2[0-1]\d{2})\b/g));
     for (const ym of yearMatches) {
@@ -581,7 +666,6 @@ export function enrichParseResult(
   }
 
   // ── 5. Merge lore entries ──────────────────────────────────────────────
-  const aiLoreNamesArray = aiResult.lore.map(l => l.name.toUpperCase());
   const aiLoreCategories = new Set(aiResult.lore.map(l => l.category));
   const additionalLore: ParsedLoreEntry[] = [];
 
@@ -593,9 +677,12 @@ export function enrichParseResult(
     for (const detLore of deterministicResult.lore) {
       const detName = detLore.name.toUpperCase();
 
-      const isDuplicateOrSubstring = aiLoreNamesArray.some(aiName =>
-        aiName === detName || aiName.includes(detName) || detName.includes(aiName)
-      );
+      // Type-aware duplicate check: only consider same-category entries as potential duplicates
+      const isDuplicateOrSubstring = aiResult.lore.some(aiLore => {
+        if (aiLore.category !== detLore.category) return false;
+        const aiName = aiLore.name.toUpperCase();
+        return aiName === detName || aiName.includes(detName) || detName.includes(aiName);
+      });
 
       // Only add deterministic lore if it's not a duplicate AND it fills a category the AI missed
       if (!isDuplicateOrSubstring && !aiLoreCategories.has(detLore.category)) {

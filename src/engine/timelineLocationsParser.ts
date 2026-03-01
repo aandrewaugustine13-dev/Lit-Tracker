@@ -53,6 +53,39 @@ const COMMAND_CENTER_KEYWORDS = ['command', 'headquarters', 'hq', 'base', 'contr
 // Real-world location indicators
 const REAL_WORLD_KEYWORDS = ['nyc', 'york', 'street', 'avenue', 'broadway', 'city'];
 
+// Screenplay/comic keywords to filter out when detecting character names
+const SPEAKER_NOISE_WORDS = new Set([
+  'INT', 'EXT', 'CUT', 'FADE', 'DISSOLVE', 'SMASH', 'MATCH', 'CONTINUED',
+  'CONT', 'ANGLE', 'CLOSE', 'WIDE', 'PAN', 'ZOOM', 'SFX', 'VO', 'OS', 'OC',
+  'POV', 'INSERT', 'SUPER', 'TITLE', 'THE', 'AND', 'BUT', 'FOR', 'NOT',
+  'WITH', 'FROM', 'PAGE', 'PANEL', 'SCENE', 'ACT', 'END', 'DAY', 'NIGHT',
+  'MORNING', 'EVENING', 'LATER', 'CONTINUOUS', 'INTERCUT', 'FLASHBACK',
+  'MONTAGE', 'BEGIN', 'RESUME', 'BACK', 'SAME', 'TIME', 'CAPTION', 'SETTING',
+  'NARRATOR', 'NARRATION', 'DESCRIPTION', 'NOTE', 'ACTION', 'ESTABLISHING',
+]);
+
+// Action verbs for item/echo detection
+const ITEM_ACTION_VERBS_TLP = [
+  'holds', 'hold', 'holding', 'wields', 'wield', 'wielding',
+  'carries', 'carry', 'carrying', 'grabs', 'grab', 'grabbing',
+  'picks up', 'pick up', 'picking up', 'draws', 'draw', 'drawing',
+  'clutches', 'clutch', 'clutching', 'brandishes', 'brandish', 'brandishing',
+  'wears', 'wear', 'wearing', 'raises', 'raise', 'raising',
+  'retrieves', 'retrieve', 'retrieving', 'activates', 'activate', 'activating',
+];
+
+// Significant object keywords for item detection
+const ITEM_KEYWORDS_TLP = new Set([
+  'SWORD', 'BLADE', 'KNIFE', 'DAGGER', 'AXE', 'HAMMER', 'SPEAR', 'BOW',
+  'GUN', 'PISTOL', 'RIFLE', 'WEAPON', 'SHIELD', 'ARMOR', 'RING', 'AMULET',
+  'PENDANT', 'NECKLACE', 'CROWN', 'STAFF', 'WAND', 'TOME', 'SCROLL',
+  'MAP', 'KEY', 'ARTIFACT', 'RELIC', 'CRYSTAL', 'GEM', 'STONE', 'ORB',
+  'DEVICE', 'GADGET', 'BADGE', 'VIAL', 'SERUM', 'SHARD', 'TALISMAN',
+]);
+
+// Articles/possessives that should not be used as item modifiers
+const ARTICLE_WORDS_TLP = new Set(['a', 'an', 'the', 'his', 'her', 'its', 'their', 'my', 'your', 'our']);
+
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
 /**
@@ -591,6 +624,113 @@ function inferRegionFromTags(tags: string[]): string {
   return '';
 }
 
+interface ExtractedCharacter {
+  name: string;
+  lineNumber: number;
+  contextSnippet: string;
+}
+
+/**
+ * Extract character names from script text using dialogue speaker patterns.
+ * Detects ALL-CAPS speakers in both standalone and inline dialogue formats.
+ */
+function extractCharacters(text: string): ExtractedCharacter[] {
+  const normalizedText = stripMarkdown(text);
+  const characters: Map<string, ExtractedCharacter> = new Map();
+  const lines = normalizedText.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+    const lineNumber = i + 1;
+
+    if (!trimmedLine) continue;
+
+    // Pattern 1: Standalone ALL-CAPS name (dialogue speaker on own line)
+    const standaloneMatch = trimmedLine.match(/^([A-Z][A-Z\s'.,-]{2,29})$/);
+    if (standaloneMatch) {
+      const name = standaloneMatch[1].trim();
+      if (!SPEAKER_NOISE_WORDS.has(name) && !PLACE_INDICATORS.has(name)) {
+        const key = normalizeName(name);
+        if (!characters.has(key)) {
+          characters.set(key, { name, lineNumber, contextSnippet: trimmedLine.substring(0, 100) });
+        }
+      }
+      continue;
+    }
+
+    // Pattern 2: Comic-style inline dialogue: NAME: "text" or NAME: text
+    const inlineDialogueMatch = trimmedLine.match(/^([A-Z][A-Z\s'.,-]{1,29})(?:\s*\([^)]*\))?\s*:\s*.+/);
+    if (inlineDialogueMatch) {
+      const name = inlineDialogueMatch[1].trim();
+      if (!SPEAKER_NOISE_WORDS.has(name) && !PLACE_INDICATORS.has(name)) {
+        const key = normalizeName(name);
+        if (!characters.has(key)) {
+          characters.set(key, { name, lineNumber, contextSnippet: trimmedLine.substring(0, 100) });
+        }
+      }
+    }
+  }
+
+  return Array.from(characters.values());
+}
+
+interface ExtractedItem {
+  name: string;
+  lineNumber: number;
+  contextSnippet: string;
+}
+
+/**
+ * Extract significant items/echoes from script text.
+ * Detects items mentioned after action verbs (holds, wields, carries, etc.)
+ * combined with known item type keywords.
+ */
+function extractItems(text: string): ExtractedItem[] {
+  const normalizedText = stripMarkdown(text);
+  const items: Map<string, ExtractedItem> = new Map();
+  const lines = normalizedText.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+    const lineNumber = i + 1;
+
+    if (!trimmedLine) continue;
+
+    const lowerLine = trimmedLine.toLowerCase();
+
+    for (const verb of ITEM_ACTION_VERBS_TLP) {
+      const verbIdx = lowerLine.indexOf(verb);
+      if (verbIdx !== -1) {
+        const afterVerb = trimmedLine.substring(verbIdx + verb.length);
+        const words = afterVerb.split(/\s+/);
+
+        for (let wi = 0; wi < Math.min(words.length, 6); wi++) {
+          const word = words[wi].replace(/[^A-Za-z]/g, '').toUpperCase();
+          if (ITEM_KEYWORDS_TLP.has(word)) {
+            // Include optional preceding adjective modifier (skip articles)
+            const prevWord = wi > 0 ? words[wi - 1].replace(/[^A-Za-z]/g, '') : '';
+            const useModifier = prevWord && !ARTICLE_WORDS_TLP.has(prevWord.toLowerCase());
+            const itemName = (useModifier ? prevWord + ' ' : '') + words[wi].replace(/[^A-Za-z]/g, '');
+            const cleanName = itemName.trim();
+            if (cleanName.length >= MIN_LOCATION_NAME_LENGTH) { // reuse minimum-length constant (value: 3)
+              const key = normalizeName(cleanName);
+              if (!items.has(key)) {
+                items.set(key, { name: cleanName, lineNumber, contextSnippet: trimmedLine.substring(0, 100) });
+              }
+            }
+            break;
+          }
+        }
+        break; // Only process the first matching verb per line
+      }
+    }
+  }
+
+  return Array.from(items.values());
+}
+
 // ─── Main Parser Function ───────────────────────────────────────────────────
 
 export async function parseTimelineAndLocations(
@@ -683,6 +823,53 @@ export async function parseTimelineAndLocations(
     }
   }
 
+  // ─── Extract Characters ────────────────────────────────────────────────────
+
+  const extractedCharacters = extractCharacters(rawScriptText);
+  const existingCharacterNames = new Set(
+    existingState.characters.map(c => normalizeName(c.name))
+  );
+
+  for (const char of extractedCharacters) {
+    const key = normalizeName(char.name);
+    if (!existingCharacterNames.has(key)) {
+      existingCharacterNames.add(key); // Prevent duplicates within this parse
+      newEntities.push({
+        tempId: generateUUID(),
+        entityType: 'character',
+        name: toTitleCase(char.name),
+        source: 'deterministic',
+        confidence: 0.9,
+        contextSnippet: char.contextSnippet,
+        lineNumber: char.lineNumber,
+        suggestedRole: 'Supporting' as const,
+        suggestedDescription: `Character introduced at line ${char.lineNumber}`,
+      });
+    }
+  }
+
+  // ─── Extract Items ─────────────────────────────────────────────────────────
+
+  const extractedItems = extractItems(rawScriptText);
+  const seenItemKeys = new Set<string>();
+
+  for (const item of extractedItems) {
+    const key = normalizeName(item.name);
+    if (!seenItemKeys.has(key)) {
+      seenItemKeys.add(key);
+      newEntities.push({
+        tempId: generateUUID(),
+        entityType: 'item',
+        name: toTitleCase(item.name),
+        source: 'deterministic',
+        confidence: 0.8,
+        contextSnippet: item.contextSnippet,
+        lineNumber: item.lineNumber,
+        suggestedItemDescription: `Item detected in action at line ${item.lineNumber}`,
+      });
+    }
+  }
+
   // ─── Extract Timeline Events ────────────────────────────────────────────────
 
   const extractedTimelineEvents = extractTimelineEvents(rawScriptText);
@@ -751,16 +938,23 @@ export async function parseTimelineAndLocations(
   // ─── Generate Preview Text ──────────────────────────────────────────────────
 
   const newLocationCount = newEntities.filter(e => e.entityType === 'location').length;
-  const locationUpdateCount = updatedEntities.filter(e => e.entityType === 'location').length;
+  const newCharacterCount = newEntities.filter(e => e.entityType === 'character').length;
+  const newItemCount = newEntities.filter(e => e.entityType === 'item').length;
   const characterMoveCount = updatedEntities.filter(e => e.entityType === 'character').length;
   const timelineEventCount = newTimelineEvents.length;
 
   // Build preview warnings
-  if (newLocationCount > 0 || timelineEventCount > 0 || characterMoveCount > 0) {
+  if (newLocationCount > 0 || timelineEventCount > 0 || characterMoveCount > 0 || newCharacterCount > 0 || newItemCount > 0) {
     const previewParts: string[] = [];
     
     if (newLocationCount > 0) {
       previewParts.push(`${newLocationCount} new location${newLocationCount === 1 ? '' : 's'}`);
+    }
+    if (newCharacterCount > 0) {
+      previewParts.push(`${newCharacterCount} new character${newCharacterCount === 1 ? '' : 's'}`);
+    }
+    if (newItemCount > 0) {
+      previewParts.push(`${newItemCount} new item${newItemCount === 1 ? '' : 's'}`);
     }
     if (timelineEventCount > 0) {
       previewParts.push(`${timelineEventCount} timeline event${timelineEventCount === 1 ? '' : 's'}`);
@@ -772,9 +966,17 @@ export async function parseTimelineAndLocations(
     const previewSummary = `🧵 The loom senses new threads: ${previewParts.join(', ')}`;
     
     // Add specific highlights
-    if (newLocationCount > 0 && newEntities.length > 0) {
-      const firstLoc = newEntities[0];
-      warnings.unshift(`📍 New location: ${firstLoc.name} (${firstLoc.suggestedDescription})`);
+    if (newLocationCount > 0) {
+      const firstLoc = newEntities.find(e => e.entityType === 'location');
+      if (firstLoc) {
+        warnings.unshift(`📍 New location: ${firstLoc.name} (${firstLoc.suggestedDescription})`);
+      }
+    }
+    if (newCharacterCount > 0) {
+      const firstChar = newEntities.find(e => e.entityType === 'character');
+      if (firstChar) {
+        warnings.unshift(`👤 New character: ${firstChar.name}`);
+      }
     }
     if (timelineEventCount > 0) {
       const years = extractedTimelineEvents.map(e => e.year);

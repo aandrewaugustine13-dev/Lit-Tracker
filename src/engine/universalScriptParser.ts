@@ -98,6 +98,15 @@ const ITEM_KEYWORDS = new Set([
 // Maximum length for character names
 const MAX_CHARACTER_NAME_LENGTH = 30;
 
+// Organization/group keywords for faction detection
+const FACTION_KEYWORDS_PASS1 = new Set([
+  'DEPARTMENT', 'AGENCY', 'INSTITUTE', 'ORGANIZATION', 'ORDER', 'GUILD',
+  'SQUAD', 'DIVISION', 'BUREAU', 'TEAM', 'FORCE', 'CORPS', 'GROUP',
+  'UNION', 'COUNCIL', 'COMMITTEE', 'ALLIANCE', 'LEAGUE', 'SYNDICATE',
+  'COLLECTIVE', 'SOCIETY', 'BROTHERHOOD', 'SISTERHOOD', 'ASSOCIATION',
+  'FOUNDATION', 'MINISTRY', 'COMMAND', 'AUTHORITY',
+]);
+
 // Threshold for triggering comic parser fallback (if Pass 1 finds fewer entities)
 const MIN_ENTITIES_THRESHOLD = 3;
 
@@ -619,6 +628,40 @@ function runPass1(
             }
             break;
           }
+        }
+      }
+    }
+
+    // ═══ 7b. FACTION DETECTION ═══
+    // Look for ALL-CAPS phrases containing organization/group keywords
+    const capsPhrasesForFaction = trimmedLine.match(/\b([A-Z][A-Z\s'.,-]{2,49})\b/g);
+    if (capsPhrasesForFaction) {
+      for (const phrase of capsPhrasesForFaction) {
+        const cleanPhrase = phrase.trim();
+        const normalized = normalizeName(cleanPhrase);
+        const words = cleanPhrase.split(/\s+/);
+        const hasFactionKw = words.some(w => FACTION_KEYWORDS_PASS1.has(w.replace(/[,.\-]/g, '')));
+
+        if (
+          hasFactionKw &&
+          !SCREENPLAY_KEYWORDS.has(cleanPhrase) &&
+          !PLACE_INDICATORS.has(cleanPhrase) &&
+          !discoveredNames.has(normalized) &&
+          !entityIndex.knownNames.has(normalized) &&
+          cleanPhrase.length >= 3 &&
+          cleanPhrase.length <= 60
+        ) {
+          discoveredNames.add(normalized);
+          result.newEntities.push({
+            tempId: generateUUID(),
+            entityType: 'faction',
+            name: toTitleCase(cleanPhrase),
+            source: 'deterministic',
+            confidence: 0.75,
+            contextSnippet: trimmedLine.substring(0, 100),
+            lineNumber,
+            suggestedDescription: `Organization/faction detected in script`,
+          });
         }
       }
     }
