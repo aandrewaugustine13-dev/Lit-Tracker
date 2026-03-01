@@ -494,10 +494,28 @@ export function enrichParseResult(
 
   const mergedCharacters = [...aiResult.characters, ...missedCharacters];
 
+  // ── 2b. Filter out non-character speakers ────────────────────────────────
+  const NON_CHARACTER_PATTERNS = [
+    /^(SIGN|BANNER|PLACARD|GRAFFITI|TEXT|SCREEN|DISPLAY)$/i,
+    /^(RADIO|TV|TELEVISION|NEWS|BROADCAST|INTERCOM|PA|SPEAKER|PHONE|RECORDING)$/i,
+    /^(NEWSPAPER|LETTER|DOCUMENT|NOTE|POSTER|BILLBOARD|MARQUEE)$/i,
+    /^(CROWD|CHANT|CHORUS|ALL|EVERYONE|VOICES?)$/i,
+    /^(SFX|SOUND|MUSIC|SONG)$/i,
+    /^(NARRATOR|CAPTION|TITLE|TITLE.?CARD|CRAWL|CRAWLER|CHYRON|SUPER)$/i,
+  ];
+
+  const filteredCharacters = mergedCharacters.filter(char => {
+    const isNonCharacter = NON_CHARACTER_PATTERNS.some(pattern => pattern.test(char.name.trim()));
+    if (isNonCharacter) {
+      warnings.push('Filtered non-character: "' + char.name + '" (inanimate/media source).');
+    }
+    return !isNonCharacter;
+  });
+
   // ── 3. Cross-check lines_count ─────────────────────────────────────────
   const detCharMap = new Map(deterministicResult.characters.map(c => [c.name.toUpperCase(), c]));
 
-  for (const aiChar of mergedCharacters) {
+  for (const aiChar of filteredCharacters) {
     const detChar = detCharMap.get(aiChar.name.toUpperCase());
     if (detChar) {
       // If AI's count is wildly different, prefer deterministic
@@ -549,6 +567,15 @@ export function enrichParseResult(
 
   const mergedLore = [...aiResult.lore, ...additionalLore];
 
+  // ── 5b. Check lore category diversity ────────────────────────────────────
+  const loreCategories = new Set(mergedLore.map(l => l.category));
+  if (loreCategories.size < 3 && mergedLore.length > 0) {
+    warnings.push(
+      'Low lore diversity: only ' + loreCategories.size + ' categories found (' +
+      Array.from(loreCategories).join(', ') + '). Expected 4+.'
+    );
+  }
+
   // ── 6. Merge timeline events ───────────────────────────────────────────
   const aiTimelineNames = new Set(aiResult.timeline.map(t => t.name));
   const additionalTimeline: ParsedTimelineEvent[] = [];
@@ -565,7 +592,7 @@ export function enrichParseResult(
   return {
     ...aiResult,
     warnings,
-    characters: mergedCharacters,
+    characters: filteredCharacters,
     lore: mergedLore,
     timeline: mergedTimeline,
     parser_source: 'ai+deterministic',
