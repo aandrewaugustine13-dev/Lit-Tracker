@@ -112,14 +112,45 @@ Read the entire script. Identify:
 PHASE 2: EXTRACT STRUCTURED DATA
 Using your full comprehension, extract every piece of data into the JSON schema below. Do not skip anything.
 
-QUALITY CHECKLIST (verify before responding):
-[] Every page in the script has a corresponding page object
-[] Every panel/scene beat has a corresponding panel object
-[] Every speaking character has a DIALOGUE or THOUGHT block with their name as speaker
-[] Every speaking character appears in the characters[] array
-[] Lore entries span multiple categories (factions, locations, events, concepts, artifacts, rules, items)
-[] Timeline events cover the major story beats
-[] No panels are missing, combined, or summarized`;
+CHARACTER RULES — READ CAREFULLY:
+A character is a PERSON or SENTIENT BEING who acts in the story. The following are NOT characters and must NEVER appear in the characters[] array:
+- Signs, placards, banners, graffiti, written text (use CRAWLER or CAPTION block type instead)
+- Radio broadcasts, TV news, intercoms, PA systems, phone recordings (use CRAWLER block type with meta.source)
+- Newspapers, letters, documents being read (use CAPTION block type)
+- Sound effects, environmental noises (use SFX block type)
+- Unnamed crowds, groups chanting (use CAPTION with meta.source = "crowd")
+
+When non-character sources "speak," use the appropriate block type (CRAWLER, CAPTION, SFX) — NOT DIALOGUE. Only actual characters get DIALOGUE blocks with a speaker field.
+
+QUALITY CHECKLIST — MANDATORY (verify before responding):
+□ Every page in the script has a corresponding page object
+□ Every panel/scene beat has a corresponding panel object
+□ Every speaking character appears in the characters[] array
+□ Only actual people/beings are in characters[] (no signs, radios, TVs)
+□ Lore entries span AT LEAST 4 different categories
+□ Timeline events cover the major story beats
+
+LORE EXTRACTION RULES — THIS IS CRITICAL:
+Returning only locations is FAILURE. Every script contains more than just places.
+
+Expected minimum yield per category:
+- 2-5 locations (settings, named places)
+- 1-3 factions/organizations (any group, team, agency, order, crew)
+- 1-3 events (battles, discoveries, deaths, meetings, rituals — past or present)
+- 1-2 concepts (powers, abilities, phenomena, philosophies, technologies)
+- 0-2 artifacts (named weapons, tools, relics, significant objects)
+- 0-2 rules (world mechanics, constraints, established laws)
+- 0-2 items (generic objects characters interact with)
+
+COMMON LORE FAILURES TO AVOID:
+✗ Only extracting locations — look at dialogue for faction mentions, event references
+✗ Missing factions — if characters mention "the team," "the order," "the agency," that's a faction
+✗ Missing events — references to past battles, deaths, meetings, discoveries are events
+✗ Missing concepts — if a character uses a power, ability, or technology, that's a concept
+✗ Missing artifacts — if a character wields a named weapon or important object, that's an artifact
+✗ Ignoring dialogue — organizations, events, and artifacts are often mentioned in conversation, not just action
+
+MANDATORY: Before finalizing JSON, count your lore categories. If fewer than 4 different categories, go back and extract more.`;
 
   // Existing entities to skip
   if (options?.existingCharacters?.length) {
