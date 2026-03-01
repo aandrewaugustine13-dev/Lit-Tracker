@@ -1,0 +1,290 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lit-tracker.app/schemas/unified-parse.v2.schema.json",
+  "title": "UnifiedParseResult",
+  "description": "The single output contract for the Lit-Tracker parser pipeline. Both the AI parser and deterministic parser produce this shape. All downstream consumers (inkSlice, characterSlice, loreSlice, crossSlice) receive converted data from this structure.",
+  "type": "object",
+  "required": [
+    "source_hash",
+    "project_type",
+    "warnings",
+    "pages",
+    "characters",
+    "lore",
+    "timeline",
+    "parser_source"
+  ],
+  "properties": {
+    "source_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the input script text. Used for cache invalidation and deduplication."
+    },
+    "project_type": {
+      "$ref": "#/definitions/ProjectType"
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Non-fatal issues encountered during parsing. Empty array if clean parse."
+    },
+    "pages": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ParsedPage" },
+      "description": "Storyboard structure. One entry per page/scene/act depending on project_type."
+    },
+    "characters": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ParsedCharacter" },
+      "description": "All characters extracted from the script."
+    },
+    "lore": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ParsedLoreEntry" },
+      "description": "World-building entities extracted from the script."
+    },
+    "timeline": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ParsedTimelineEvent" },
+      "description": "Major story beats in chronological order."
+    },
+    "parser_source": {
+      "type": "string",
+      "enum": ["ai", "deterministic", "ai+deterministic"],
+      "description": "Which parser(s) produced this result."
+    },
+    "ai_model": {
+      "type": "string",
+      "description": "The LLM model identifier used for AI parsing (e.g. 'gpt-4o', 'gemini-2.0-flash'). Only present when parser_source includes 'ai'."
+    },
+    "parse_duration_ms": {
+      "type": "number",
+      "description": "Wall-clock time in milliseconds for the full parse pipeline."
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ProjectType": {
+      "type": "string",
+      "enum": ["comic", "screenplay", "stage-play", "tv-series"],
+      "description": "The script format being parsed."
+    },
+    "BlockType": {
+      "type": "string",
+      "enum": [
+        "ART_NOTE",
+        "DIALOGUE",
+        "CAPTION",
+        "NARRATOR",
+        "SFX",
+        "THOUGHT",
+        "CRAWLER",
+        "TITLE_CARD",
+        "OTHER"
+      ],
+      "description": "The semantic type of a content block within a panel."
+    },
+    "Block": {
+      "type": "object",
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "$ref": "#/definitions/BlockType" },
+        "text": {
+          "type": "string",
+          "description": "The content of this block."
+        },
+        "speaker": {
+          "type": "string",
+          "description": "Character name. Required when type is DIALOGUE or THOUGHT."
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional key-value pairs for visual modifiers, parentheticals, etc."
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "properties": { "type": { "enum": ["DIALOGUE", "THOUGHT"] } }
+      },
+      "then": {
+        "required": ["type", "text", "speaker"]
+      }
+    },
+    "ParsedPanel": {
+      "type": "object",
+      "required": ["panel_number", "blocks"],
+      "properties": {
+        "panel_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential panel number within the page (resets per page)."
+        },
+        "blocks": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Block" },
+          "minItems": 1,
+          "description": "Content blocks in reading order."
+        },
+        "visual_marker": {
+          "type": "string",
+          "description": "Visual style marker (e.g. 'echo', 'hitch', 'overflow', 'shattered')."
+        },
+        "aspect_hint": {
+          "type": "string",
+          "description": "AI's layout suggestion (e.g. 'wide', 'tall', 'square')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ParsedPage": {
+      "type": "object",
+      "required": ["page_number", "panels"],
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential page number (no gaps, no duplicates)."
+        },
+        "panels": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ParsedPanel" },
+          "minItems": 1,
+          "description": "Panels within this page, in reading order."
+        }
+      },
+      "additionalProperties": false
+    },
+    "CharacterRole": {
+      "type": "string",
+      "enum": ["Protagonist", "Antagonist", "Supporting", "Minor"]
+    },
+    "ParsedCharacter": {
+      "type": "object",
+      "required": [
+        "name",
+        "pages_present",
+        "first_appearance_page",
+        "lines_count"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Character name as it appears in the script."
+        },
+        "role": { "$ref": "#/definitions/CharacterRole" },
+        "description": {
+          "type": "string",
+          "description": "Brief character description from context."
+        },
+        "pages_present": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "description": "Page numbers where this character appears or is referenced."
+        },
+        "first_appearance_page": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Page number of first appearance."
+        },
+        "lines_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of DIALOGUE + THOUGHT blocks attributed to this character."
+        },
+        "notable_quotes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "maxItems": 2,
+          "description": "Up to 2 memorable lines from this character."
+        }
+      },
+      "additionalProperties": false
+    },
+    "LoreCategory": {
+      "type": "string",
+      "enum": [
+        "faction",
+        "location",
+        "event",
+        "concept",
+        "artifact",
+        "rule",
+        "item"
+      ],
+      "description": "The world-building category for a lore entry."
+    },
+    "ParsedLoreEntry": {
+      "type": "object",
+      "required": [
+        "name",
+        "category",
+        "description",
+        "pages",
+        "confidence"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the lore entity."
+        },
+        "category": { "$ref": "#/definitions/LoreCategory" },
+        "description": {
+          "type": "string",
+          "description": "What this entity is and why it matters to the story."
+        },
+        "pages": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "description": "Page numbers where this entity is referenced."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Parser confidence in this extraction (0.0 = guess, 1.0 = certain)."
+        },
+        "related_characters": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Character names linked to this lore entry."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Category-specific fields (ideology for factions, region for locations, etc.)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ParsedTimelineEvent": {
+      "type": "object",
+      "required": [
+        "name",
+        "description",
+        "page",
+        "characters_involved"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Short name for the story beat."
+        },
+        "description": {
+          "type": "string",
+          "description": "What happens in this event."
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Page number where this event occurs."
+        },
+        "characters_involved": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Character names involved in this event."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
