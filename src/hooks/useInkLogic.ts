@@ -21,7 +21,7 @@ import { genId } from '../utils/helpers';
 import { getImage, saveImage } from '../services/imageStorage';
 import { ART_STYLES, ASPECT_CONFIGS, GENERATION_DELAY_MS } from '../constants';
 import { ParseResult, parseScript } from '../services/scriptParser';
-import { toLegacyParseResult } from '../engine/parserConversion';
+import { toLegacyParseResult, toLoreEntries } from '../engine/parserConversion';
 import { useAuth } from '../context/AuthContext';
 import { useCloudSync } from './useCloudSync';
 import { useImageGeneration } from './useImageGeneration';
@@ -479,6 +479,21 @@ export function useInkLogic() {
     for (const parsed of result.characters) {
       const match = allChars.find(c => c.name.toLowerCase().trim() === parsed.name.toLowerCase().trim());
       if (match) nameToId.set(parsed.name.toLowerCase().trim(), match.id);
+    }
+
+    // 1b. Seed lore entries from unified parse result
+    const { parsedScriptResult } = useLitStore.getState();
+    if (parsedScriptResult?.lore?.length) {
+      const loreSeeds = toLoreEntries(parsedScriptResult);
+      const existingLore = useLitStore.getState().loreEntries;
+      const existingLoreNames = new Set(existingLore.map(l => l.name.toUpperCase()));
+
+      for (const entry of loreSeeds) {
+        if (!existingLoreNames.has(entry.name.toUpperCase())) {
+          useLitStore.getState().addLoreEntry(entry);
+        }
+      }
+      console.log(`[LIT Sync] ${loreSeeds.length} lore entries seeded`);
     }
 
     // 2. Build pages with auto-linked character IDs
