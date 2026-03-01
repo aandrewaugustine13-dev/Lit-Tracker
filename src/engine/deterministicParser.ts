@@ -509,11 +509,18 @@ export function enrichParseResult(
   }
 
   // ── 2. Find characters the AI missed ───────────────────────────────────
-  const aiCharNames = new Set(aiResult.characters.map(c => c.name.toUpperCase()));
+  const aiCharNamesArray = aiResult.characters.map(c => c.name.toUpperCase());
   const missedCharacters: ParsedCharacter[] = [];
 
   for (const detChar of deterministicResult.characters) {
-    if (!aiCharNames.has(detChar.name.toUpperCase())) {
+    const detName = detChar.name.toUpperCase();
+
+    // Check if exact match OR substring match (e.g. "JOHN" vs "JOHN DOE")
+    const isDuplicateOrSubstring = aiCharNamesArray.some(aiName =>
+      aiName === detName || aiName.includes(detName) || detName.includes(aiName)
+    );
+
+    if (!isDuplicateOrSubstring) {
       missedCharacters.push(detChar);
       warnings.push('AI missed character: ' + detChar.name + ' (added by deterministic pass).');
     }
@@ -574,13 +581,30 @@ export function enrichParseResult(
   }
 
   // ── 5. Merge lore entries ──────────────────────────────────────────────
-  const aiLoreNames = new Set(aiResult.lore.map(l => l.name.toUpperCase()));
+  const aiLoreNamesArray = aiResult.lore.map(l => l.name.toUpperCase());
+  const aiLoreCategories = new Set(aiResult.lore.map(l => l.category));
   const additionalLore: ParsedLoreEntry[] = [];
 
-  for (const detLore of deterministicResult.lore) {
-    if (!aiLoreNames.has(detLore.name.toUpperCase())) {
-      additionalLore.push(detLore);
+  // If the AI found a healthy, diverse set of lore, trust it and skip deterministic lore.
+  // This prevents the deterministic parser from flooding the results with locations.
+  const hasGoodAiLore = aiLoreCategories.size >= 3;
+
+  if (!hasGoodAiLore) {
+    for (const detLore of deterministicResult.lore) {
+      const detName = detLore.name.toUpperCase();
+
+      const isDuplicateOrSubstring = aiLoreNamesArray.some(aiName =>
+        aiName === detName || aiName.includes(detName) || detName.includes(aiName)
+      );
+
+      // Only add deterministic lore if it's not a duplicate AND it fills a category the AI missed
+      if (!isDuplicateOrSubstring && !aiLoreCategories.has(detLore.category)) {
+        additionalLore.push(detLore);
+        warnings.push(`AI missed lore category '${detLore.category}': added ${detLore.name} from deterministic pass.`);
+      }
     }
+  } else {
+    warnings.push('AI found diverse lore; skipped deterministic lore enrichment to prevent dilution.');
   }
 
   const mergedLore = [...aiResult.lore, ...additionalLore];
