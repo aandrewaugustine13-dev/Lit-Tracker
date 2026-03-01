@@ -476,7 +476,7 @@ export function enrichParseResult(
     const detPageCount = deterministicResult.pages.length;
     if (Math.abs(aiPageCount - detPageCount) > 2) {
       warnings.push(
-        'Page count mismatch: AI found ' + aiPageCount + ' pages, deterministic found ' + detPageCount + '.'.
+        'Page count mismatch: AI found ' + aiPageCount + ' pages, deterministic found ' + detPageCount + '.',
       );
     }
   }
@@ -503,7 +503,7 @@ export function enrichParseResult(
       // If AI's count is wildly different, prefer deterministic
       if (detChar.lines_count > 0 && Math.abs(aiChar.lines_count - detChar.lines_count) > detChar.lines_count * 0.5) {
         warnings.push(
-          'lines_count corrected for ' + aiChar.name + ': AI said ' + aiChar.lines_count + ', deterministic found ' + detChar.lines_count + '.'.
+          'lines_count corrected for ' + aiChar.name + ': AI said ' + aiChar.lines_count + ', deterministic found ' + detChar.lines_count + '.',
         );
         aiChar.lines_count = detChar.lines_count;
       }
