@@ -164,6 +164,33 @@ function hasLocationIndicator(text: string): boolean {
   return words.some(w => LOCATION_INDICATORS.has(w.replace(/[,\.\-]/g, '')));
 }
 
+// ─── Non-Character Filter ────────────────────────────────────────────────────
+
+const NON_CHARACTER_WORDS = new Set([
+  'SIGN', 'BANNER', 'PLACARD', 'GRAFFITI', 'TEXT', 'SCREEN', 'DISPLAY',
+  'RADIO', 'TV', 'TELEVISION', 'NEWS', 'BROADCAST', 'INTERCOM', 'PA',
+  'SPEAKER', 'PHONE', 'RECORDING', 'VOICEMAIL', 'ANSWERING',
+  'NEWSPAPER', 'LETTER', 'DOCUMENT', 'NOTE', 'POSTER', 'BILLBOARD', 'MARQUEE',
+  'CROWD', 'CHANT', 'CHORUS', 'ALL', 'EVERYONE', 'VOICE', 'VOICES',
+  'SFX', 'SOUND', 'MUSIC', 'SONG',
+  'NARRATOR', 'CAPTION', 'TITLE', 'CRAWL', 'CRAWLER', 'CHYRON', 'SUPER',
+  'MONITOR', 'COMPUTER', 'DEVICE', 'ALARM', 'SIREN', 'HORN',
+  'ANNOUNCEMENT', 'ANNOUNCER', 'AUTOMATED', 'SYSTEM', 'GPS', 'AI',
+]);
+
+function isNonCharacterName(name: string): boolean {
+  const upper = name.trim().toUpperCase();
+  // Exact match
+  if (NON_CHARACTER_WORDS.has(upper)) return true;
+  // Any word in the name is a non-character word
+  const words = upper.split(/[\s\-_\/]+/);
+  if (words.some(w => NON_CHARACTER_WORDS.has(w))) return true;
+  // Patterns that indicate non-characters
+  if (/\b(ON|FROM|VIA)\s+(RADIO|TV|SCREEN|PHONE|INTERCOM)/.test(upper)) return true;
+  if (/\(V\.?O\.?\)|\(O\.?S\.?\)|\(O\.?C\.?\)/.test(upper)) return false; // V.O./O.S. = real character
+  return false;
+}
+
 // ─── Standalone Parse (Mode B) ──────────────────────────────────────────────
 
 /**
@@ -412,7 +439,7 @@ export function deterministicParse(
 
   // ── Build characters array ─────────────────────────────────────────────
   const characters: ParsedCharacter[] = Array.from(characterMap.entries())
-    .filter(([, data]) => data.count > 0)
+    .filter(([name, data]) => data.count > 0 && !isNonCharacterName(name))
     .sort((a, b) => b[1].count - a[1].count)
     .map(([name, data]) => ({
       name,
@@ -495,21 +522,12 @@ export function enrichParseResult(
   const mergedCharacters = [...aiResult.characters, ...missedCharacters];
 
   // ── 2b. Filter out non-character speakers ────────────────────────────────
-  const NON_CHARACTER_PATTERNS = [
-    /^(SIGN|BANNER|PLACARD|GRAFFITI|TEXT|SCREEN|DISPLAY)$/i,
-    /^(RADIO|TV|TELEVISION|NEWS|BROADCAST|INTERCOM|PA|SPEAKER|PHONE|RECORDING)$/i,
-    /^(NEWSPAPER|LETTER|DOCUMENT|NOTE|POSTER|BILLBOARD|MARQUEE)$/i,
-    /^(CROWD|CHANT|CHORUS|ALL|EVERYONE|VOICES?)$/i,
-    /^(SFX|SOUND|MUSIC|SONG)$/i,
-    /^(NARRATOR|CAPTION|TITLE|TITLE.?CARD|CRAWL|CRAWLER|CHYRON|SUPER)$/i,
-  ];
-
   const filteredCharacters = mergedCharacters.filter(char => {
-    const isNonCharacter = NON_CHARACTER_PATTERNS.some(pattern => pattern.test(char.name.trim()));
-    if (isNonCharacter) {
-      warnings.push('Filtered non-character: "' + char.name + '" (inanimate/media source).');
+    if (isNonCharacterName(char.name)) {
+      warnings.push('Filtered non-character: "' + char.name + '"');
+      return false;
     }
-    return !isNonCharacter;
+    return true;
   });
 
   // ── 3. Cross-check lines_count ─────────────────────────────────────────
