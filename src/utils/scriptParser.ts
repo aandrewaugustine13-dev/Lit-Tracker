@@ -111,8 +111,22 @@ async function callGrok(...args: any[]) { /* same */ }
 async function callDeepSeek(...args: any[]) { /* same */ }
 
 // ============= HELPER FUNCTIONS (unchanged) =============
-export function stripMarkdownFences(text: string): string { /* same */ }
-export function validateAndClean(data: any): ParsedScript { /* same */ }
+export function stripMarkdownFences(text: string): string {
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
+    cleaned = cleaned.replace(/\n?```\s*$/, '');
+  }
+  return cleaned.trim();
+}
+export function validateAndClean(data: any): ParsedScript {
+  return {
+    pages: Array.isArray(data?.pages) ? data.pages : [],
+    characters: Array.isArray(data?.characters) ? data.characters : [],
+    lore_candidates: Array.isArray(data?.lore_candidates) ? data.lore_candidates : [],
+    overall_lore_summary: data?.overall_lore_summary || '',
+  };
+}
 
 // ============= PROXY FUNCTION (unchanged) =============
 async function callViaProxy(...args: any[]) { /* same */ }
