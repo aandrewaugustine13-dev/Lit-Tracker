@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Upload, Zap, Cpu, AlertTriangle, Globe } from 'lucide-react';
-import { parseScriptWithLLM, ParsedScript } from '../../utils/scriptParser';
-import { smartFallbackParse } from '../../utils/smartFallbackParser';
+import { parseScript } from '../../engine/parserPipeline';
+import { toLegacyParseResult } from '../../engine/parserConversion';
 import { ParseResult } from '../../services/scriptParser';
 import { useLitStore } from '../../store';
 
@@ -32,40 +32,6 @@ const PROVIDER_META: Record<ProviderOption, ProviderMeta> = {
 // Show browser-compatible providers first
 const PROVIDERS: ProviderOption[] = ['gemini', 'anthropic', 'openai', 'grok', 'deepseek'];
 
-// ─── Convert ParsedScript → ParseResult (Ink Tracker format) ──────────────
-
-function toParseResult(parsed: ParsedScript): ParseResult {
-  return {
-    success: true,
-    pages: parsed.pages.map(page => ({
-      pageNumber: page.page_number,
-      panels: page.panels.map(panel => ({
-        panelNumber: panel.panel_number,
-        description: panel.description,
-        bubbles: panel.dialogue.map(d => ({
-          type: d.type === 'spoken' ? 'dialogue' as const :
-                d.type === 'thought' ? 'thought' as const :
-                d.type === 'caption' ? 'caption' as const :
-                d.type === 'sfx' ? 'sfx' as const :
-                'dialogue' as const,
-          text: d.text,
-          character: d.character,
-        })),
-        artistNotes: [],
-        visualMarker: 'standard' as const,
-        aspectRatio: 'wide' as any,
-      })),
-    })),
-    characters: parsed.characters.map(char => ({
-      name: char.name,
-      description: char.description,
-      lineCount: char.panel_count,
-    })),
-    errors: [],
-    warnings: [],
-  };
-}
-
 // ─── Component ─────────────────────────────────────────────────────────────
 
 interface ScriptImportModalProps {
@@ -83,6 +49,10 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
   const fileRef = useRef<HTMLInputElement>(null);
 
   const setParsedScriptResult = useLitStore((s) => s.setParsedScriptResult);
+  const inkState = useLitStore((s) => s.inkState);
+  const activeProject = inkState.projects.find(
+    (p: any) => p.id === inkState.activeProjectId,
+  );
   const meta = PROVIDER_META[provider];
 
   const handleParse = async () => {
@@ -94,37 +64,43 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
     setError(null);
 
     try {
-      let parsed: ParsedScript;
-
       if (parseMode === 'llm' && apiKey.trim()) {
         if (!meta.browserWorks) {
           setError(
-            `${meta.label} blocks direct browser requests (CORS). Use Gemini or Claude instead, or run the app through a proxy server.`
+            `${meta.label} blocks direct browser requests (CORS). Use Gemini or Claude instead, or run the app through a proxy server.``
           );
           setIsLoading(false);
           return;
         }
-        parsed = await parseScriptWithLLM(scriptText, provider, apiKey);
+        var unifiedResult = await parseScript({
+          scriptText,
+          projectType: activeProject?.projectType || 'comic',
+          llmProvider: provider,
+          llmApiKey: apiKey,
+        });
       } else {
-        parsed = smartFallbackParse(scriptText);
+        var unifiedResult = await parseScript({
+          scriptText,
+          projectType: activeProject?.projectType || 'comic',
+        });
       }
 
       // Store for Lore Tracker to pick up later
       try {
-        setParsedScriptResult(parsed, scriptText);
+        setParsedScriptResult(unifiedResult, scriptText);
       } catch (e) {
         // Non-fatal
         console.warn('Could not store parsed result for Lore Tracker:', e);
       }
 
-      const result = toParseResult(parsed);
+      const result = toLegacyParseResult(unifiedResult);
 
       if (result.pages.length === 0 || result.pages.every(p => p.panels.length === 0)) {
         setError(
-          'Parser found no panels. Make sure your script uses recognizable formatting:\n' +
-          '• "PAGE 1" or "Panel 1:" headers\n' +
-          '• "INT./EXT." slug lines\n' +
-          '• CHARACTER: Dialogue lines\n' +
+          'Parser found no panels. Make sure your script uses recognizable formatting:
+          '• "PAGE 1" or "Panel 1:" headers
+          '• "INT./EXT." slug lines
+          '• CHARACTER: Dialogue lines
           '• Or try AI mode for unformatted text'
         );
         setIsLoading(false);
@@ -236,7 +212,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
                             : 'bg-stone-50 text-stone-400 hover:bg-stone-100'
                       }`}
                     >
-                      {!pm.browserWorks && <Globe className="w-3 h-3 opacity-60" />}
+                      {!pm.browserWorks && <Globe className="w-3 h-3 opacity-60" />} 
                       {pm.label}
                     </button>
                   );
