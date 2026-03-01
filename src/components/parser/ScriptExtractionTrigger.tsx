@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { X, Upload, Zap, Cpu, HardDrive } from 'lucide-react';
 import { useLitStore } from '../../store';
-import { parseScriptAndProposeUpdates, LLMProvider, reconstructFormattedScript } from '../../engine/universalScriptParser';
-import { parseScriptWithLLM, ParsedScript, LoreCandidate } from '../../utils/scriptParser';
-import { smartFallbackParse } from '../../utils/smartFallbackParser';
+import { parseScript } from '../../engine/parserPipeline';
+import type { UnifiedParseResult } from '../../engine/parserPipeline.types';
+import { parseScriptAndProposeUpdates } from '../../engine/universalScriptParser';
 import { isGoogleDriveConfigured } from '../../services/googleDrive';
 import { DriveFilePicker } from '../shared/DriveFilePicker';
 
@@ -49,6 +49,10 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
   const setParserStatus = useLitStore((s) => s.setParserStatus);
   const setParserError = useLitStore((s) => s.setParserError);
   const setParsedScriptResult = useLitStore((s) => s.setParsedScriptResult);
+  const inkState = useLitStore((s) => s.inkState);
+  const activeProject = inkState.projects.find(
+    (p: any) => p.id === inkState.activeProjectId,
+  );
 
   const enableLLM = parseMode === 'llm';
   const meta = PROVIDER_META[provider];
@@ -64,54 +68,37 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
     setErrorMessage(null);
 
     try {
-      let formattedScript: string | undefined = undefined;
-      let loreCandidates: LoreCandidate[] | undefined = undefined;
-      let parsedScript: ParsedScript | undefined = undefined;
       let llmFormatFailed = false;
+      let unifiedResult: UnifiedParseResult | undefined = undefined;
 
-      // ═══ STEP 1: AI FORMATTING (if LLM mode is enabled) ═══
-      if (enableLLM && apiKey) {
-        // All providers now work - browser-compatible ones go direct, others via proxy
-        try {
-          console.log('[ScriptExtraction] Starting AI formatting and normalization...');
-          parsedScript = await parseScriptWithLLM(
-            scriptText,
-            provider,
-            apiKey
-          );
-          
-          // Reconstruct formatted script from parsed structure
-          formattedScript = reconstructFormattedScript(parsedScript);
-          loreCandidates = parsedScript.lore_candidates;
-          
-          console.log('[ScriptExtraction] AI formatting complete:', {
-            pages: parsedScript.pages.length,
-            characters: parsedScript.characters.length,
-            loreCandidates: loreCandidates.length
-          });
-        } catch (formatError) {
-          llmFormatFailed = true;
-          const errorMsg = formatError instanceof Error ? formatError.message : 'Unknown error';
-          console.warn('[ScriptExtraction] AI formatting failed:', formatError);
-          
-          // Surface the error to the user as a warning
-          setErrorMessage(
-            `⚠️ AI formatting failed: ${errorMsg}. Lore extraction will continue with pattern matching only. Storyboard import may be limited.`
-          );
-          
-          // Continue without formatted script - the parser will work with raw text
-        }
-      } else {
-        console.log('[ScriptExtraction] Skipping AI formatting (LLM disabled or no API key)');
+      // ═══ STEP 1: UNIFIED PARSE (AI or deterministic) ═══
+      try {
+        console.log('[ScriptExtraction] Running unified parser pipeline...');
+        unifiedResult = await parseScript({
+          scriptText,
+          projectType: activeProject?.projectType || 'comic',
+          llmProvider: enableLLM && apiKey ? provider : undefined,
+          llmApiKey: enableLLM ? apiKey : undefined,
+        });
+        console.log('[ScriptExtraction] Pipeline complete:', {
+          pages: unifiedResult.pages.length,
+          characters: unifiedResult.characters.length,
+          lore: unifiedResult.lore.length,
+          source: unifiedResult.parser_source,
+        });
+      } catch (pipelineError) {
+        llmFormatFailed = true;
+        const errorMsg = pipelineError instanceof Error ? pipelineError.message : 'Unknown error';
+        console.warn('[ScriptExtraction] Pipeline failed:', pipelineError);
+        setErrorMessage(
+          `⚠️ Parser pipeline failed: ${errorMsg}. Lore extraction will continue with pattern matching only.`
+        );
       }
 
       // ═══ STEP 2: LORE EXTRACTION ═══
-      // Pass formatted script (if available) and lore candidates to the parser
       console.log('[ScriptExtraction] Starting lore extraction...');
       const proposal = await parseScriptAndProposeUpdates({
         rawScriptText: scriptText,
-        formattedScriptText: formattedScript,
-        externalLoreCandidates: loreCandidates,
         config: projectConfig,
         characters,
         normalizedLocations,
@@ -122,25 +109,12 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       });
 
       // ═══ STEP 3: STORE PARSED SCRIPT FOR INK TRACKER ═══
-      // Store the parsed script result for Ink Tracker import, even in Pattern Only mode
-      if (parsedScript) {
-        // LLM succeeded - store the full structured result
+      if (unifiedResult) {
         try {
-          setParsedScriptResult(parsedScript, scriptText);
-          console.log('[ScriptExtraction] Stored LLM-parsed script for Ink Tracker import');
+          setParsedScriptResult(unifiedResult, scriptText);
+          console.log('[ScriptExtraction] Stored unified parse result for Ink Tracker');
         } catch (storeError) {
-          console.warn('[ScriptExtraction] Failed to store parsed script for Ink Tracker:', storeError);
-          // Non-fatal - continue
-        }
-      } else {
-        // LLM was disabled, failed, or Pattern Only mode - create a fallback ParsedScript
-        try {
-          const fallbackScript = smartFallbackParse(scriptText);
-          setParsedScriptResult(fallbackScript, scriptText);
-          console.log('[ScriptExtraction] Stored fallback parsed script for Ink Tracker import');
-        } catch (storeError) {
-          console.warn('[ScriptExtraction] Failed to store fallback parsed script for Ink Tracker:', storeError);
-          // Non-fatal - continue
+          console.warn('[ScriptExtraction] Failed to store parse result:', storeError);
         }
       }
 
@@ -239,7 +213,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
                 <li>Characters (from dialogue speakers and mentions)</li>
                 <li>Locations (from slug-lines and scene headings)</li>
                 {parseMode === 'llm' && (
-                  <>
+                  <>  
                     <li>Factions and Organizations</li>
                     <li>Events and significant moments</li>
                     <li>Concepts, powers, and phenomena</li>
