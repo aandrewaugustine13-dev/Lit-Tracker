@@ -21,53 +21,12 @@ import { genId } from '../utils/helpers';
 import { getImage, saveImage } from '../services/imageStorage';
 import { ART_STYLES, ASPECT_CONFIGS, GENERATION_DELAY_MS } from '../constants';
 import { ParseResult, parseScript } from '../services/scriptParser';
-import { ParsedScript } from '../utils/scriptParser';
+import { toLegacyParseResult } from '../engine/parserConversion';
 import { useAuth } from '../context/AuthContext';
 import { useCloudSync } from './useCloudSync';
 import { useImageGeneration } from './useImageGeneration';
 import { seedCharactersFromScript, autoLinkPanelsToCharacters, detectLoreMentions } from '../store/crossSlice';
 
-/**
- * Convert ParsedScript (from LLM parser) to ParseResult (expected by handleScriptImport)
- * 
- * NOTE: This is a bridge function between two data formats:
- * - ParsedScript: Output from parseScriptWithLLM() in utils/scriptParser.ts
- * - ParseResult: Legacy format expected by Ink Tracker storyboard generation
- * 
- * If this conversion is needed elsewhere, consider extracting to a shared utility module.
- */
-function convertParsedScriptToParseResult(parsedScript: ParsedScript): ParseResult {
-  return {
-    success: true,
-    pages: parsedScript.pages.map(page => ({
-      pageNumber: page.page_number,
-      panels: page.panels.map(panel => ({
-        panelNumber: panel.panel_number,
-        description: panel.description,
-        bubbles: panel.dialogue.map(d => ({
-          type: d.type === 'spoken' ? 'dialogue' as const :
-                d.type === 'thought' ? 'thought' as const :
-                d.type === 'caption' ? 'caption' as const :
-                d.type === 'sfx' ? 'sfx' as const :
-                'dialogue' as const,
-          text: d.text,
-          character: d.character,
-        })),
-        artistNotes: [],
-        visualMarker: 'standard' as const,
-        aspectRatio: 'wide' as any,
-      })),
-    })),
-    characters: parsedScript.characters.map(char => ({
-      name: char.name,
-      description: char.description || `Character appearing in ${char.panel_count} panel${char.panel_count !== 1 ? 's' : ''}`,
-      lineCount: char.panel_count,
-      firstAppearance: char.description || undefined,
-    })),
-    errors: [],
-    warnings: [],
-  };
-}
 
 import { generateImage as generateGeminiImage } from '../services/geminiService';
 import { generateLeonardoImage } from '../services/leonardoService';
@@ -614,7 +573,7 @@ export function useInkLogic() {
     // Prefer the AI-structured parse when available so Ink Tracker gets richer paneling,
     // dialogue typing, and character context from the same extraction run.
     if (parsedScriptResult?.pages?.length) {
-      const parseResult = convertParsedScriptToParseResult(parsedScriptResult);
+      const parseResult = toLegacyParseResult(parsedScriptResult);
       handleScriptImport(parseResult, rawScriptText);
       return;
     }
