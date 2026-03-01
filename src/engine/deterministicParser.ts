@@ -605,7 +605,7 @@ export function enrichParseResult(
       aiName === detName || aiName.includes(detName) || detName.includes(aiName)
     );
 
-    if (!isDuplicateOrSubstring) {
+    if (!isDuplicateOrSubstring && detChar.lines_count >= 2) {
       missedCharacters.push(detChar);
       warnings.push('AI missed character: ' + detChar.name + ' (added by deterministic pass).');
     }
