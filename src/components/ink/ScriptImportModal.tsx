@@ -64,22 +64,24 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
     setError(null);
 
     try {
+      let unifiedResult;
+
       if (parseMode === 'llm' && apiKey.trim()) {
         if (!meta.browserWorks) {
           setError(
-            `${meta.label} blocks direct browser requests (CORS). Use Gemini or Claude instead, or run the app through a proxy server.``
+            `${meta.label} blocks direct browser requests (CORS). Use Gemini or Claude instead, or run the app through a proxy server.`
           );
           setIsLoading(false);
           return;
         }
-        var unifiedResult = await parseScript({
+        unifiedResult = await parseScript({
           scriptText,
           projectType: activeProject?.projectType || 'comic',
           llmProvider: provider,
           llmApiKey: apiKey,
         });
       } else {
-        var unifiedResult = await parseScript({
+        unifiedResult = await parseScript({
           scriptText,
           projectType: activeProject?.projectType || 'comic',
         });
@@ -97,10 +99,10 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
 
       if (result.pages.length === 0 || result.pages.every(p => p.panels.length === 0)) {
         setError(
-          'Parser found no panels. Make sure your script uses recognizable formatting:
-          '• "PAGE 1" or "Panel 1:" headers
-          '• "INT./EXT." slug lines
-          '• CHARACTER: Dialogue lines
+          'Parser found no panels. Make sure your script uses recognizable formatting:\n' +
+          '• "PAGE 1" or "Panel 1:" headers\n' +
+          '• "INT./EXT." slug lines\n' +
+          '• CHARACTER: Dialogue lines\n' +
           '• Or try AI mode for unformatted text'
         );
         setIsLoading(false);
@@ -212,7 +214,7 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
                             : 'bg-stone-50 text-stone-400 hover:bg-stone-100'
                       }`}
                     >
-                      {!pm.browserWorks && <Globe className="w-3 h-3 opacity-60" />} 
+                      {!pm.browserWorks && <Globe className="w-3 h-3 opacity-60" />}
                       {pm.label}
                     </button>
                   );
@@ -276,12 +278,12 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
             className="px-6 py-2 font-body font-semibold text-white bg-ink hover:bg-stone-800 disabled:bg-stone-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2 text-sm"
           >
             {isLoading ? (
-              <>
+              <> 
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Parsing...
               </>
             ) : (
-              <>
+              <> 
                 {parseMode === 'llm' ? <Zap className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                 Import to Storyboard
               </>
