@@ -9,8 +9,9 @@ import {
 } from '../types/parserTypes';
 import { Character, LocationEntry, Item, TimelineEntry, LoreType, LoreEntry, FactionEntry, EventEntry, ConceptEntry, ArtifactEntry, RuleEntry } from '../types';
 import { createEntityAdapter, EntityState } from './entityAdapter';
-import { parseTimelineAndLocations } from '../engine/timelineLocationsParser';
-import type { ParsedScript } from '../utils/scriptParser';
+import { parseScript } from '../engine/parserPipeline';
+import type { UnifiedParseResult } from '../engine/parserPipeline.types';
+import { parseScriptAndProposeUpdates } from '../engine/universalScriptParser';
 
 // Create adapters for entity management
 const characterAdapter = createEntityAdapter<Character>((c) => c.id);
@@ -39,7 +40,7 @@ export interface ParserSlice {
   /** Project-level parser configuration */
   projectConfig: ProjectConfig;
   /** Parsed script result with pages/panels/dialogue for Ink Tracker */
-  parsedScriptResult: ParsedScript | null;
+  parsedScriptResult: UnifiedParseResult | null;
   /** Raw script text from last parse */
   rawScriptText: string | null;
 
@@ -76,7 +77,7 @@ export interface ParserSlice {
   commitExtractionProposal: () => void;
   
   /** Set the parsed script result for Ink Tracker consumption */
-  setParsedScriptResult: (result: ParsedScript | null, rawText?: string | null) => void;
+  setParsedScriptResult: (result: UnifiedParseResult | null, rawText?: string | null) => void;
 }
 
 // ─── Selector Functions ─────────────────────────────────────────────────────
@@ -611,13 +612,23 @@ export const createParserSlice: StateCreator<any, [], [], ParserSlice> = (set, g
       // Read current state
       const characters = state.characters || [];
       const normalizedLocations = state.normalizedLocations || locationAdapter.getInitialState();
-      const loreEntries = deriveLoreEntries(normalizedLocations);
 
-      // Call the parser engine
-      const proposal = await parseTimelineAndLocations(rawScriptText, {
+      // Step 1: Run unified parser pipeline
+      const unifiedResult = await parseScript({
+        scriptText: rawScriptText,
+        projectType: 'comic',
+      });
+
+      // Store for Ink Tracker
+      set({ parsedScriptResult: unifiedResult, rawScriptText: rawScriptText });
+
+      // Step 2: Run lore extraction (proposal engine) for the review modal
+      const proposal = await parseScriptAndProposeUpdates({
+        rawScriptText,
+        config: state.projectConfig,
         characters,
         normalizedLocations,
-        loreEntries,
+        normalizedItems: state.normalizedItems,
       });
 
       // Set the proposal (this auto-selects all and sets status to 'awaiting-review')
