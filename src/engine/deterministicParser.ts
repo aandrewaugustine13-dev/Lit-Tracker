@@ -40,9 +40,9 @@ const COMIC_PATTERNS: FormatPatterns = {
   panelBreak: /^Panel\s+(\d+)/i,
   dialogue: /^([A-Z][A-Z\s'.\-]+?)(?:\s*\([^)]*\))?\s*:\s*(.+)/,
   artNote: /^\[.*\]$|^ARTIST\s*NOTE/i,
-  caption: /^CAPTION\s*:\s*(.+)/i,
-  sfx: /^SFX\s*:\s*(.+)/i,
-  thought: /^([A-Z][A-Z\s'.\-]+?)\s*\(thought(?:\s+caption)?\)\s*:\s*(.+)/i,
+  caption: /^CAPTION\s*: \s*(.+)/i,
+  sfx: /^SFX\s*: \s*(.+)/i,
+  thought: /^([A-Z][A-Z\s'.\-]+?)\s*\(thought(?:\s+caption)?\)\s*: \s*(.+)/i,
   ignore: /^\s*$/,  
   visualMarkers: /\[(ECHO|HITCH|OVERFLOW|SHATTERED|SPLIT)\]/i,
 };
@@ -63,8 +63,8 @@ const STAGE_PLAY_PATTERNS: FormatPatterns = {
   panelBreak: /^SCENE\s+(\d+)/i,
   dialogue: /^([A-Z][A-Z\s'.\-]+?)\.\s+(.+)/,
   artNote: /^\(.*\)$|^\[.*\]$/,
-  caption: /^NARRATOR\s*:\s*(.+)/i,
-  sfx: /^SFX\s*:\s*(.+)/i,
+  caption: /^NARRATOR\s*: \s*(.+)/i,
+  sfx: /^SFX\s*: \s*(.+)/i,
   thought: /\(aside\)/i,
   ignore: /^\s*$/,  
 };
@@ -193,12 +193,12 @@ function isNoiseWord(name: string): boolean {
 
 function hasLocationIndicator(text: string): boolean {
   const words = text.toUpperCase().split(/\s+/);
-  return words.some(w => LOCATION_INDICATORS.has(w.replace(/[,\.\-]/g, '')));
+  return words.some(w => LOCATION_INDICATORS.has(w.replace(/[,.\-]/g, '')));
 }
 
 function hasFactionKeyword(text: string): boolean {
   const words = text.toUpperCase().split(/\s+/);
-  return words.some(w => FACTION_KEYWORDS.has(w.replace(/[,\.\-]/g, '')));
+  return words.some(w => FACTION_KEYWORDS.has(w.replace(/[,.\-]/g, '')));
 }
 
 // ─── Non-Character Filter ────────────────────────────────────────────────────
@@ -224,7 +224,7 @@ function isNonCharacterName(name: string): boolean {
   if (words.some(w => NON_CHARACTER_WORDS.has(w))) return true;
   // Patterns that indicate non-characters
   if (/\b(ON|FROM|VIA)\s+(RADIO|TV|SCREEN|PHONE|INTERCOM)/.test(upper)) return true;
-  if (/\(V\.?O\.?\)|\(O\.?S\.?\)|\(O\.?C\.?\)/.test(upper)) return false; // V.O./O.S. = real character
+  if (/\(V\.?O\.\)|\(O\.?S\.\)|\(O\.?C\.\)/.test(upper)) return false; // V.O./O.S. = real character
   return false;
 }
 
@@ -258,7 +258,7 @@ export function deterministicParse(
   let currentBlocks: Block[] = [];
   let pendingDialogueSpeaker: string | null = null;
 
-  // ── Helper: save current panel ─────────────────────────────────────────
+  // ── Helper: save current panel ───────────────────────────────────────��─
   const savePanel = () => {
     if (currentPanelNumber > 0 && currentBlocks.length > 0) {
       // Detect visual marker from blocks
@@ -328,7 +328,7 @@ export function deterministicParse(
     // Skip ignored lines
     if (patterns.ignore.test(trimmed) && trimmed.length > 0) {
       // Only skip if the ignore pattern is not just whitespace check
-      if (trimmed.length > 0 && /^(FADE|CUT|DISSOLVE|CONTINUED|SMASH CUT|MATCH CUT|\(CONTINUED\))/i.test(trimmed)) {
+      if (trimmed.length > 0 && /^(FADE|CUT|DISSOLVE|CONTINUED|SMASH CUT|MATCH CUT|\(CONTINUED\))/.test(trimmed)) {
         continue;
       }
     }
@@ -671,7 +671,7 @@ export function enrichParseResult(
 
   // If the AI found a healthy, diverse set of lore, trust it and skip deterministic lore.
   // This prevents the deterministic parser from flooding the results with locations.
-  const hasGoodAiLore = aiLoreCategories.size >= 3;
+  const hasGoodAiLore = aiLoreCategories.size >= 2;
 
   if (!hasGoodAiLore) {
     for (const detLore of deterministicResult.lore) {
