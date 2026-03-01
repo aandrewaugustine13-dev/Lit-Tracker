@@ -67,8 +67,8 @@ export async function parseScript(options: ParseOptions): Promise<UnifiedParseRe
 
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn('[parseScript] AI parse failed, falling back to deterministic:', message);
-      // Fall through to deterministic
+      console.error('[parseScript] AI parse failed:', message);
+      throw new Error('AI parse failed: ' + message + '. Switch to deterministic mode or check your API key.');
     }
   }
 
