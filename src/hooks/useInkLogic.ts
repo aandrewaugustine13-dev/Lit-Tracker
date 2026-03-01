@@ -454,9 +454,11 @@ export function useInkLogic() {
     if (!result.success || !activeProject) return;
 
     // 1. Seed characters into the global Character module
+    console.log('[handleScriptImport] Legacy result character names:', result.characters.map(c => c.name));
     const seedResult = seedCharactersFromScript(result.characters, characters as any);
 
     // Add newly created characters to the store
+    console.log('[handleScriptImport] Seed result — created:', seedResult.created.length, 'existing:', seedResult.existing.length);
     for (const newChar of seedResult.created) {
       useLitStore.getState().addCharacter({
         name: newChar.name,
@@ -483,6 +485,9 @@ export function useInkLogic() {
 
     // 1b. Seed lore entries from unified parse result
     const { parsedScriptResult } = useLitStore.getState();
+    console.log('[handleScriptImport] parsedScriptResult exists:', !!parsedScriptResult);
+    console.log('[handleScriptImport] parsedScriptResult parser_source:', parsedScriptResult?.parser_source);
+    console.log('[handleScriptImport] parsedScriptResult lore entries:', parsedScriptResult?.lore?.map(l => l.name));
     if (parsedScriptResult?.lore?.length) {
       const loreSeeds = toLoreEntries(parsedScriptResult);
       const existingLore = useLitStore.getState().loreEntries;

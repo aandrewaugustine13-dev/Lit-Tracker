@@ -87,6 +87,11 @@ export const ScriptImportModal: React.FC<ScriptImportModalProps> = ({ onImport, 
         });
       }
 
+      // ── Diagnostic: log unified result summary before storing ──
+      console.log('[ScriptImportModal] parser_source:', unifiedResult.parser_source);
+      console.log('[ScriptImportModal] characters:', unifiedResult.characters.map(c => c.name));
+      console.log('[ScriptImportModal] lore:', unifiedResult.lore.map(l => l.name));
+
       // Store for Lore Tracker to pick up later
       try {
         setParsedScriptResult(unifiedResult, scriptText);

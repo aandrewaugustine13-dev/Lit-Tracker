@@ -51,8 +51,19 @@ export async function parseScript(options: ParseOptions): Promise<UnifiedParseRe
         },
       );
 
+      // ── Diagnostic: what did the AI return? ──
+      console.log('[parseScript] AI characters:', aiResult.characters.map(c => c.name));
+      console.log('[parseScript] AI lore:', aiResult.lore.map(l => l.name));
+      console.log('[parseScript] AI lore categories:', aiResult.lore.map(l => l.category));
+
       // Deterministic pass validates and fills gaps
-      return enrichParseResult(aiResult, scriptText, projectType);
+      const enriched = enrichParseResult(aiResult, scriptText, projectType);
+
+      // ── Diagnostic: what does the enriched result look like? ──
+      console.log('[parseScript] Enriched characters:', enriched.characters.map(c => c.name));
+      console.log('[parseScript] Enriched lore:', enriched.lore.map(l => l.name));
+
+      return enriched;
 
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -62,5 +73,6 @@ export async function parseScript(options: ParseOptions): Promise<UnifiedParseRe
   }
 
   // Path B: Deterministic only (no API key, or AI failed)
+  console.log('[parseScript] Using deterministic-only path. Reason:', !llmProvider || !llmApiKey ? 'no LLM credentials' : 'AI parse threw');
   return deterministicParse(scriptText, projectType);
 }
