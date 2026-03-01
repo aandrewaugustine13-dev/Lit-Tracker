@@ -104,18 +104,18 @@ If you fail either check, go back and fix it.
 Now parse this script:`;
 
 // ============= API CALL FUNCTIONS (unchanged) =============
-async function callOpenAI( ... ) { /* same as before */ }
-async function callAnthropic( ... ) { /* same */ }
-async function callGemini( ... ) { /* same */ }
-async function callGrok( ... ) { /* same */ }
-async function callDeepSeek( ... ) { /* same */ }
+async function callOpenAI(...args: any[]) { /* same as before */ }
+async function callAnthropic(...args: any[]) { /* same */ }
+async function callGemini(...args: any[]) { /* same */ }
+async function callGrok(...args: any[]) { /* same */ }
+async function callDeepSeek(...args: any[]) { /* same */ }
 
 // ============= HELPER FUNCTIONS (unchanged) =============
 export function stripMarkdownFences(text: string): string { /* same */ }
 export function validateAndClean(data: any): ParsedScript { /* same */ }
 
 // ============= PROXY FUNCTION (unchanged) =============
-async function callViaProxy( ... ) { /* same */ }
+async function callViaProxy(...args: any[]) { /* same */ }
 
 // ============= MAIN ENTRY POINT (unchanged) =============
-export async function parseScriptWithLLM( ... ) { /* same */ }
+export async function parseScriptWithLLM(...args: any[]) { /* same */ }
