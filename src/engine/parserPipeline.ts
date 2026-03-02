@@ -1,14 +1,12 @@
 // =============================================================================
 // PARSER PIPELINE — Single entry point for all script parsing
 // =============================================================================
-// This is the ONLY function the rest of the app calls.
-// Path A: AI parse -> deterministic enrichment (when API key present)
-// Path B: Deterministic only (no API key, or AI call failed)
-// Replaces: universalScriptParser.ts (parseScriptAndProposeUpdates)
+// AI-only pipeline. No deterministic fallback, no enrichment step.
+// If no LLM credentials are provided, or if the AI call fails, we throw.
+// Clean failure > polluted output.
 
 import { UnifiedParseResult, ProjectType } from './parserPipeline.types';
 import { aiParse, LLMProvider, AiParseOptions } from './aiParser';
-import { deterministicParse, enrichParseResult } from './deterministicParser';
 
 // Re-export for convenience — consumers only need to import from parserPipeline
 export type { UnifiedParseResult, ProjectType } from './parserPipeline.types';
@@ -24,53 +22,38 @@ export interface ParseOptions {
 }
 
 /**
- * Parse a script through the unified pipeline.
+ * Parse a script through the AI pipeline.
  *
- * If an LLM provider and API key are supplied, runs the AI parser first
- * then enriches with a deterministic pass. If the AI call fails for any
- * reason, falls back silently to deterministic-only mode.
- *
- * If no LLM credentials are supplied, runs deterministic-only mode.
- *
- * Every code path returns UnifiedParseResult — the single contract.
+ * Requires an LLM provider and API key. Throws if either is missing
+ * or if the AI call fails. No silent fallbacks.
  */
 export async function parseScript(options: ParseOptions): Promise<UnifiedParseResult> {
   const { scriptText, projectType, llmProvider, llmApiKey } = options;
 
-  // Path A: AI parse followed by deterministic enrichment
-  if (llmProvider && llmApiKey) {
-    try {
-      const aiResult = await aiParse(
-        scriptText,
-        projectType,
-        llmProvider,
-        llmApiKey,
-        {
-          existingCharacters: options.existingCharacters,
-          canonLocks: options.canonLocks,
-        },
-      );
-
-      // ── Diagnostic: what did the AI return? ──
-      console.log('[parseScript] AI characters:', aiResult.characters.map(c => c.name));
-      console.log('[parseScript] AI lore:', aiResult.lore.map(l => l.name));
-      console.log('[parseScript] AI lore categories:', aiResult.lore.map(l => l.category));
-
-      // Deterministic pass validates and fills gaps
-      const enriched = enrichParseResult(aiResult, scriptText, projectType);
-
-      // ── Diagnostic: what does the enriched result look like? ──
-      console.log('[parseScript] Enriched characters:', enriched.characters.map(c => c.name));
-      console.log('[parseScript] Enriched lore:', enriched.lore.map(l => l.name));
-
-      return enriched;
-
-    } catch (err) {
-      console.warn('[parseScript] AI parse failed, falling back to deterministic:', err);
-    }
+  if (!llmProvider || !llmApiKey) {
+    throw new Error('AI parsing requires an LLM provider and API key. Please select a provider and enter your API key.');
   }
 
-  // Path B: Deterministic only (no API key, or AI failed)
-  console.log('[parseScript] Using deterministic-only path. Reason:', !llmProvider || !llmApiKey ? 'no LLM credentials' : 'AI parse threw');
-  return deterministicParse(scriptText, projectType);
+  console.log('[parseScript] Running AI-only pipeline with provider:', llmProvider);
+
+  const aiResult = await aiParse(
+    scriptText,
+    projectType,
+    llmProvider,
+    llmApiKey,
+    {
+      existingCharacters: options.existingCharacters,
+      canonLocks: options.canonLocks,
+    },
+  );
+
+  // ── Diagnostic logging ──
+  console.log('[parseScript] AI parse complete.');
+  console.log('[parseScript] Characters:', aiResult.characters.map(c => c.name));
+  console.log('[parseScript] Lore:', aiResult.lore.map(l => `${l.name} (${l.category})`));
+  console.log('[parseScript] Lore categories:', [...new Set(aiResult.lore.map(l => l.category))]);
+  console.log('[parseScript] Timeline events:', aiResult.timeline.length);
+  console.log('[parseScript] Pages:', aiResult.pages.length);
+
+  return aiResult;
 }
