@@ -2,8 +2,7 @@
 // PARSER PIPELINE — Single entry point for all script parsing
 // =============================================================================
 // AI-only pipeline. No deterministic fallback, no enrichment step.
-// If no LLM credentials are provided, or if the AI call fails, we throw.
-// Clean failure > polluted output.
+// Supports extractionOnly mode (characters/lore/timeline only, no storyboard).
 
 import { UnifiedParseResult, ProjectType } from './parserPipeline.types';
 import { aiParse, LLMProvider, AiParseOptions } from './aiParser';
@@ -19,6 +18,7 @@ export interface ParseOptions {
   llmApiKey?: string;
   existingCharacters?: string[];
   canonLocks?: string[];
+  extractionOnly?: boolean; // true = skip storyboard, only extract entities
 }
 
 /**
@@ -34,7 +34,7 @@ export async function parseScript(options: ParseOptions): Promise<UnifiedParseRe
     throw new Error('AI parsing requires an LLM provider and API key. Please select a provider and enter your API key.');
   }
 
-  console.log('[parseScript] Running AI-only pipeline with provider:', llmProvider);
+  console.log('[parseScript] Running AI-only pipeline with provider:', llmProvider, 'extractionOnly:', !!options.extractionOnly);
 
   const aiResult = await aiParse(
     scriptText,
@@ -44,6 +44,7 @@ export async function parseScript(options: ParseOptions): Promise<UnifiedParseRe
     {
       existingCharacters: options.existingCharacters,
       canonLocks: options.canonLocks,
+      extractionOnly: options.extractionOnly,
     },
   );
 
