@@ -37,6 +37,7 @@ const DEFAULT_MODELS: Record<LLMProvider, string> = {
 export interface AiParseOptions {
   existingCharacters?: string[];  // Names to not re-extract
   canonLocks?: string[];          // Entities to not modify
+  extractionOnly?: boolean;       // true = skip pages, only return characters/lore/timeline
 }
 
 // ─── Format Context Prompts ──────────────────────────────────────────────────
@@ -165,7 +166,54 @@ MANDATORY: Before finalizing JSON, count your lore categories. If fewer than 4 d
   prompt += '\n\n' + FORMAT_CONTEXTS[projectType];
 
   // OUTPUT SCHEMA section
-  prompt += `
+  if (options?.extractionOnly) {
+    // Lightweight schema — entities only, no storyboard structure
+    prompt += `
+
+OUTPUT SCHEMA — Output ONLY valid JSON matching this exact structure. No markdown fences. No commentary. No explanation. Just the JSON.
+
+{
+  "characters": [
+    {
+      "name": "...",
+      "role": "Protagonist",
+      "description": "...",
+      "pages_present": [1, 3, 5],
+      "first_appearance_page": 1,
+      "lines_count": 42,
+      "notable_quotes": ["...", "..."]
+    }
+  ],
+  "lore": [
+    {
+      "name": "...",
+      "category": "faction",
+      "description": "...",
+      "pages": [2, 7],
+      "confidence": 0.9,
+      "related_characters": ["Elias"],
+      "metadata": {}
+    }
+  ],
+  "timeline": [
+    {
+      "name": "...",
+      "description": "...",
+      "page": 3,
+      "characters_involved": ["Elias", "Maya"]
+    }
+  ]
+}
+
+DO NOT include a "pages" array. Only extract characters, lore, and timeline.
+
+Valid lore categories: faction, location, event, concept, artifact, rule, item
+Valid character roles: Protagonist, Antagonist, Supporting, Minor
+
+Now parse this script:`;
+  } else {
+    // Full schema with storyboard structure
+    prompt += `
 
 OUTPUT SCHEMA — Output ONLY valid JSON matching this exact structure. No markdown fences. No commentary. No explanation. Just the JSON.
 
@@ -224,6 +272,7 @@ Valid lore categories: faction, location, event, concept, artifact, rule, item
 Valid character roles: Protagonist, Antagonist, Supporting, Minor
 
 Now parse this script:`;
+  }
 
   return prompt;
 }
@@ -391,11 +440,12 @@ function validateAndRepair(
   sourceHash: string,
   aiModel: string,
   warnings: string[],
+  extractionOnly?: boolean,
 ): UnifiedParseResult {
   // ── Pages ──────────────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawPages: any[] = Array.isArray(raw.pages) ? raw.pages : [];
-  if (rawPages.length === 0) {
+  if (rawPages.length === 0 && !extractionOnly) {
     throw new Error('AI parse produced empty pages array - cannot recover.');
   }
 
@@ -578,7 +628,7 @@ export async function aiParse(
   }
 
   // Validate + repair
-  const result = validateAndRepair(parsed, projectType, sourceHash, aiModel, warnings);
+  const result = validateAndRepair(parsed, projectType, sourceHash, aiModel, warnings, options?.extractionOnly);
 
   // Attach timing
   result.parse_duration_ms = Date.now() - startTime;
