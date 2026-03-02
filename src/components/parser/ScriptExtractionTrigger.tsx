@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
-import { X, Upload, Zap, Cpu, HardDrive } from 'lucide-react';
+import { X, Upload, Zap, HardDrive } from 'lucide-react';
 import { useLitStore } from '../../store';
 import { parseScript } from '../../engine/parserPipeline';
 import type { UnifiedParseResult } from '../../engine/parserPipeline.types';
-import { parseScriptAndProposeUpdates } from '../../engine/universalScriptParser';
+import type { ParsedProposal, ProposedNewEntity, ProposedTimelineEvent, ProposedEntityType } from '../../types/parserTypes';
 import { isGoogleDriveConfigured } from '../../services/googleDrive';
 import { DriveFilePicker } from '../shared/DriveFilePicker';
 
 // =============================================================================
-// SCRIPT EXTRACTION TRIGGER — Modal for inputting script text and triggering parser
+// SCRIPT EXTRACTION TRIGGER — AI-only parser modal
 // =============================================================================
+// Runs the unified AI pipeline and converts the result into a ParsedProposal
+// for the extraction review UI. No deterministic parser. No silent fallbacks.
 
 interface ScriptExtractionTriggerProps {
   onClose: () => void;
 }
 
-type ParseMode = 'llm' | 'deterministic';
 type ProviderOption = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek' | 'groq';
-
-// Duration to display warning message before auto-closing modal (in milliseconds)
-const WARNING_DISPLAY_DURATION_MS = 3000;
 
 const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string; helpUrl: string; browserWorks: boolean }> = {
   anthropic: { label: 'Claude', placeholder: 'sk-ant-...', helpUrl: 'https://console.anthropic.com/settings/keys', browserWorks: true },
@@ -32,19 +30,117 @@ const PROVIDER_META: Record<ProviderOption, { label: string; placeholder: string
 
 const PROVIDERS: ProviderOption[] = ['anthropic', 'gemini', 'groq', 'openai', 'grok', 'deepseek'];
 
+// ─── Conversion: UnifiedParseResult → ParsedProposal ────────────────────────
+
+let _tempIdCounter = 0;
+function tempId(): string {
+  return 'tmp-' + Date.now() + '-' + (++_tempIdCounter);
+}
+
+/** Map lore category to proposal entity type (direct 1:1 mapping) */
+function loreCategoryToEntityType(category: string): ProposedEntityType {
+  const map: Record<string, ProposedEntityType> = {
+    faction: 'faction',
+    location: 'location',
+    event: 'event',
+    concept: 'concept',
+    artifact: 'artifact',
+    rule: 'rule',
+    item: 'item',
+  };
+  return map[category] || 'item';
+}
+
+function unifiedResultToProposal(result: UnifiedParseResult, scriptText: string, startTime: number): ParsedProposal {
+  const newEntities: ProposedNewEntity[] = [];
+
+  // ── Characters → ProposedNewEntity ──
+  for (const char of result.characters) {
+    newEntities.push({
+      tempId: tempId(),
+      entityType: 'character',
+      name: char.name,
+      source: 'llm',
+      confidence: 0.9,
+      contextSnippet: char.notable_quotes?.[0] || char.description || '',
+      lineNumber: 0,
+      suggestedRole: char.role || 'Supporting',
+      suggestedDescription: char.description || '',
+    });
+  }
+
+  // ── Lore → ProposedNewEntity ──
+  for (const lore of result.lore) {
+    const entity: ProposedNewEntity = {
+      tempId: tempId(),
+      entityType: loreCategoryToEntityType(lore.category),
+      name: lore.name,
+      source: 'llm',
+      confidence: lore.confidence,
+      contextSnippet: lore.description,
+      lineNumber: 0,
+      suggestedLoreType: lore.category,
+      suggestedDescription: lore.description,
+    };
+
+    // Category-specific fields
+    if (lore.category === 'faction' && lore.related_characters?.length) {
+      entity.suggestedLeader = lore.related_characters[0];
+    }
+    if (lore.category === 'artifact' || lore.category === 'concept') {
+      entity.suggestedOrigin = lore.description;
+    }
+    if (lore.metadata) {
+      entity.suggestedTags = Object.keys(lore.metadata);
+    }
+
+    newEntities.push(entity);
+  }
+
+  // ── Timeline → ProposedTimelineEvent ──
+  const newTimelineEvents: ProposedTimelineEvent[] = result.timeline.map(evt => ({
+    tempId: tempId(),
+    source: 'llm' as const,
+    confidence: 0.85,
+    contextSnippet: evt.description,
+    lineNumber: 0,
+    entityType: 'character' as const,
+    entityId: '',
+    entityName: evt.characters_involved[0] || evt.name,
+    action: 'status_changed' as const,
+    payload: {
+      page: evt.page,
+      characters: evt.characters_involved,
+      eventName: evt.name,
+    },
+    description: evt.description,
+  }));
+
+  return {
+    meta: {
+      parsedAt: new Date().toISOString(),
+      rawScriptLength: scriptText.length,
+      lineCount: scriptText.split('\n').length,
+      parseDurationMs: Date.now() - startTime,
+      llmWasUsed: true,
+      warnings: result.warnings,
+    },
+    newEntities,
+    updatedEntities: [],
+    newTimelineEvents,
+  };
+}
+
+// ─── Component ──────────────────────────────────────────────────────────────
+
 export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = ({ onClose }) => {
   const [scriptText, setScriptText] = useState('');
   const [apiKey, setApiKey] = useState('');
-  const [parseMode, setParseMode] = useState<ParseMode>('llm');
-  const [provider, setProvider] = useState<ProviderOption>('anthropic');
+  const [provider, setProvider] = useState<ProviderOption>('gemini');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showDrivePicker, setShowDrivePicker] = useState(false);
 
-  const projectConfig = useLitStore((s) => s.projectConfig);
-  const characters = useLitStore((s) => s.characters);
-  const normalizedLocations = useLitStore((s) => s.normalizedLocations);
-  const normalizedItems = useLitStore((s) => s.normalizedItems);
   const setCurrentProposal = useLitStore((s) => s.setCurrentProposal);
   const setParserStatus = useLitStore((s) => s.setParserStatus);
   const setParserError = useLitStore((s) => s.setParserError);
@@ -54,7 +150,6 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
     (p: any) => p.id === inkState.activeProjectId,
   );
 
-  const enableLLM = parseMode === 'llm';
   const meta = PROVIDER_META[provider];
 
   const handleParse = async () => {
@@ -62,84 +157,71 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       setErrorMessage('Please enter script text to parse');
       return;
     }
+    if (!apiKey.trim()) {
+      setErrorMessage('Please enter your API key');
+      return;
+    }
+    if (!meta.browserWorks) {
+      setErrorMessage(
+        `${meta.label} blocks direct browser requests (CORS). Use Gemini or Claude instead, or run the app through a proxy server.`
+      );
+      return;
+    }
 
     setIsLoading(true);
     setParserStatus('parsing');
     setErrorMessage(null);
+    const startTime = Date.now();
 
     try {
-      let llmFormatFailed = false;
-      let unifiedResult: UnifiedParseResult | undefined = undefined;
+      // ═══ SINGLE STEP: AI Parse → Proposal ═══
+      console.log('[ScriptExtraction] Running AI-only pipeline with', provider);
 
-      // ═══ STEP 1: UNIFIED PARSE (AI or deterministic) ═══
-      try {
-        console.log('[ScriptExtraction] Running unified parser pipeline...');
-        unifiedResult = await parseScript({
-          scriptText,
-          projectType: activeProject?.projectType || 'comic',
-          llmProvider: enableLLM && apiKey ? provider : undefined,
-          llmApiKey: enableLLM ? apiKey : undefined,
-        });
-        console.log('[ScriptExtraction] Pipeline complete:', {
-          pages: unifiedResult.pages.length,
-          characters: unifiedResult.characters.length,
-          lore: unifiedResult.lore.length,
-          source: unifiedResult.parser_source,
-        });
-      } catch (pipelineError) {
-        llmFormatFailed = true;
-        const errorMsg = pipelineError instanceof Error ? pipelineError.message : 'Unknown error';
-        console.warn('[ScriptExtraction] Pipeline failed:', pipelineError);
-        setErrorMessage(
-          `⚠️ Parser pipeline failed: ${errorMsg}. Lore extraction will continue with pattern matching only.`
-        );
-      }
-
-      // ═══ STEP 2: LORE EXTRACTION ═══
-      console.log('[ScriptExtraction] Starting lore extraction...');
-      const proposal = await parseScriptAndProposeUpdates({
-        rawScriptText: scriptText,
-        config: projectConfig,
-        characters,
-        normalizedLocations,
-        normalizedItems,
-        llmApiKey: enableLLM ? apiKey : undefined,
-        llmProvider: enableLLM ? provider : undefined,
-        enableLLM,
+      const unifiedResult = await parseScript({
+        scriptText,
+        projectType: activeProject?.projectType || 'comic',
+        llmProvider: provider,
+        llmApiKey: apiKey,
       });
 
-      // ═══ STEP 3: STORE PARSED SCRIPT FOR INK TRACKER ═══
-      if (unifiedResult) {
-        try {
-          setParsedScriptResult(unifiedResult, scriptText);
-          console.log('[ScriptExtraction] Stored unified parse result for Ink Tracker');
-        } catch (storeError) {
-          console.warn('[ScriptExtraction] Failed to store parse result:', storeError);
-        }
+      console.log('[ScriptExtraction] AI parse complete:', {
+        pages: unifiedResult.pages.length,
+        characters: unifiedResult.characters.length,
+        lore: unifiedResult.lore.length,
+        timeline: unifiedResult.timeline.length,
+        source: unifiedResult.parser_source,
+      });
+
+      // Store for Ink Tracker
+      try {
+        setParsedScriptResult(unifiedResult, scriptText);
+      } catch (storeError) {
+        console.warn('[ScriptExtraction] Failed to store parse result:', storeError);
       }
 
-      setCurrentProposal(proposal);
-      console.log('[ScriptExtraction] Extraction complete:', {
+      // Convert to proposal for extraction review UI
+      const proposal = unifiedResultToProposal(unifiedResult, scriptText, startTime);
+
+      console.log('[ScriptExtraction] Proposal created:', {
         newEntities: proposal.newEntities.length,
-        updatedEntities: proposal.updatedEntities.length,
+        characters: proposal.newEntities.filter(e => e.entityType === 'character').length,
+        factions: proposal.newEntities.filter(e => e.entityType === 'faction').length,
+        locations: proposal.newEntities.filter(e => e.entityType === 'location').length,
+        events: proposal.newEntities.filter(e => e.entityType === 'event').length,
+        concepts: proposal.newEntities.filter(e => e.entityType === 'concept').length,
+        artifacts: proposal.newEntities.filter(e => e.entityType === 'artifact').length,
         timelineEvents: proposal.newTimelineEvents.length,
       });
 
-      // Don't close the modal immediately if there was an LLM error (so user can see the warning)
-      if (!llmFormatFailed) {
-        onClose();
-      } else {
-        // Give user time to see the warning, then auto-close
-        // Note: We always close after the timeout regardless of loading state since extraction has completed
-        setTimeout(() => {
-          onClose();
-        }, WARNING_DISPLAY_DURATION_MS);
-      }
+      setCurrentProposal(proposal);
+      setParserStatus('idle');
+      onClose();
     } catch (error) {
-      console.error('Parsing error:', error);
+      console.error('[ScriptExtraction] Parse failed:', error);
       const errorMsg = error instanceof Error ? error.message : 'Unknown parsing error';
       setParserError(errorMsg);
       setErrorMessage(`Parsing failed: ${errorMsg}`);
+      setParserStatus('error');
     } finally {
       setIsLoading(false);
     }
@@ -178,66 +260,21 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="space-y-4">
-            {/* Mode Toggle */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setParseMode('llm')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body font-semibold text-sm transition-colors ${
-                  parseMode === 'llm'
-                    ? 'bg-ink text-white'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
-              >
-                <Zap className="w-4 h-4" />
-                AI Extraction
-              </button>
-              <button
-                onClick={() => setParseMode('deterministic')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body font-semibold text-sm transition-colors ${
-                  parseMode === 'deterministic'
-                    ? 'bg-ink text-white'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
-              >
-                <Cpu className="w-4 h-4" />
-                Pattern Only
-              </button>
-            </div>
-
             {/* Instructions */}
             <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 text-sm text-stone-700">
               <p className="font-body mb-2">
-                <strong>How it works:</strong> Paste your script text below, and the parser will extract:
+                <strong>How it works:</strong> Paste your script text below. The AI parser will extract:
               </p>
               <ul className="list-disc list-inside space-y-1 text-stone-600 ml-2">
-                <li>Characters (from dialogue speakers and mentions)</li>
-                <li>Locations (from slug-lines and scene headings)</li>
-                {parseMode === 'llm' && (
-                  <>  
-                    <li>Factions and Organizations</li>
-                    <li>Events and significant moments</li>
-                    <li>Concepts, powers, and phenomena</li>
-                    <li>Artifacts and significant objects</li>
-                    <li>World rules and mechanics</li>
-                  </>
-                )}
-                <li>Items (from action descriptions)</li>
-                <li>Timeline events (character movements, item transfers)</li>
+                <li>Characters (from dialogue and action)</li>
+                <li>Locations (settings, named places)</li>
+                <li>Factions and Organizations</li>
+                <li>Events and significant moments</li>
+                <li>Concepts, powers, and phenomena</li>
+                <li>Artifacts and significant objects</li>
+                <li>World rules and mechanics</li>
+                <li>Timeline events</li>
               </ul>
-              <p className="mt-3 text-stone-600">
-                {parseMode === 'llm'
-                  ? 'AI extraction first formats your script, then extracts entities with advanced pattern recognition and LLM-powered analysis.'
-                  : 'Pattern-only mode uses deterministic rules — no API key needed.'}
-              </p>
-              {parseMode === 'deterministic' && (
-                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-amber-800 font-semibold text-xs mb-1">⚠️ Limited Extraction</p>
-                  <p className="text-amber-700 text-xs">
-                    Pattern-only mode can only reliably extract characters and locations. 
-                    For factions, events, concepts, artifacts, and rules, please use AI Extraction mode.
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Error Message */}
@@ -271,17 +308,7 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
               <textarea
                 value={scriptText}
                 onChange={(e) => setScriptText(e.target.value)}
-                placeholder="Paste your script text here...
-
-Example:
-INT. APARTMENT - NIGHT
-
-Panel 1 Interior apartment. ELI sits at a table.
-
-ELI
-  I've been searching for years.
-
-Panel 2 Close-up of the ANCIENT SWORD on the table."
+                placeholder="Paste your script text here..."
                 className="w-full h-64 px-4 py-3 border border-stone-200 rounded font-mono text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 resize-none"
               />
               <div className="mt-2 flex items-center gap-2">
@@ -310,60 +337,58 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
               </div>
             </div>
 
-            {/* LLM Provider & API Key (only in LLM mode) */}
-            {parseMode === 'llm' && (
-              <div className="border border-stone-200 rounded-lg p-4 space-y-3">
-                <p className="font-body font-semibold text-ink text-sm">AI Provider</p>
-                <div className="flex flex-wrap gap-2">
-                  {PROVIDERS.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setProvider(p)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-body font-semibold transition-colors ${
-                        provider === p
-                          ? 'bg-ink text-white'
-                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                      }`}
-                    >
-                      {PROVIDER_META[p].label}
-                    </button>
-                  ))}
-                </div>
+            {/* Provider & API Key */}
+            <div className="border border-stone-200 rounded-lg p-4 space-y-3">
+              <p className="font-body font-semibold text-ink text-sm">AI Provider</p>
+              <div className="flex flex-wrap gap-2">
+                {PROVIDERS.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setProvider(p)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-body font-semibold transition-colors ${
+                      provider === p
+                        ? 'bg-ink text-white'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    {PROVIDER_META[p].label}
+                  </button>
+                ))}
+              </div>
 
-                {!meta.browserWorks && (
-                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <span className="text-amber-600 flex-shrink-0 mt-0.5 text-sm">⚠️</span>
-                    <p className="text-xs text-amber-800">
-                      {meta.label} routes through a server proxy to avoid CORS restrictions.
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-body font-medium text-ink mb-1">
-                    {meta.label} API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder={meta.placeholder}
-                    className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20"
-                  />
-                  <p className="text-xs text-stone-500 mt-1">
-                    Get your API key at{' '}
-                    <a
-                      href={meta.helpUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-ember-500 hover:underline"
-                    >
-                      {meta.helpUrl.replace('https://', '')}
-                    </a>
+              {!meta.browserWorks && (
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <span className="text-amber-600 flex-shrink-0 mt-0.5 text-sm">⚠️</span>
+                  <p className="text-xs text-amber-800">
+                    {meta.label} blocks direct browser requests (CORS). Use Gemini or Claude for now.
                   </p>
                 </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-body font-medium text-ink mb-1">
+                  {meta.label} API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={meta.placeholder}
+                  className="w-full px-3 py-2 border border-stone-200 rounded text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20"
+                />
+                <p className="text-xs text-stone-500 mt-1">
+                  Get your API key at{' '}
+                  <a
+                    href={meta.helpUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-ember-500 hover:underline"
+                  >
+                    {meta.helpUrl.replace('https://', '')}
+                  </a>
+                </p>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -377,7 +402,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
           </button>
           <button
             onClick={handleParse}
-            disabled={isLoading || !scriptText.trim()}
+            disabled={isLoading || !scriptText.trim() || !apiKey.trim()}
             className="px-6 py-2 font-body font-semibold text-white bg-ink hover:bg-stone-800 disabled:bg-stone-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2"
           >
             {isLoading ? (
@@ -387,7 +412,7 @@ Panel 2 Close-up of the ANCIENT SWORD on the table."
               </>
             ) : (
               <>
-                {parseMode === 'llm' ? <Zap className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
+                <Zap className="w-4 h-4" />
                 Parse Script
               </>
             )}
