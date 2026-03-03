@@ -114,20 +114,38 @@ PHASE 2: EXTRACT STRUCTURED DATA
 Using your full comprehension, extract every piece of data into the JSON schema below. Do not skip anything.
 
 CHARACTER RULES — READ CAREFULLY:
-A character is a PERSON or SENTIENT BEING who acts in the story. The following are NOT characters and must NEVER appear in the characters[] array:
-- Signs, placards, banners, graffiti, written text (use CRAWLER or CAPTION block type instead)
-- Radio broadcasts, TV news, intercoms, PA systems, phone recordings (use CRAWLER block type with meta.source)
-- Newspapers, letters, documents being read (use CAPTION block type)
-- Sound effects, environmental noises (use SFX block type)
-- Unnamed crowds, groups chanting (use CAPTION with meta.source = "crowd")
+A character is a PERSON (or sentient being) who SPEAKS DIALOGUE TO OTHER CHARACTERS, MAKES DECISIONS, or PHYSICALLY ACTS in scenes. Apply this three-part test:
+1. Does this entity have a BODY? (Can it walk, sit, gesture, make facial expressions?)
+2. Does it speak TO another character in conversation?
+3. Is it described with an age, appearance, or personality?
+If the answer to ALL THREE is no, it is NOT a character.
+
+The following are NEVER characters — do NOT put them in the characters[] array:
+- Scene headings: INT., EXT., or any line starting with INT/EXT (these are LOCATIONS)
+- Page/panel markers: PAGE, PANEL, PAGES, or any structural formatting labels
+- On-screen text: NOTIFICATION, SCREEN, DISPLAY, MONITOR, SIGN, SIGN ON STAGE, BANNER, POSTER, MARQUEE, CHYRON
+- File/data labels: FILE, FILE INFO, FOLDER, SEARCH, RESULT, QUERY, LOG, METADATA
+- UI elements: CAPTION, CRAWL, CRAWLER, NOTIFICATION, POPUP, ALERT
+- Environmental text: SIGN, PLACARD, GRAFFITI, BILLBOARD
+- Audio sources without a body: VOICE (when disembodied/from a recording), RADIO, TV, PA, INTERCOM, BROADCAST, RECORDING, VOICEMAIL, ANNOUNCEMENT
+- Groups: CROWD, CHORUS, ALL, EVERYONE, VOICES, MURMURS
+- Formatting: NEXT, END, CONTINUED, SFX, SOUND, MUSIC
+- Story markers: LOGLINE, NEXT (as in "NEXT ISSUE"), END ISSUE
+
+A VENDOR calling out to customers IS a character (has a body, speaks to people).
+A SIGN displaying text IS NOT a character (no body, doesn't converse).
+A NOTIFICATION popup IS NOT a character (UI element, no body).
+A VOICE from earbuds IS NOT a character unless identified as a specific person.
+Scene headings like "EXT. CITY SQUARE" are LOCATIONS, never characters.
+
+When in doubt: if you cannot describe what the entity LOOKS LIKE as a person, it is not a character.
 
 When non-character sources "speak," use the appropriate block type (CRAWLER, CAPTION, SFX) — NOT DIALOGUE. Only actual characters get DIALOGUE blocks with a speaker field.
 
 QUALITY CHECKLIST — MANDATORY (verify before responding):
-□ Every page in the script has a corresponding page object
-□ Every panel/scene beat has a corresponding panel object
-□ Every speaking character appears in the characters[] array
-□ Only actual people/beings are in characters[] (no signs, radios, TVs)
+□ Every character in characters[] passes the three-part test (body, speaks to others, described as a person)
+□ NO scene headings (INT./EXT.), page markers, UI elements, signs, or file labels in characters[]
+□ Characters[] count should be SMALL — most scripts have 3-8 real characters, rarely more than 12
 □ Lore entries span AT LEAST 4 different categories
 □ Timeline events cover the major story beats
 
@@ -531,8 +549,45 @@ function validateAndRepair(
       : undefined,
   }));
 
-  if (characters.length === 0) {
-    warnings.push('AI returned no characters - deterministic pass should fill these.');
+  // ── Hard filter: catch non-characters the AI missed ──────────────────
+  const NON_CHARACTER_PATTERNS: RegExp[] = [
+    /^(INT|EXT|INT\.|EXT\.)\b/i,           // Scene headings
+    /^PAGES?\s+\d/i,                         // Page markers (PAGE ONE, PAGES EIGHT)
+    /^PANEL\s+\d/i,                          // Panel markers
+    /^(END|NEXT|CONTINUED|LOGLINE)\b/i,     // Structural markers
+    /^(SFX|SOUND|MUSIC|SONG)\b/i,           // Audio markers
+  ];
+  const NON_CHARACTER_EXACT = new Set([
+    'SIGN', 'SIGN ON STAGE', 'BANNER', 'POSTER', 'PLACARD', 'GRAFFITI', 'BILLBOARD', 'MARQUEE',
+    'SCREEN', 'DISPLAY', 'MONITOR', 'NOTIFICATION', 'POPUP', 'ALERT', 'CHYRON',
+    'FILE', 'FILE INFO', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY', 'LOG', 'METADATA',
+    'RADIO', 'TV', 'TELEVISION', 'NEWS', 'BROADCAST', 'INTERCOM', 'PA',
+    'SPEAKER', 'PHONE', 'RECORDING', 'VOICEMAIL', 'ANSWERING', 'ANNOUNCEMENT', 'ANNOUNCER',
+    'VOICE', 'VOICES', 'CROWD', 'CHANT', 'CHORUS', 'ALL', 'EVERYONE',
+    'NARRATOR', 'CAPTION', 'TITLE', 'CRAWL', 'CRAWLER', 'SUPER',
+    'COMPUTER', 'DEVICE', 'ALARM', 'SIREN', 'HORN', 'AUTOMATED', 'SYSTEM', 'GPS', 'AI',
+    'NEXT', 'END', 'CONTINUED', 'UNKNOWN',
+  ]);
+
+  function isNonCharacter(name: string): boolean {
+    const upper = name.trim().toUpperCase();
+    if (NON_CHARACTER_EXACT.has(upper)) return true;
+    if (NON_CHARACTER_PATTERNS.some(p => p.test(upper))) return true;
+    // Any word in the name is a scene heading keyword
+    if (/\bINT\b|\bEXT\b/.test(upper)) return true;
+    return false;
+  }
+
+  const filteredCharacters = characters.filter(c => {
+    if (isNonCharacter(c.name)) {
+      warnings.push('Filtered non-character from AI output: "' + c.name + '"');
+      return false;
+    }
+    return true;
+  });
+
+  if (filteredCharacters.length === 0) {
+    warnings.push('AI returned no valid characters after filtering.');
   }
 
   // ── Lore ───────────────────────────────────────────────────────────────
@@ -582,7 +637,7 @@ function validateAndRepair(
     project_type: projectType,
     warnings,
     pages,
-    characters,
+    characters: filteredCharacters,
     lore,
     timeline,
     parser_source: 'ai',
