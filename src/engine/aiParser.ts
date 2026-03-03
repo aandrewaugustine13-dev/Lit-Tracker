@@ -447,6 +447,42 @@ const VALID_ROLES: Set<string> = new Set([
 
 const SPEAKER_REQUIRED_TYPES: Set<string> = new Set(['DIALOGUE', 'THOUGHT']);
 
+const CHARACTER_STOP_WORDS = new Set([
+  'THE', 'A', 'AN', 'OF', 'AND', 'TO', 'FROM', 'IN', 'ON', 'AT', 'FOR', 'WITH', 'BY',
+]);
+
+function normalizeCharacterName(name: string): string {
+  return name
+    .trim()
+    .replace(/^\((.*?)\)$/, '$1')
+    .replace(/[\[\]{}]/g, '')
+    .replace(/\b(V\.O\.|O\.S\.|OFF[- ]?SCREEN|VOICEOVER|VO)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function characterNameKey(name: string): string {
+  return normalizeCharacterName(name)
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function looksLikePersonName(name: string): boolean {
+  const key = characterNameKey(name);
+  if (!key) return false;
+  const parts = key.split(' ').filter(Boolean);
+  if (parts.length === 0 || parts.length > 4) return false;
+
+  const meaningful = parts.filter((part) => !CHARACTER_STOP_WORDS.has(part));
+  if (meaningful.length === 0) return false;
+
+  // Names are typically compact labels, not sentence-like phrases.
+  if (key.length > 40) return false;
+  return true;
+}
+
 /**
  * Validates and repairs the raw LLM JSON into a well-formed UnifiedParseResult.
  * Non-critical issues are repaired and logged as warnings.
@@ -534,7 +570,7 @@ function validateAndRepair(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawChars: any[] = Array.isArray(raw.characters) ? raw.characters : [];
   const characters: ParsedCharacter[] = rawChars.map((rc) => ({
-    name: typeof rc.name === 'string' ? rc.name : 'UNKNOWN',
+    name: normalizeCharacterName(typeof rc.name === 'string' ? rc.name : 'UNKNOWN'),
     role: VALID_ROLES.has(rc.role as string)
       ? (rc.role as ParsedCharacter['role'])
       : undefined,
@@ -575,18 +611,98 @@ function validateAndRepair(
     if (NON_CHARACTER_PATTERNS.some(p => p.test(upper))) return true;
     // Any word in the name is a scene heading keyword
     if (/\bINT\b|\bEXT\b/.test(upper)) return true;
+    // Purely numeric or mostly punctuation labels are not characters.
+    if (!/[A-Z]/.test(upper)) return true;
+    if (/^[^A-Z0-9]+$/.test(upper)) return true;
     return false;
   }
 
+  // Dialogue speakers are the strongest evidence of actual characters.
+  const speakerStats = new Map<string, { displayName: string; pages: Set<number>; lines: number }>();
+  for (const page of pages) {
+    for (const panel of page.panels) {
+      for (const block of panel.blocks) {
+        if (!block.speaker || !SPEAKER_REQUIRED_TYPES.has(block.type)) continue;
+        const normalized = normalizeCharacterName(block.speaker);
+        const key = characterNameKey(normalized);
+        if (!key || isNonCharacter(normalized) || !looksLikePersonName(normalized)) continue;
+
+        const existing = speakerStats.get(key);
+        if (existing) {
+          existing.lines += 1;
+          existing.pages.add(page.page_number);
+        } else {
+          speakerStats.set(key, {
+            displayName: normalized,
+            pages: new Set([page.page_number]),
+            lines: 1,
+          });
+        }
+      }
+    }
+  }
+
   const filteredCharacters = characters.filter(c => {
-    if (isNonCharacter(c.name)) {
+    const normalized = normalizeCharacterName(c.name);
+    if (!normalized || isNonCharacter(normalized) || !looksLikePersonName(normalized)) {
       warnings.push('Filtered non-character from AI output: "' + c.name + '"');
       return false;
     }
+    c.name = normalized;
     return true;
   });
 
-  if (filteredCharacters.length === 0) {
+  // Merge duplicate character entries and enrich from dialogue evidence.
+  const mergedCharacters = new Map<string, ParsedCharacter>();
+  for (const character of filteredCharacters) {
+    const key = characterNameKey(character.name);
+    if (!key) continue;
+
+    const existing = mergedCharacters.get(key);
+    if (!existing) {
+      mergedCharacters.set(key, {
+        ...character,
+        pages_present: [...new Set(character.pages_present)].sort((a, b) => a - b),
+      });
+      continue;
+    }
+
+    existing.role = existing.role ?? character.role;
+    existing.description = existing.description ?? character.description;
+    existing.first_appearance_page = Math.min(existing.first_appearance_page, character.first_appearance_page);
+    existing.lines_count = Math.max(existing.lines_count, character.lines_count);
+    existing.pages_present = [...new Set([...existing.pages_present, ...character.pages_present])].sort((a, b) => a - b);
+    const existingQuotes = existing.notable_quotes ?? [];
+    const incomingQuotes = character.notable_quotes ?? [];
+    const combinedQuotes = [...new Set([...existingQuotes, ...incomingQuotes])].slice(0, 2);
+    existing.notable_quotes = combinedQuotes.length > 0 ? combinedQuotes : undefined;
+  }
+
+  // Add dialogue-backed characters that the model omitted.
+  for (const [key, stats] of speakerStats.entries()) {
+    const existing = mergedCharacters.get(key);
+    if (!existing) {
+      mergedCharacters.set(key, {
+        name: stats.displayName,
+        role: 'Minor',
+        description: undefined,
+        pages_present: [...stats.pages].sort((a, b) => a - b),
+        first_appearance_page: Math.min(...stats.pages),
+        lines_count: stats.lines,
+        notable_quotes: undefined,
+      });
+      warnings.push('Recovered missing character from dialogue speaker: "' + stats.displayName + '"');
+      continue;
+    }
+
+    existing.lines_count = Math.max(existing.lines_count, stats.lines);
+    existing.pages_present = [...new Set([...existing.pages_present, ...stats.pages])].sort((a, b) => a - b);
+    existing.first_appearance_page = Math.min(existing.first_appearance_page, Math.min(...stats.pages));
+  }
+
+  const dedupedCharacters = Array.from(mergedCharacters.values());
+
+  if (dedupedCharacters.length === 0) {
     warnings.push('AI returned no valid characters after filtering.');
   }
 
@@ -637,7 +753,7 @@ function validateAndRepair(
     project_type: projectType,
     warnings,
     pages,
-    characters: filteredCharacters,
+    characters: dedupedCharacters,
     lore,
     timeline,
     parser_source: 'ai',
