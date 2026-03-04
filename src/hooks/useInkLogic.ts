@@ -598,6 +598,14 @@ export function useInkLogic() {
       return;
     }
     
+    // If we have a parsedScriptResult but no pages, this was an extraction-only run
+    // (Lore Module). Don't fall through to the legacy parser — it will pollute
+    // the character store with non-character entities (signs, notifications, etc.)
+    if (parsedScriptResult) {
+      console.log('[handleImportFromStore] Extraction-only parse detected (no pages). Skipping storyboard auto-import.');
+      return;
+    }
+    
     // Fallback to rules-based parser if no structured parse is available in store
     const parseResult = parseScript(rawScriptText);
     
