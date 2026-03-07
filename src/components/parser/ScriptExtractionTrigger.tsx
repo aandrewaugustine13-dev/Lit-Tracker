@@ -182,7 +182,6 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
         projectType: activeProject?.projectType || 'comic',
         llmProvider: provider,
         llmApiKey: apiKey,
-        extractionOnly: true,
       });
 
       console.log('[ScriptExtraction] AI parse complete:', {
