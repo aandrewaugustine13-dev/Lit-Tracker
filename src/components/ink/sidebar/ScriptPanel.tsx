@@ -23,7 +23,7 @@ export const STYLE_GROUPS: Record<string, string[]> = {
     "Horror & Dark Fantasy": ["ec-horror", "vertigo-horror", "mignola-hellboy", "hellraiser", "spawn-mcfarlane"],
     "Indie & European": ["underground-comix", "indie-minimalist", "clear-line", "european-bd", "modern-alt"],
     "Americana & Whimsy": ["norman-rockwell", "kinkade-luminous", "lisa-frank"],
-    "Sci-Fi & Experimental": ["dune-epic", "erotic-realism", "pulp-adventure", "cyberpunk-noir"],
+    "Sci-Fi & Experimental": ["dune-epic", "pulp-adventure", "cyberpunk-noir"],
     "Custom": ["custom"]
 };
 
