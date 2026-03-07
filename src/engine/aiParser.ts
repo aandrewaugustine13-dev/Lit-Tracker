@@ -25,7 +25,7 @@ export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek
 
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
   anthropic: 'claude-sonnet-4-5-20250929',
-  gemini: 'gemini-2.0-flash',
+  gemini: 'gemini-2.5-flash',
   openai: 'gpt-4o',
   grok: 'grok-2-latest',
   deepseek: 'deepseek-chat',
