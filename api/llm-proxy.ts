@@ -264,7 +264,11 @@ async function callGemini(
   }
 
   const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  // Gemini 2.5+ thinking models return multiple parts: thought parts first,
+  // then the actual response last. Grab the last non-thought part.
+  const parts = data.candidates[0].content.parts;
+  const outputPart = parts.filter((p: any) => !p.thought).pop() || parts[parts.length - 1];
+  return outputPart.text;
 }
 
 async function callAnthropic(
