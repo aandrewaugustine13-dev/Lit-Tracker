@@ -25,7 +25,7 @@ const DEFAULT_MODELS: Record<string, string> = {
   openai: 'gpt-4o',
   deepseek: 'deepseek-chat',
   grok: 'grok-2-latest',
-  gemini: 'gemini-2.0-flash',
+  gemini: 'gemini-2.5-flash',
   anthropic: 'claude-sonnet-4-5-20250929',
 };
 
