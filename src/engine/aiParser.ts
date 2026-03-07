@@ -1,8 +1,7 @@
 // =============================================================================
-// AI PARSER — Single LLM call, format-aware prompt, UnifiedParseResult output
+// AI PARSER — Fresh rewrite. Single LLM call, format-aware prompt.
 // =============================================================================
-// Replaces: src/utils/scriptParser.ts (parseScriptWithLLM)
-// Uses the existing api/llm-proxy.ts for provider routing.
+// Exports: aiParse, LLMProvider, AiParseOptions
 // Produces UnifiedParseResult — the single contract for all downstream consumers.
 
 import {
@@ -21,7 +20,7 @@ import {
 
 export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek' | 'groq';
 
-// ─── Default Models (mirrors api/llm-proxy.ts) ──────────────────────────────
+// ─── Default Models ─────────────────────────────────────────────────────────
 
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
   anthropic: 'claude-sonnet-4-5-20250929',
@@ -35,13 +34,12 @@ const DEFAULT_MODELS: Record<LLMProvider, string> = {
 // ─── Options ─────────────────────────────────────────────────────────────────
 
 export interface AiParseOptions {
-  existingCharacters?: string[];  // Names to not re-extract
-  canonLocks?: string[];          // Entities to not modify
-  extractionOnly?: boolean;       // true = skip pages, only return characters/lore/timeline
+  existingCharacters?: string[];
+  canonLocks?: string[];
+  extractionOnly?: boolean;
 }
 
 // ─── Format Context Prompts ──────────────────────────────────────────────────
-// Each project type gets a format-specific section injected into the prompt.
 
 const FORMAT_CONTEXTS: Record<ProjectType, string> = {
   comic: `
@@ -95,11 +93,7 @@ CRITICAL: Preserve act structure. Note act breaks in page metadata.`,
 
 // ─── Prompt Builder ──────────────────────────────────────────────────────────
 
-function buildPrompt(
-  projectType: ProjectType,
-  options?: AiParseOptions,
-): string {
-  // CONSTANT section
+function buildPrompt(projectType: ProjectType, options?: AiParseOptions): string {
   let prompt = `You are a script parser for Lit-Tracker. You perform a strict two-phase process.
 
 PHASE 1: READ AND COMPREHEND
@@ -171,7 +165,6 @@ COMMON LORE FAILURES TO AVOID:
 
 MANDATORY: Before finalizing JSON, count your lore categories. If fewer than 4 different categories, go back and extract more.`;
 
-  // Existing entities to skip
   if (options?.existingCharacters?.length) {
     prompt += '\n\nALREADY TRACKED CHARACTERS (do not re-extract, but include in characters_involved if relevant):\n' + options.existingCharacters.map(n => '- ' + n).join('\n');
   }
@@ -180,12 +173,9 @@ MANDATORY: Before finalizing JSON, count your lore categories. If fewer than 4 d
     prompt += '\n\nCANON-LOCKED ENTITIES (do not modify these names or descriptions):\n' + options.canonLocks.map(n => '- ' + n).join('\n');
   }
 
-  // FORMAT CONTEXT section
   prompt += '\n\n' + FORMAT_CONTEXTS[projectType];
 
-  // OUTPUT SCHEMA section
   if (options?.extractionOnly) {
-    // Lightweight schema — entities only, no storyboard structure
     prompt += `
 
 OUTPUT SCHEMA — Output ONLY valid JSON matching this exact structure. No markdown fences. No commentary. No explanation. Just the JSON.
@@ -230,7 +220,6 @@ Valid character roles: Protagonist, Antagonist, Supporting, Minor
 
 Now parse this script:`;
   } else {
-    // Full schema with storyboard structure
     prompt += `
 
 OUTPUT SCHEMA — Output ONLY valid JSON matching this exact structure. No markdown fences. No commentary. No explanation. Just the JSON.
@@ -298,7 +287,6 @@ Now parse this script:`;
 // ─── Source Hash ──────────────────────────────────────────────────────────────
 
 async function computeSourceHash(text: string): Promise<string> {
-  // Use SubtleCrypto if available (browser + modern Node), else simple fallback
   if (typeof crypto !== 'undefined' && crypto.subtle) {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
@@ -306,7 +294,6 @@ async function computeSourceHash(text: string): Promise<string> {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  // Simple DJB2 fallback for environments without SubtleCrypto
   let hash = 5381;
   for (let i = 0; i < text.length; i++) {
     hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
@@ -314,49 +301,9 @@ async function computeSourceHash(text: string): Promise<string> {
   return Math.abs(hash).toString(16).padStart(8, '0');
 }
 
-// ─── LLM Call via Proxy ──────────────────────────────────────────────────────
-// Reuses the existing api/llm-proxy.ts Vercel function.
-
-async function callLLM(
-  prompt: string,
-  scriptText: string,
-  provider: LLMProvider,
-  apiKey: string,
-): Promise<string> {
-  const model = DEFAULT_MODELS[provider];
-
-  // Browser-compatible providers can be called directly
-  if (provider === 'gemini') {
-    return callGeminiDirect(prompt, scriptText, apiKey, model);
-  }
-  if (provider === 'anthropic') {
-    return callAnthropicDirect(prompt, scriptText, apiKey, model);
-  }
-
-  // All other providers go through the Vercel proxy to avoid CORS
-  const response = await fetch('/api/llm-proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      provider,
-      apiKey,
-      model,
-      prompt,
-      script: scriptText,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error('LLM proxy error (' + provider + '): ' + response.status + ' - ' + errorBody);
-  }
-
-  const data = await response.json();
-  if (data.error) throw new Error('LLM proxy returned error: ' + data.error);
-  return data.text;
-}
-
-// ─── Direct Provider Calls (browser-compatible) ──────────────────────────────
+// =============================================================================
+// LLM CALLS — Each provider gets its own function
+// =============================================================================
 
 async function callGeminiDirect(
   prompt: string,
@@ -364,6 +311,8 @@ async function callGeminiDirect(
   apiKey: string,
   model: string,
 ): Promise<string> {
+  console.log('[aiParser] Calling Gemini directly:', model);
+
   const response = await fetch(
     'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey,
     {
@@ -385,11 +334,40 @@ async function callGeminiDirect(
   }
 
   const data = await response.json();
-  // Gemini 2.5+ thinking models return multiple parts: thought parts first,
-  // then the actual response last. Grab the last non-thought part.
-  const parts = data.candidates[0].content.parts;
-  const outputPart = parts.filter((p: any) => !p.thought).pop() || parts[parts.length - 1];
-  return outputPart.text;
+
+  // Diagnostic: log the response shape so we can debug if something changes
+  const parts = data.candidates?.[0]?.content?.parts;
+  console.log('[aiParser] Gemini response:', JSON.stringify({
+    candidateCount: data.candidates?.length,
+    partsCount: parts?.length,
+    partSummary: parts?.map((p: any, i: number) => ({
+      index: i,
+      hasText: !!p.text,
+      isThought: !!p.thought,
+      textLen: p.text?.length ?? 0,
+    })),
+  }));
+
+  if (!parts || parts.length === 0) {
+    throw new Error('Gemini returned no content parts');
+  }
+
+  // Gemini 2.5+ is a thinking model. When responseMimeType is set to
+  // 'application/json', thinking is typically suppressed in the output.
+  // But we handle it defensively in case thoughts leak through:
+  // find all non-thought text parts, take the last one.
+  const nonThoughtTextParts = parts.filter((p: any) => p.text && !p.thought);
+  if (nonThoughtTextParts.length > 0) {
+    return nonThoughtTextParts[nonThoughtTextParts.length - 1].text;
+  }
+
+  // Fallback: grab the last part that has any text at all
+  const anyTextParts = parts.filter((p: any) => p.text);
+  if (anyTextParts.length > 0) {
+    return anyTextParts[anyTextParts.length - 1].text;
+  }
+
+  throw new Error('Gemini returned parts but none contained text');
 }
 
 async function callAnthropicDirect(
@@ -398,6 +376,8 @@ async function callAnthropicDirect(
   apiKey: string,
   model: string,
 ): Promise<string> {
+  console.log('[aiParser] Calling Anthropic directly:', model);
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -423,18 +403,72 @@ async function callAnthropicDirect(
   return data.content[0].text;
 }
 
+async function callViaProxy(
+  prompt: string,
+  script: string,
+  provider: LLMProvider,
+  apiKey: string,
+  model: string,
+): Promise<string> {
+  console.log('[aiParser] Calling via proxy:', provider, model);
+
+  const response = await fetch('/api/llm-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, apiKey, model, prompt, script }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error('LLM proxy error (' + provider + '): ' + response.status + ' - ' + errorBody);
+  }
+
+  const data = await response.json();
+  if (data.error) throw new Error('LLM proxy returned error: ' + data.error);
+  return data.text;
+}
+
+// ─── Router ──────────────────────────────────────────────────────────────────
+
+async function callLLM(
+  prompt: string,
+  scriptText: string,
+  provider: LLMProvider,
+  apiKey: string,
+): Promise<string> {
+  const model = DEFAULT_MODELS[provider];
+
+  if (provider === 'gemini') {
+    return callGeminiDirect(prompt, scriptText, apiKey, model);
+  }
+  if (provider === 'anthropic') {
+    return callAnthropicDirect(prompt, scriptText, apiKey, model);
+  }
+
+  return callViaProxy(prompt, scriptText, provider, apiKey, model);
+}
+
 // ─── Response Cleaning ───────────────────────────────────────────────────────
 
 function stripMarkdownFences(text: string): string {
   let cleaned = text.trim();
+
+  // Strip ```json ... ``` wrapping
   if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '');
     cleaned = cleaned.replace(/\n?```\s*$/, '');
   }
+
+  // Strip any leading non-JSON preamble text
+  const firstBrace = cleaned.indexOf('{');
+  if (firstBrace > 0 && firstBrace < 100) {
+    cleaned = cleaned.substring(firstBrace);
+  }
+
   return cleaned.trim();
 }
 
-// ─── Validation Helpers ──────────────────────────────────────────────────────
+// ─── Validation Constants ────────────────────────────────────────────────────
 
 const VALID_BLOCK_TYPES: Set<string> = new Set([
   'ART_NOTE', 'DIALOGUE', 'CAPTION', 'NARRATOR', 'SFX',
@@ -451,11 +485,46 @@ const VALID_ROLES: Set<string> = new Set([
 
 const SPEAKER_REQUIRED_TYPES: Set<string> = new Set(['DIALOGUE', 'THOUGHT']);
 
-/**
- * Validates and repairs the raw LLM JSON into a well-formed UnifiedParseResult.
- * Non-critical issues are repaired and logged as warnings.
- * Throws only if pages[] is empty or fundamentally malformed.
- */
+// ─── Character Filter ────────────────────────────────────────────────────────
+// Two tiers:
+//   1. Exact match for short/ambiguous words (safe, no false positives on names)
+//   2. Word-boundary regex for compound names like "STREET SIGN", "TV SCREEN"
+
+const NON_CHARACTER_EXACT = new Set([
+  'TV', 'PA', 'AI', 'ALL', 'END', 'NEXT', 'LOG', 'NEWS',
+  'VOICE', 'PHONE', 'SPEAKER', 'HORN', 'SYSTEM', 'DEVICE', 'GPS',
+  'SONG', 'MUSIC', 'NARRATOR', 'TITLE', 'SUPER',
+  'FILE', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY', 'METADATA',
+  'ANNOUNCEMENT', 'ANNOUNCER', 'ANSWERING',
+  'UNKNOWN', 'CONTINUED',
+  'SIGN ON STAGE', 'FILE INFO', 'SEARCH RESULT', 'PA SYSTEM', 'GPS VOICE',
+  'TITLE CARD',
+]);
+
+const NON_CHARACTER_PATTERNS: RegExp[] = [
+  /\bINT\b|\bEXT\b/i,
+  /^PAGES?\s+\d/i,
+  /^PANEL\s+\d/i,
+  /^(END|NEXT|CONTINUED|LOGLINE)\b/i,
+  /\b(SFX|SOUND EFFECT)\b/i,
+  /\b(SIGN|BANNER|POSTER|PLACARD|GRAFFITI|BILLBOARD|MARQUEE|CHYRON)\b/i,
+  /\b(SCREEN|DISPLAY|MONITOR|NOTIFICATION|POPUP|ALERT)\b/i,
+  /\b(RADIO|TELEVISION|BROADCAST|INTERCOM|VOICEMAIL|RECORDING)\b/i,
+  /^TV\b/i,
+  /\b(COMPUTER|ALARM|SIREN|AUTOMATED)\b/i,
+  /\b(CROWD|CHORUS|EVERYONE|VOICES|MURMURS|CHANT)\b/i,
+  /\b(CAPTION|CRAWL|CRAWLER)\b/i,
+];
+
+function isNonCharacter(name: string): boolean {
+  const upper = name.trim().toUpperCase();
+  if (NON_CHARACTER_EXACT.has(upper)) return true;
+  if (NON_CHARACTER_PATTERNS.some(p => p.test(upper))) return true;
+  return false;
+}
+
+// ─── Validate & Repair ──────────────────────────────────────────────────────
+
 function validateAndRepair(
   raw: Record<string, unknown>,
   projectType: ProjectType,
@@ -464,7 +533,8 @@ function validateAndRepair(
   warnings: string[],
   extractionOnly?: boolean,
 ): UnifiedParseResult {
-  // ── Pages ──────────────────────────────────────────────────────────────
+
+  // ── Pages ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawPages: any[] = Array.isArray(raw.pages) ? raw.pages : [];
   if (rawPages.length === 0 && !extractionOnly) {
@@ -476,9 +546,8 @@ function validateAndRepair(
 
   for (const rp of rawPages) {
     const pageNum = typeof rp.page_number === 'number' ? rp.page_number : pages.length + 1;
-
     if (seenPageNumbers.has(pageNum)) {
-      warnings.push('Duplicate page_number ' + pageNum + ' - skipping duplicate.');
+      warnings.push('Duplicate page_number ' + pageNum + ' - skipping.');
       continue;
     }
     seenPageNumbers.add(pageNum);
@@ -490,9 +559,8 @@ function validateAndRepair(
 
     for (const rpnl of rawPanels) {
       const panelNum = typeof rpnl.panel_number === 'number' ? rpnl.panel_number : panels.length + 1;
-
       if (seenPanelNumbers.has(panelNum)) {
-        warnings.push('Page ' + pageNum + ': duplicate panel_number ' + panelNum + ' - skipping.');
+        warnings.push('Page ' + pageNum + ': duplicate panel ' + panelNum + ' - skipping.');
         continue;
       }
       seenPanelNumbers.add(panelNum);
@@ -504,17 +572,13 @@ function validateAndRepair(
       for (const rb of rawBlocks) {
         const blockType: BlockType = VALID_BLOCK_TYPES.has(rb.type) ? rb.type : 'OTHER';
         if (!VALID_BLOCK_TYPES.has(rb.type)) {
-          warnings.push('Page ' + pageNum + ' Panel ' + panelNum + ': unknown block type "' + rb.type + '" mapped to OTHER');
+          warnings.push('Page ' + pageNum + ' Panel ' + panelNum + ': unknown block type "' + rb.type + '" → OTHER');
         }
-
         const text = typeof rb.text === 'string' ? rb.text : '';
         const speaker = typeof rb.speaker === 'string' ? rb.speaker : undefined;
-
-        // Validate speaker requirement
         if (SPEAKER_REQUIRED_TYPES.has(blockType) && !speaker) {
           warnings.push('Page ' + pageNum + ' Panel ' + panelNum + ': ' + blockType + ' block missing speaker.');
         }
-
         blocks.push({
           type: blockType,
           text,
@@ -534,7 +598,7 @@ function validateAndRepair(
     pages.push({ page_number: pageNum, panels });
   }
 
-  // ── Characters ─────────────────────────────────────────────────────────
+  // ── Characters ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawChars: any[] = Array.isArray(raw.characters) ? raw.characters : [];
   const characters: ParsedCharacter[] = rawChars.map((rc) => ({
@@ -553,38 +617,9 @@ function validateAndRepair(
       : undefined,
   }));
 
-  // ── Hard filter: catch non-characters the AI missed ──────────────────
-  const NON_CHARACTER_PATTERNS: RegExp[] = [
-    /^(INT|EXT|INT\.|EXT\.)\b/i,           // Scene headings
-    /^PAGES?\s+\d/i,                         // Page markers (PAGE ONE, PAGES EIGHT)
-    /^PANEL\s+\d/i,                          // Panel markers
-    /^(END|NEXT|CONTINUED|LOGLINE)\b/i,     // Structural markers
-    /^(SFX|SOUND|MUSIC|SONG)\b/i,           // Audio markers
-  ];
-  const NON_CHARACTER_EXACT = new Set([
-    'SIGN', 'SIGN ON STAGE', 'BANNER', 'POSTER', 'PLACARD', 'GRAFFITI', 'BILLBOARD', 'MARQUEE',
-    'SCREEN', 'DISPLAY', 'MONITOR', 'NOTIFICATION', 'POPUP', 'ALERT', 'CHYRON',
-    'FILE', 'FILE INFO', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY', 'LOG', 'METADATA',
-    'RADIO', 'TV', 'TELEVISION', 'NEWS', 'BROADCAST', 'INTERCOM', 'PA',
-    'SPEAKER', 'PHONE', 'RECORDING', 'VOICEMAIL', 'ANSWERING', 'ANNOUNCEMENT', 'ANNOUNCER',
-    'VOICE', 'VOICES', 'CROWD', 'CHANT', 'CHORUS', 'ALL', 'EVERYONE',
-    'NARRATOR', 'CAPTION', 'TITLE', 'CRAWL', 'CRAWLER', 'SUPER',
-    'COMPUTER', 'DEVICE', 'ALARM', 'SIREN', 'HORN', 'AUTOMATED', 'SYSTEM', 'GPS', 'AI',
-    'NEXT', 'END', 'CONTINUED', 'UNKNOWN',
-  ]);
-
-  function isNonCharacter(name: string): boolean {
-    const upper = name.trim().toUpperCase();
-    if (NON_CHARACTER_EXACT.has(upper)) return true;
-    if (NON_CHARACTER_PATTERNS.some(p => p.test(upper))) return true;
-    // Any word in the name is a scene heading keyword
-    if (/\bINT\b|\bEXT\b/.test(upper)) return true;
-    return false;
-  }
-
   const filteredCharacters = characters.filter(c => {
     if (isNonCharacter(c.name)) {
-      warnings.push('Filtered non-character from AI output: "' + c.name + '"');
+      warnings.push('Filtered non-character: "' + c.name + '"');
       return false;
     }
     return true;
@@ -594,7 +629,7 @@ function validateAndRepair(
     warnings.push('AI returned no valid characters after filtering.');
   }
 
-  // ── Lore ───────────────────────────────────────────────────────────────
+  // ── Lore ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawLore: any[] = Array.isArray(raw.lore) ? raw.lore : [];
   const lore: ParsedLoreEntry[] = rawLore
@@ -618,10 +653,10 @@ function validateAndRepair(
     }));
 
   if (lore.length === 0) {
-    warnings.push('AI returned no lore entries - deterministic pass should extract these.');
+    warnings.push('AI returned no lore entries.');
   }
 
-  // ── Timeline ───────────────────────────────────────────────────────────
+  // ── Timeline ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawTimeline: any[] = Array.isArray(raw.timeline) ? raw.timeline : [];
   const timeline: ParsedTimelineEvent[] = rawTimeline
@@ -635,7 +670,7 @@ function validateAndRepair(
         : [],
     }));
 
-  // ── Assemble ───────────────────────────────────────────────────────────
+  // ── Assemble ──
   return {
     source_hash: sourceHash,
     project_type: projectType,
@@ -649,12 +684,10 @@ function validateAndRepair(
   };
 }
 
-// ─── Main Export ─────────────────────────────────────────────────────────────
+// =============================================================================
+// MAIN EXPORT
+// =============================================================================
 
-/**
- * Parse a script using a single LLM call with a format-aware prompt.
- * Returns UnifiedParseResult — the single contract all downstream code consumes.
- */
 export async function aiParse(
   scriptText: string,
   projectType: ProjectType,
@@ -667,16 +700,16 @@ export async function aiParse(
   const aiModel = DEFAULT_MODELS[provider];
   const warnings: string[] = [];
 
-  // Build the format-aware prompt
+  console.log('[aiParse] Starting. Provider:', provider, 'Model:', aiModel, 'extractionOnly:', !!options?.extractionOnly);
+
   const prompt = buildPrompt(projectType, options);
 
-  // Single LLM call
   const rawText = await callLLM(prompt, scriptText, provider, apiKey);
+  console.log('[aiParse] Raw response length:', rawText.length, '| First 200 chars:', rawText.substring(0, 200));
 
-  // Clean response
   const cleanedText = stripMarkdownFences(rawText);
+  console.log('[aiParse] Cleaned length:', cleanedText.length, '| Starts with:', cleanedText.substring(0, 50));
 
-  // Parse JSON
   let parsed: Record<string, unknown>;
   try {
     parsed = JSON.parse(cleanedText);
@@ -686,11 +719,19 @@ export async function aiParse(
     );
   }
 
-  // Validate + repair
-  const result = validateAndRepair(parsed, projectType, sourceHash, aiModel, warnings, options?.extractionOnly);
+  console.log('[aiParse] JSON parsed. Keys:', Object.keys(parsed));
 
-  // Attach timing
+  const result = validateAndRepair(parsed, projectType, sourceHash, aiModel, warnings, options?.extractionOnly);
   result.parse_duration_ms = Date.now() - startTime;
+
+  console.log('[aiParse] Done.', {
+    characters: result.characters.length,
+    lore: result.lore.length,
+    timeline: result.timeline.length,
+    pages: result.pages.length,
+    warnings: result.warnings.length,
+    ms: result.parse_duration_ms,
+  });
 
   return result;
 }
