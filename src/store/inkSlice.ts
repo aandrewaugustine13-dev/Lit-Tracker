@@ -557,10 +557,20 @@ function createDefaultInkState(): InkAppState {
 }
 
 function normalizeInkProjects(state: InkAppState): InkAppState {
+  const mapLegacyStyle = (style?: string): string => {
+    // Backward compatibility: legacy Ink Tracker saves may contain removed photoreal styles.
+    const normalized = (style || '').toLowerCase().trim();
+    if (['erotic-realism', 'photorealistic', 'photoreal', 'photo-real', 'cinematic realism'].includes(normalized)) {
+      return 'pulp-adventure';
+    }
+    return style || 'classic-noir';
+  };
+
   return {
     ...state,
     projects: state.projects.map(proj => ({
       ...proj,
+      style: mapLegacyStyle(proj.style),
       issueType: proj.issueType || 'issue',
       imageProvider: proj.imageProvider || 'gemini',
       projectType: proj.projectType || 'comic',

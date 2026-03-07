@@ -13,7 +13,7 @@ export const ART_STYLES = [
 { id: 'bronze-superhero', name: 'Bronze Age (1970s)', prompt: '1970s bronze age superhero comic book art, dynamic action poses, thick ink outlines, vibrant flat colors with Ben-Day dots, expressive faces' },
 { id: 'silver-superhero', name: 'Silver Age (1960s)', prompt: '1960s silver age superhero comic book art, clean heroic proportions, bright primary colors, classic four-color printing look, optimistic heroic style' },
 { id: 'kirby-cosmic', name: 'Kirby Cosmic', prompt: 'Jack Kirby style cosmic superhero art, bold blocky shapes, Kirby crackle energy, epic scale, hyper-dynamic anatomy, geometric power' },
-{ id: 'alex-ross', name: 'Painted Realism (Ross)', prompt: 'Alex Ross style hyper-realistic painted superhero art, photorealistic gouache painting, classical heroic lighting, masterpiece quality, cinematic realism' },
+{ id: 'alex-ross', name: 'Painted Heroic (Ross)', prompt: 'Alex Ross inspired painted superhero illustration, dramatic heroic lighting, rich gouache-like brushwork, classic comic composition, masterpiece quality' },
 { id: 'frank-miller', name: 'Gritty Miller Style', prompt: 'Frank Miller gritty comic art, heavy expressionistic ink work, blocky angular shadows, dark brooding atmosphere, muscular silhouettes' },
 
 // Horror
@@ -25,16 +25,15 @@ export const ART_STYLES = [
 { id: 'underground-comix', name: 'Underground Comix', prompt: '1960s underground comix style, R. Crumb-inspired raw ink work, heavy cross-hatching, satirical distorted proportions, detailed messy textures' },
 { id: 'indie-minimalist', name: 'Indie Minimalist', prompt: 'indie graphic novel style, clean minimalist line art, emotional realism, sophisticated composition, muted color palette, Chris Ware influence' },
 { id: 'clear-line', name: 'Clear-Line (Tintin)', prompt: 'European clear-line (ligne claire) style, precise uniform ink outlines, flat colors, no hatching, clean readable backgrounds, Hergé aesthetic' },
-{ id: 'european-bd', name: 'European BD Adventure', prompt: 'modern European BD adventure art, realistic proportions, intricate background details, sophisticated color grading, Moebius influence' },
+{ id: 'european-bd', name: 'European BD Adventure', prompt: 'modern European BD adventure art, expressive comic proportions, intricate background details, sophisticated color grading, Moebius influence' },
 { id: 'modern-alt', name: 'Modern Indie Alt', prompt: 'modern indie alt-comic style, loose sketchy line work, contemporary emotional storytelling, minimal shading, Adrian Tomine vibe' },
 
-// Experimental & Realistic
-{ id: 'erotic-realism', name: 'Photorealistic', prompt: 'ultra photorealistic sensual erotic portrait, detailed realistic skin texture and anatomy, soft intimate lighting, cinematic chiaroscuro, tasteful artistic sensual pose, high detail masterpiece, no cartoon elements' },
+// Experimental
 { id: 'pulp-adventure', name: 'Retro Pulp Adventure', prompt: 'retro 1930s pulp magazine cover art, dynamic adventure serials, warm vintage palette, hand-painted texture, dramatic heroic action' },
     { id: 'cyberpunk-noir', name: 'Western Cyberpunk Noir', prompt: 'Western cyberpunk neon-noir comic art, intricate mechanical details, glowing accents, gritty high-tech low-life aesthetic, intense lighting' },
 
     // Americana & Subverted Wholesome
-    { id: 'norman-rockwell', name: 'Norman Rockwell', prompt: 'Norman Rockwell illustration style, folksy Americana, warm nostalgic palette, Saturday Evening Post aesthetic, detailed realistic figures, idyllic small-town scenes, homespun warmth with subtle underlying tension, masterful composition' },
+    { id: 'norman-rockwell', name: 'Norman Rockwell', prompt: 'Norman Rockwell illustration style, folksy Americana, warm nostalgic palette, Saturday Evening Post aesthetic, detailed expressive figures, idyllic small-town scenes, homespun warmth with subtle underlying tension, masterful composition' },
     { id: 'kinkade-luminous', name: 'Kinkade Luminous', prompt: 'Thomas Kinkade style, luminous glowing cottages, idyllic pastoral landscapes, soft diffused golden light, painterly warmth, ethereal glow effects, cozy nostalgic atmosphere, romanticized nature' },
     { id: 'lisa-frank', name: 'Lisa Frank', prompt: 'Lisa Frank style, hypersaturated neon rainbow colors, sparkles and glitter effects, 90s aesthetic, kawaii cute characters, gradient backgrounds, maximalist whimsy, unicorns and dolphins, bold outlines' },
 
@@ -42,7 +41,7 @@ export const ART_STYLES = [
     { id: 'hellraiser', name: 'Hellraiser', prompt: 'Clive Barker Hellraiser aesthetic, cenobite body horror, leather and chains, puzzle box motifs, sadomasochistic nightmare imagery, dim crimson and black palette, intricate geometric torture designs, flesh and metal fusion' },
     { id: 'spawn-mcfarlane', name: 'Spawn (McFarlane)', prompt: 'Todd McFarlane Spawn style, elaborate flowing capes with impossible detail, hellfire green necroplasm glow, gritty urban supernatural, heavy dramatic shadows, dynamic exaggerated poses, chains skulls and spikes, 90s Image comics energy' },
 
-    // Epic Sci-Fi (new group or add to Realistic & Experimental)
+    // Epic Sci-Fi
     { id: 'dune-epic', name: 'Dune', prompt: 'Dune aesthetic, epic desert landscapes, ornate stillsuits with intricate detail, sandworm scale and grandeur, spice-blue eyes, arid orange ochre and deep blue palette, Frank Herbert vision, baroque sci-fi grandeur, harsh sunlight and deep shadows' },
 
     // Custom - this is a special one
