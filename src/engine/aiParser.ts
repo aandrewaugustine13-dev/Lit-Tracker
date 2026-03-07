@@ -17,7 +17,7 @@ import {
   BlockType,
 } from './parserPipeline.types';
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 // ─── LLM Provider Type ──────────────────────────────────────────────────────
 
@@ -366,18 +366,18 @@ async function callGeminiDirect(
   apiKey: string,
   model: string,
 ): Promise<string> {
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const geminiModel = genAI.getGenerativeModel({ model });
+  const ai = new GoogleGenAI({ apiKey });
 
-  const result = await geminiModel.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt + '\n\n' + script }] }],
-    generationConfig: {
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt + '\n\n' + script,
+    config: {
       temperature: 0.1,
       responseMimeType: 'application/json',
     },
   });
 
-  const text = result.response.text();
+  const text = response.text;
   if (!text) {
     throw new Error('Gemini returned empty response');
   }
