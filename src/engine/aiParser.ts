@@ -550,36 +550,74 @@ function validateAndRepair(
   }));
 
   // ── Hard filter: catch non-characters the AI missed ──────────────────
-  const NON_CHARACTER_PATTERNS: RegExp[] = [
-    /^(INT|EXT|INT\.|EXT\.)\b/i,           // Scene headings
-    /^PAGES?\s+\d/i,                         // Page markers (PAGE ONE, PAGES EIGHT)
-    /^PANEL\s+\d/i,                          // Panel markers
-    /^(END|NEXT|CONTINUED|LOGLINE)\b/i,     // Structural markers
-    /^(SFX|SOUND|MUSIC|SONG)\b/i,           // Audio markers
+  // Uses word-boundary matching so "STREET SIGN", "TV SCREEN", "OLD RADIO"
+  // all get caught — not just exact bare-word matches.
+
+  // Patterns that reject if they match ANYWHERE in the name (word-boundary)
+  const NON_CHARACTER_WORD_PATTERNS: RegExp[] = [
+    // Scene headings
+    /\bINT\b|\bEXT\b/i,
+    // Structural / formatting markers
+    /^PAGES?\s+\d/i,
+    /^PANEL\s+\d/i,
+    /^(END|NEXT|CONTINUED|LOGLINE)\b/i,
+    // Audio / SFX markers
+    /\b(SFX|SOUND EFFECT)\b/i,
+    // Signs and environmental text — any name containing these words
+    /\b(SIGN|BANNER|POSTER|PLACARD|GRAFFITI|BILLBOARD|MARQUEE|CHYRON)\b/i,
+    // Screens and displays
+    /\b(SCREEN|DISPLAY|MONITOR|NOTIFICATION|POPUP|ALERT)\b/i,
+    // File / data labels
+    /\b(FILE INFO|METADATA|SEARCH RESULT)\b/i,
+    // Broadcast / audio sources (without a body)
+    /\b(RADIO|TELEVISION|BROADCAST|INTERCOM|PA SYSTEM|VOICEMAIL|RECORDING)\b/i,
+    // Shorthand broadcast
+    /^TV\b/i,
+    // Devices and systems
+    /\b(COMPUTER|DEVICE|ALARM|SIREN|AUTOMATED|GPS VOICE|GPS)\b/i,
+    // Groups without individual identity
+    /\b(CROWD|CHORUS|EVERYONE|VOICES|MURMURS|CHANT)\b/i,
+    // Narration / overlay text
+    /\b(CAPTION|CRAWL|CRAWLER|TITLE CARD|SUPER)\b/i,
   ];
+
+  // Exact matches for short / ambiguous words that could false-positive
+  // with word-boundary alone (e.g. "ALL" could hit "SALLY")
   const NON_CHARACTER_EXACT = new Set([
-    'SIGN', 'SIGN ON STAGE', 'BANNER', 'POSTER', 'PLACARD', 'GRAFFITI', 'BILLBOARD', 'MARQUEE',
-    'SCREEN', 'DISPLAY', 'MONITOR', 'NOTIFICATION', 'POPUP', 'ALERT', 'CHYRON',
-    'FILE', 'FILE INFO', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY', 'LOG', 'METADATA',
-    'RADIO', 'TV', 'TELEVISION', 'NEWS', 'BROADCAST', 'INTERCOM', 'PA',
-    'SPEAKER', 'PHONE', 'RECORDING', 'VOICEMAIL', 'ANSWERING', 'ANNOUNCEMENT', 'ANNOUNCER',
-    'VOICE', 'VOICES', 'CROWD', 'CHANT', 'CHORUS', 'ALL', 'EVERYONE',
-    'NARRATOR', 'CAPTION', 'TITLE', 'CRAWL', 'CRAWLER', 'SUPER',
-    'COMPUTER', 'DEVICE', 'ALARM', 'SIREN', 'HORN', 'AUTOMATED', 'SYSTEM', 'GPS', 'AI',
-    'NEXT', 'END', 'CONTINUED', 'UNKNOWN',
+    'TV', 'PA', 'AI', 'ALL', 'END', 'NEXT', 'LOG', 'NEWS',
+    'VOICE', 'PHONE', 'SPEAKER', 'HORN', 'SYSTEM',
+    'SONG', 'MUSIC', 'NARRATOR', 'TITLE', 'SUPER',
+    'FILE', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY',
+    'ANNOUNCEMENT', 'ANNOUNCER', 'ANSWERING',
+    'UNKNOWN', 'CONTINUED',
   ]);
 
-  function isNonCharacter(name: string): boolean {
+  // Description keywords that indicate an object, not a person
+  const OBJECT_DESCRIPTION_PATTERNS: RegExp[] = [
+    /\b(inanimate|non-human object|device|appliance|furniture|vehicle)\b/i,
+    /\b(sign that reads|screen displaying|monitor showing|display reading)\b/i,
+    /\b(text on|written on|reads:|displays?:)\b/i,
+    /\b(mounted on|hanging from|posted on|nailed to)\b/i,
+    /\bnot a (person|character|human|being)\b/i,
+  ];
+
+  function isNonCharacter(name: string, description?: string): boolean {
     const upper = name.trim().toUpperCase();
+
+    // Exact match for short ambiguous words
     if (NON_CHARACTER_EXACT.has(upper)) return true;
-    if (NON_CHARACTER_PATTERNS.some(p => p.test(upper))) return true;
-    // Any word in the name is a scene heading keyword
-    if (/\bINT\b|\bEXT\b/.test(upper)) return true;
+
+    // Word-boundary pattern match anywhere in the name
+    if (NON_CHARACTER_WORD_PATTERNS.some(p => p.test(upper))) return true;
+
+    // Description heuristic: if the AI's own description says it's an object, trust that
+    if (description && OBJECT_DESCRIPTION_PATTERNS.some(p => p.test(description))) return true;
+
     return false;
   }
 
   const filteredCharacters = characters.filter(c => {
-    if (isNonCharacter(c.name)) {
+    if (isNonCharacter(c.name, c.description)) {
       warnings.push('Filtered non-character from AI output: "' + c.name + '"');
       return false;
     }
