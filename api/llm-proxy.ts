@@ -264,9 +264,7 @@ async function callGemini(
   }
 
   const data = await response.json();
-  const parts = data.candidates[0].content.parts;
-  const textPart = parts.filter((p: any) => p.text && !p.thought).pop() || parts[parts.length - 1];
-  return textPart.text;
+  return data.candidates[0].content.parts[0].text;
 }
 
 async function callAnthropic(
