@@ -264,20 +264,9 @@ async function callGemini(
   }
 
   const data = await response.json();
-  // Gemini 2.5+ thinking model: filter out thought parts, take last real output
-  const parts = data.candidates?.[0]?.content?.parts;
-  if (!parts || parts.length === 0) {
-    throw new Error('Gemini returned no content parts');
-  }
-  const nonThoughtParts = parts.filter((p: any) => p.text && !p.thought);
-  if (nonThoughtParts.length > 0) {
-    return nonThoughtParts[nonThoughtParts.length - 1].text;
-  }
-  const anyTextParts = parts.filter((p: any) => p.text);
-  if (anyTextParts.length > 0) {
-    return anyTextParts[anyTextParts.length - 1].text;
-  }
-  throw new Error('Gemini returned parts but none contained text');
+  const parts = data.candidates[0].content.parts;
+  const textPart = parts.filter((p: any) => p.text && !p.thought).pop() || parts[parts.length - 1];
+  return textPart.text;
 }
 
 async function callAnthropic(
