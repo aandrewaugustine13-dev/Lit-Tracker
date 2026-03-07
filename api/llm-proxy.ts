@@ -264,11 +264,20 @@ async function callGemini(
   }
 
   const data = await response.json();
-  // Gemini 2.5+ thinking models return multiple parts: thought parts first,
-  // then the actual response last. Grab the last non-thought part.
-  const parts = data.candidates[0].content.parts;
-  const outputPart = parts.filter((p: any) => !p.thought).pop() || parts[parts.length - 1];
-  return outputPart.text;
+  // Gemini 2.5+ thinking model: filter out thought parts, take last real output
+  const parts = data.candidates?.[0]?.content?.parts;
+  if (!parts || parts.length === 0) {
+    throw new Error('Gemini returned no content parts');
+  }
+  const nonThoughtParts = parts.filter((p: any) => p.text && !p.thought);
+  if (nonThoughtParts.length > 0) {
+    return nonThoughtParts[nonThoughtParts.length - 1].text;
+  }
+  const anyTextParts = parts.filter((p: any) => p.text);
+  if (anyTextParts.length > 0) {
+    return anyTextParts[anyTextParts.length - 1].text;
+  }
+  throw new Error('Gemini returned parts but none contained text');
 }
 
 async function callAnthropic(
