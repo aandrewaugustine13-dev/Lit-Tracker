@@ -556,21 +556,23 @@ function createDefaultInkState(): InkAppState {
   };
 }
 
-function normalizeInkProjects(state: InkAppState): InkAppState {
-  const mapLegacyStyle = (style?: string): string => {
-    // Backward compatibility: legacy Ink Tracker saves may contain removed photoreal styles.
-    const normalized = (style || '').toLowerCase().trim();
-    if (['erotic-realism', 'photorealistic', 'photoreal', 'photo-real', 'cinematic realism'].includes(normalized)) {
-      return 'pulp-adventure';
-    }
-    return style || 'classic-noir';
-  };
+// Maps deprecated legacy style ids to a supported current style.
+const LEGACY_STYLE_IDS: ReadonlySet<string> = new Set([
+  'erotic-realism', 'photorealistic', 'photoreal', 'photo-real', 'cinematic realism',
+]);
 
+function migrateLegacyStyleId(style?: string): string {
+  const normalized = (style || '').toLowerCase().trim();
+  if (LEGACY_STYLE_IDS.has(normalized)) return 'pulp-adventure';
+  return style || 'classic-noir';
+}
+
+function normalizeInkProjects(state: InkAppState): InkAppState {
   return {
     ...state,
     projects: state.projects.map(proj => ({
       ...proj,
-      style: mapLegacyStyle(proj.style),
+      style: migrateLegacyStyleId(proj.style),
       issueType: proj.issueType || 'issue',
       imageProvider: proj.imageProvider || 'gemini',
       projectType: proj.projectType || 'comic',
