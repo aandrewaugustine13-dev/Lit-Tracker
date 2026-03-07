@@ -17,6 +17,8 @@ import {
   BlockType,
 } from './parserPipeline.types';
 
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
 // ─── LLM Provider Type ──────────────────────────────────────────────────────
 
 export type LLMProvider = 'anthropic' | 'gemini' | 'openai' | 'grok' | 'deepseek' | 'groq';
@@ -364,30 +366,22 @@ async function callGeminiDirect(
   apiKey: string,
   model: string,
 ): Promise<string> {
-  const response = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt + '\n\n' + script }] }],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: 'application/json',
-        },
-      }),
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const geminiModel = genAI.getGenerativeModel({ model });
+
+  const result = await geminiModel.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt + '\n\n' + script }] }],
+    generationConfig: {
+      temperature: 0.1,
+      responseMimeType: 'application/json',
     },
-  );
+  });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error('Gemini API error: ' + response.status + ' - ' + error);
+  const text = result.response.text();
+  if (!text) {
+    throw new Error('Gemini returned empty response');
   }
-
-  const data = await response.json();
-  const parts = data.candidates[0].content.parts;
-  const textPart = parts.filter((p: any) => p.text && !p.thought).pop() || parts[parts.length - 1];
-  return textPart.text;
+  return text;
 }
 
 async function callAnthropicDirect(
