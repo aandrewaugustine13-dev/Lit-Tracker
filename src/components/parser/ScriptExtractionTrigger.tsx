@@ -215,7 +215,6 @@ export const ScriptExtractionTrigger: React.FC<ScriptExtractionTriggerProps> = (
       });
 
       setCurrentProposal(proposal);
-      setParserStatus('idle');
       onClose();
     } catch (error) {
       console.error('[ScriptExtraction] Parse failed:', error);
