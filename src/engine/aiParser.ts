@@ -550,55 +550,31 @@ function validateAndRepair(
   }));
 
   // ── Hard filter: catch non-characters the AI missed ──────────────────
-  // Word-boundary matching on NAMES ONLY so "STREET SIGN", "TV SCREEN",
-  // "OLD RADIO" get caught. No description filtering — too many false positives.
-
-  // Patterns that reject if they match ANYWHERE in the name (word-boundary)
-  const NON_CHARACTER_WORD_PATTERNS: RegExp[] = [
-    // Scene headings
-    /\bINT\b|\bEXT\b/i,
-    // Structural / formatting markers
-    /^PAGES?\s+\d/i,
-    /^PANEL\s+\d/i,
-    /^(END|NEXT|CONTINUED|LOGLINE)\b/i,
-    // Audio / SFX markers
-    /\b(SFX|SOUND EFFECT)\b/i,
-    // Signs and environmental text — any name containing these words
-    /\b(SIGN|BANNER|POSTER|PLACARD|GRAFFITI|BILLBOARD|MARQUEE|CHYRON)\b/i,
-    // Screens and displays
-    /\b(SCREEN|DISPLAY|MONITOR|NOTIFICATION|POPUP|ALERT)\b/i,
-    // Broadcast / audio sources (without a body)
-    /\b(RADIO|TELEVISION|BROADCAST|INTERCOM|VOICEMAIL|RECORDING)\b/i,
-    // Shorthand broadcast
-    /^TV\b/i,
-    // Devices and systems
-    /\b(COMPUTER|ALARM|SIREN|AUTOMATED)\b/i,
-    // Groups without individual identity
-    /\b(CROWD|CHORUS|EVERYONE|VOICES|MURMURS|CHANT)\b/i,
-    // Narration / overlay text
-    /\b(CAPTION|CRAWL|CRAWLER|TITLE CARD)\b/i,
+  const NON_CHARACTER_PATTERNS: RegExp[] = [
+    /^(INT|EXT|INT\.|EXT\.)\b/i,           // Scene headings
+    /^PAGES?\s+\d/i,                         // Page markers (PAGE ONE, PAGES EIGHT)
+    /^PANEL\s+\d/i,                          // Panel markers
+    /^(END|NEXT|CONTINUED|LOGLINE)\b/i,     // Structural markers
+    /^(SFX|SOUND|MUSIC|SONG)\b/i,           // Audio markers
   ];
-
-  // Exact matches for short / ambiguous words only
   const NON_CHARACTER_EXACT = new Set([
-    'TV', 'PA', 'AI', 'ALL', 'END', 'NEXT', 'LOG', 'NEWS',
-    'VOICE', 'PHONE', 'SPEAKER', 'HORN', 'SYSTEM', 'DEVICE', 'GPS',
-    'SONG', 'MUSIC', 'NARRATOR', 'TITLE', 'SUPER',
-    'FILE', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY', 'METADATA',
-    'ANNOUNCEMENT', 'ANNOUNCER', 'ANSWERING',
-    'UNKNOWN', 'CONTINUED',
-    'SIGN ON STAGE', 'FILE INFO', 'SEARCH RESULT', 'PA SYSTEM', 'GPS VOICE',
+    'SIGN', 'SIGN ON STAGE', 'BANNER', 'POSTER', 'PLACARD', 'GRAFFITI', 'BILLBOARD', 'MARQUEE',
+    'SCREEN', 'DISPLAY', 'MONITOR', 'NOTIFICATION', 'POPUP', 'ALERT', 'CHYRON',
+    'FILE', 'FILE INFO', 'FOLDER', 'SEARCH', 'RESULT', 'QUERY', 'LOG', 'METADATA',
+    'RADIO', 'TV', 'TELEVISION', 'NEWS', 'BROADCAST', 'INTERCOM', 'PA',
+    'SPEAKER', 'PHONE', 'RECORDING', 'VOICEMAIL', 'ANSWERING', 'ANNOUNCEMENT', 'ANNOUNCER',
+    'VOICE', 'VOICES', 'CROWD', 'CHANT', 'CHORUS', 'ALL', 'EVERYONE',
+    'NARRATOR', 'CAPTION', 'TITLE', 'CRAWL', 'CRAWLER', 'SUPER',
+    'COMPUTER', 'DEVICE', 'ALARM', 'SIREN', 'HORN', 'AUTOMATED', 'SYSTEM', 'GPS', 'AI',
+    'NEXT', 'END', 'CONTINUED', 'UNKNOWN',
   ]);
 
   function isNonCharacter(name: string): boolean {
     const upper = name.trim().toUpperCase();
-
-    // Exact match first
     if (NON_CHARACTER_EXACT.has(upper)) return true;
-
-    // Word-boundary pattern match on the name
-    if (NON_CHARACTER_WORD_PATTERNS.some(p => p.test(upper))) return true;
-
+    if (NON_CHARACTER_PATTERNS.some(p => p.test(upper))) return true;
+    // Any word in the name is a scene heading keyword
+    if (/\bINT\b|\bEXT\b/.test(upper)) return true;
     return false;
   }
 
